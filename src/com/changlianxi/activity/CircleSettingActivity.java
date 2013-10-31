@@ -1,9 +1,7 @@
 package com.changlianxi.activity;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -33,9 +31,10 @@ import android.widget.TextView;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadCircleLogo;
 import com.changlianxi.modle.CircleModle;
-import com.changlianxi.modle.ContactModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.CircleLogoAsyncTask;
+import com.changlianxi.util.AsyncImageLoader;
+import com.changlianxi.util.AsyncImageLoader.ImageCallback;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
@@ -43,37 +42,36 @@ import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
-import com.changlianxi.view.Home;
 
-public class CreateCircleActivity extends Activity implements OnClickListener,
+public class CircleSettingActivity extends Activity implements OnClickListener,
 		UpLoadCircleLogo {
-	private List<ContactModle> contactsList = new ArrayList<ContactModle>();
 	private ImageView btnBack;
 	private ImageView editClean;
 	private EditText editCirName;
 	private ImageView cirImg;
 	private SelectPicPopwindow popWindow;
-	private String cirIconPath;
+	private String cirIconPath = "";
+	private String newCirIconPath = "";// 改变之后的地址
 	private LinearLayout layadd;
 	private LinearLayout zhiwu;
 	private int count;// 添加职务数量
-	private Button createCir;
+	private Button btnSave;
 	private EditText description;
 	private JSONArray jsonAry = new JSONArray();
 	private JSONObject jsonObj;
 	private ProgressDialog progressDialog;
-	private String cid = "";// 创建圈子返回的uid 邀请成员和上传 logo用
+	private String cid = "";// 要修改圈子的id
+	private TextView cirName;
+	private AsyncImageLoader ImageLoader;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.activity_create_ciecle);
-		Bundle bundle = getIntent().getExtras();
-		contactsList = (List<ContactModle>) bundle
-				.getSerializable("contactsList");
-		System.out.println("size:" + contactsList.size());
+		setContentView(R.layout.activity_circle_setting);
+		cid = getIntent().getStringExtra("cid");
+		ImageLoader = new AsyncImageLoader(this);
+		cirName = (TextView) findViewById(R.id.cirName);
 		btnBack = (ImageView) findViewById(R.id.back);
 		btnBack.setOnClickListener(this);
 		editClean = (ImageView) findViewById(R.id.editClean);
@@ -86,8 +84,29 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		layadd = (LinearLayout) findViewById(R.id.layAdd);
 		zhiwu = (LinearLayout) findViewById(R.id.zhiwu);
 		layadd.setOnClickListener(this);
-		createCir = (Button) findViewById(R.id.createCircle);
-		createCir.setOnClickListener(this);
+		btnSave = (Button) findViewById(R.id.btn_save);
+		btnSave.setOnClickListener(this);
+		getCircleInfo(cid);
+	}
+
+	private void getCircleInfo(String cid) {
+		CircleModle modle = DBUtils.findCircleInfoById(cid);
+		cirName.setText(modle.getCirName());
+		editCirName.setText(modle.getCirName());
+		String path = modle.getCirIcon();
+		cirIconPath = path;
+		// 异步下载图片
+		Bitmap cachedImage = ImageLoader.loaDrawable(path, new ImageCallback() {
+			@Override
+			public void imageLoaded(Bitmap imageDrawable, String imageUrl) {
+				System.out.println("imageUrl" + imageUrl + "  imageDrawable:"
+						+ imageDrawable.getWidth());
+			}
+		});
+		if (cachedImage != null) {
+			cirImg.setImageBitmap(cachedImage);
+
+		}
 	}
 
 	@Override
@@ -104,15 +123,9 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 					.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
 			cursor.moveToFirst();
 			// 最后根据索引值获取图片路径
-			cirIconPath = cursor.getString(column_index);
-			String imgName = FileUtils.getFileName(cirIconPath);
-			Logger.debug(this, "cirIconPath:" + cirIconPath);
-			Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
-					MediaStore.Images.Thumbnails.MICRO_KIND,
-					CreateCircleActivity.this);
-			if (bitmap == null) {
-				System.out.println("nummnullnll");
-			}
+			newCirIconPath = cursor.getString(column_index);
+			Logger.debug(this, "cirIconPath:" + newCirIconPath);
+			Bitmap bitmap = getLocalPicByPath(newCirIconPath);
 			if (bitmap != null) {
 				cirImg.setImageBitmap(BitmapUtils.toRoundBitmap(bitmap));
 			}
@@ -120,16 +133,32 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	}
 
 	/**
-	 * 构建json串
+	 * .获取图片缩略图
 	 * 
+	 * @param path
+	 * @return
 	 */
-	private void BuildJson(String name, String num) {
+	private Bitmap getLocalPicByPath(String path) {
+		String imgName = FileUtils.getFileName(path);
+		Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
+				MediaStore.Images.Thumbnails.MICRO_KIND,
+				CircleSettingActivity.this);
+		return bitmap;
+	}
+
+	/**
+	 * 新增职务json串
+	 * 
+	 * @param name
+	 *            职务名称
+	 */
+	private void BuildAddJson(String name) {
 		try {
 			jsonObj = new JSONObject();
 			jsonObj.put("name", name);
-			jsonObj.put("cellphone", num);
+			jsonObj.put("op", "new");
+			jsonObj.put("id", "0");
 			jsonAry.put(jsonObj);
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -161,59 +190,62 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	 * 获取职务名称
 	 */
 	private String getValue() {
-		String value = "";
 		for (int i = 0; i < zhiwu.getChildCount(); i++) {
 			EditText t = (EditText) zhiwu.getChildAt(i)
 					.findViewById(R.id.zhiwu);
-			value += t.getText().toString() + ",";
-
+			BuildAddJson(t.getText().toString());
 		}
-		return value;
+		return jsonAry.toString();
 	}
 
 	/**
-	 * 邀请多个成员
+	 * 编辑圈子接口
 	 * 
 	 */
-	class IinviteMoreitTask extends AsyncTask<String, Integer, String> {
+	class EditCirTask extends AsyncTask<String, Integer, String> {
+
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
 		protected String doInBackground(String... params) {
-			for (int i = 0; i < contactsList.size(); i++) {
-				BuildJson(contactsList.get(i).getName(), contactsList.get(i)
-						.getNum());
-			}
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
-			map.put("persons", jsonAry.toString());
-			String json = HttpUrlHelper.postData(map, "/people/iinviteMore");
-			Logger.debug(this, json);
-			return json;
+			map.put("name", editCirName.getText().toString());
+			map.put("description", description.getText().toString());
+			map.put("roles", getValue());
+			String result = HttpUrlHelper.postData(map, "/circles/iedit");
+			Logger.debug(this, result);
+			return result;
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
+			String cid;
+			String roles;
 			try {
 				JSONObject object = new JSONObject(result);
 				int rt = object.getInt("rt");
 				if (rt == 1) {
-					Utils.showToast("邀请成功！");
-					Intent intent = new Intent();
-					Bundle bundle = new Bundle();
-					bundle.putSerializable("contactsList",
-							(Serializable) contactsList);
-					intent.putExtras(bundle);
-					intent.putExtra("circleName", editCirName.getText()
-							.toString());
-					intent.setClass(CreateCircleActivity.this,
-							SmsPreviewActivity.class);
-					startActivity(intent);
-					finish();
+					cid = object.getString("cid");
+					roles = object.getString("roles");
+					Logger.debug(this, "cid:" + cid + "  roles:" + roles);
+					if (newCirIconPath.equals("")) {
+						Utils.showToast("圈子修改成功!");
+						editDB(cid);
+						progressDialog.dismiss();
+						finish();
+						return;
+					}
+					// 上传圈子logo
+					CircleLogoAsyncTask cirTask = new CircleLogoAsyncTask(
+							newCirIconPath, cid);
+					cirTask.setCallBack(CircleSettingActivity.this);
+					cirTask.execute();
+					return;
 				} else {
-					Utils.showToast("邀请失败！");
+					Utils.showToast("圈子修改失败!");
+					progressDialog.dismiss();
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -223,91 +255,26 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-		}
-	}
-
-	/**
-	 * 创建圈子
-	 * 
-	 */
-	class CreateCirTask extends AsyncTask<String, Integer, String> {
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("uid", SharedUtils.getString("uid", ""));
-			map.put("token", SharedUtils.getString("token", ""));
-			map.put("name", editCirName.getText().toString());
-			map.put("description", description.getText().toString());
-			map.put("roles", getValue());
-			String result = HttpUrlHelper.postData(map, "/circles/iadd");
-			Logger.debug(this, "CreateCirTask:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			if (isCreateSuccess(result)) {
-				// 上传圈子logo
-				CircleLogoAsyncTask cirTask = new CircleLogoAsyncTask(
-						cirIconPath, cid);
-				cirTask.setCallBack(CreateCircleActivity.this);
-				cirTask.execute();
-			}
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(CreateCircleActivity.this);
+			progressDialog = new ProgressDialog(CircleSettingActivity.this);
 			progressDialog.show();
 		}
 	}
 
 	/**
-	 * 是否创建成功
-	 * 
-	 * @param str
-	 * @return
-	 */
-	private boolean isCreateSuccess(String str) {
-		try {
-			JSONObject object = new JSONObject(str);
-			int rt = object.getInt("rt");
-			if (rt == 1) {
-				cid = object.getString("cid");
-				insertDB(cid);
-				return true;
-			} else {
-				Utils.showToast("圈子创建失败!");
-				progressDialog.dismiss();
-				return false;
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return false;
-
-	}
-
-	/**
-	 * 插入本地数据库
+	 * 修改本地数据库
 	 * 
 	 * @param cid
 	 */
-	private void insertDB(String cid) {
+	private void editDB(String cid) {
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
-		values.put("cirID", cid);
 		values.put("cirName", editCirName.getText().toString());
-		values.put("cirImg", cirIconPath);
-		DBUtils.insertData("circlelist", values);
-		CircleModle modle = new CircleModle();
-		modle.setCirIcon(cirIconPath);
-		modle.setCirID(cid);
-		modle.setCirName(editCirName.getText().toString());
-		Home.refreshCircleList(modle);
+		if (newCirIconPath.equals("")) {
+			values.put("cirImg", cirIconPath);
+		} else {
+			values.put("cirImg", newCirIconPath);
+		}
+		DBUtils.editCircleInfo(values, cid);
 	}
 
 	@Override
@@ -326,12 +293,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		case R.id.layAdd:
 			addView();
 			break;
-		case R.id.createCircle:
-			if (editCirName.getText().toString().length() == 0) {
-				Utils.showToast("请输入圈子名称");
-				return;
-			}
-			new CreateCirTask().execute();
+		case R.id.btn_save:
+			new EditCirTask().execute();
 			break;
 		default:
 			break;
@@ -340,12 +303,15 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void upLoadFinish(boolean flag) {
+		progressDialog.dismiss();
 		if (flag) {
-			new IinviteMoreitTask().execute();
-		} else {
-			Utils.showToast("圈子图标上传失败!");
-			progressDialog.dismiss();
+			Utils.showToast("修改成功!");
+			editDB(cid);
+			finish();
+			return;
 		}
+		Utils.showToast("圈子图标上传失败!");
+
 	}
 
 }
