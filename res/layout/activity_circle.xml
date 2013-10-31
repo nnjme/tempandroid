@@ -73,6 +73,16 @@
             android:text="动态"
             android:textColor="@color/default_font_color"
             android:textSize="20dip" />
+
+        <Button
+            android:id="@+id/more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dip"
+            android:layout_weight="1"
+            android:background="@drawable/icon_more"
+            android:textColor="@color/default_font_color"
+            android:textSize="20dip" />
     </LinearLayout>
 
 </LinearLayout>

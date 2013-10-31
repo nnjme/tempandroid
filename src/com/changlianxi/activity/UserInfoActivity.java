@@ -106,7 +106,6 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 	private OnTouchListener MyTouchListener = new OnTouchListener() {
 		int y1 = 0, y2;
 
-		@SuppressLint("NewApi")
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
 			switch (event.getAction()) {

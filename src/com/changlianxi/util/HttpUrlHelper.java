@@ -261,8 +261,10 @@ public class HttpUrlHelper {
 		return strPostResult;
 
 	}
+
 	/**
 	 * 上传圈子logo图片
+	 * 
 	 * @param url
 	 * @param file
 	 * @param cid
@@ -272,7 +274,7 @@ public class HttpUrlHelper {
 	 * @return
 	 */
 	public static String postCircleLogo(String url, File file, String cid,
-			String uid,  String token) {
+			String uid, String token) {
 		String strPostResult = "链接失败";
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(url);
@@ -283,7 +285,7 @@ public class HttpUrlHelper {
 			mpEntity.addPart("cid", new StringBody(cid));
 			mpEntity.addPart("uid", new StringBody(uid));
 			mpEntity.addPart("token", new StringBody(token));
- 			post.setEntity(mpEntity);
+			post.setEntity(mpEntity);
 			HttpResponse response = client.execute(post);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				strPostResult = EntityUtils.toString(response.getEntity(),
@@ -292,6 +294,8 @@ public class HttpUrlHelper {
 						+ strPostResult);
 				return strPostResult;
 			} else {
+				Logger.debug("HttpUrlHelper.getStatusCode", "strPostResult:"
+						+ response.getStatusLine().getStatusCode());
 				return strPostResult;
 			}
 		} catch (Exception e) {

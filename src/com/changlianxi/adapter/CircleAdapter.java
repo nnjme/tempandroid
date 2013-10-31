@@ -50,6 +50,11 @@ public class CircleAdapter extends BaseAdapter {
 		return listmodle.size();
 	}
 
+	public void setData(List<CircleModle> modle) {
+		this.listmodle = modle;
+		notifyDataSetChanged();
+	}
+
 	@Override
 	public Object getItem(int position) {
 		// TODO Auto-generated method stub
@@ -83,26 +88,31 @@ public class CircleAdapter extends BaseAdapter {
 		params.setMargins(20, 20, 20, 20);
 		holder.circleImg.setLayoutParams(params);
 		String imgUrl = listmodle.get(position).getCirIcon();
-		ImageView imageView = holder.circleImg;
-		imageView.setTag(imgUrl);
-		// 异步下载图片
-		Bitmap cachedImage = ImageLoader.loaDrawable(imgUrl,
-				new ImageCallback() {
-					@Override
-					public void imageLoaded(Bitmap imageDrawable,
-							String imageUrl) {
-						ImageView imageViewByTag = (ImageView) listView
-								.findViewWithTag(imageUrl);
-						if (imageViewByTag != null) {
-							imageViewByTag.setImageBitmap(imageDrawable);
-						}
-					}
-				});
-		if (cachedImage != null) {
-			holder.circleImg.setImageBitmap(cachedImage);
+		if (imgUrl.equals("addroot")) {
+			holder.circleImg.setImageResource(R.drawable.root_add);
 
 		} else {
-			holder.circleImg.setImageResource(R.drawable.root_add);
+			ImageView imageView = holder.circleImg;
+			imageView.setTag(imgUrl);
+			// 异步下载图片
+			Bitmap cachedImage = ImageLoader.loaDrawable(imgUrl,
+					new ImageCallback() {
+						@Override
+						public void imageLoaded(Bitmap imageDrawable,
+								String imageUrl) {
+							ImageView imageViewByTag = (ImageView) listView
+									.findViewWithTag(imageUrl);
+							if (imageViewByTag != null) {
+								imageViewByTag.setImageBitmap(imageDrawable);
+							}
+						}
+					});
+			if (cachedImage != null) {
+				holder.circleImg.setImageBitmap(cachedImage);
+
+			} else {
+				holder.circleImg.setImageResource(R.drawable.hand_pic);
+			}
 		}
 		holder.circleName.setText(listmodle.get(position).getCirName());
 		return convertView;

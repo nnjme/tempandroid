@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,12 +24,12 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.activity.SelectContactsActivity;
 import com.changlianxi.adapter.CircleAdapter;
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
@@ -47,18 +48,14 @@ public class Home implements OnClickListener {
 	private View mHome;
 	private LinearLayout mMenu;
 	private OnOpenListener mOnOpenListener;
-	private List<CircleModle> listModle = new ArrayList<CircleModle>();
+	private static List<CircleModle> listModle = new ArrayList<CircleModle>();
 	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
 	private GridView gView;
-	private CircleAdapter adapter;
-	private DataBase dbase = DataBase.getInstance();
-	private SQLiteDatabase db;
-	private ProgressDialog progressDialog;
+	private static CircleAdapter adapter;
 	private ImageView createCircle;
 
 	public Home(Context context) {
-		this.mcontext = context;
-		db = dbase.getWritableDatabase();
+		mcontext = context;
 		mHome = LayoutInflater.from(context).inflate(R.layout.home, null);
 		findViewById();
 		setListener();
@@ -68,7 +65,7 @@ public class Home implements OnClickListener {
 
 	private void showAdapter() {
 		CircleModle modle = new CircleModle();
-		modle.setCirIcon("");
+		modle.setCirIcon("addroot");
 		modle.setCirName("新建圈子");
 		serverListModle.add(modle);
 		listModle.add(modle);
@@ -84,6 +81,7 @@ public class Home implements OnClickListener {
 	 * 
 	 */
 	class GetCircleListTask extends AsyncTask<String, Integer, String> {
+		ProgressDialog progressDialog;
 
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
@@ -98,19 +96,12 @@ public class Home implements OnClickListener {
 			// 你要执行的方法
 			try {
 				JSONObject jsonobject = new JSONObject(result);
-				// String num = jsonobject.getString("num");
-				// System.out
-				// .println("circleNum:" + num + "  " + listModle.size());
-				// if (listModle.size() - 1 == Integer.valueOf(num)) {
-				// Logger.debug(this, "加载本地圈子数据");
-				// return null;
-				// }
 				JSONArray jsonarray = jsonobject.getJSONArray("circles");
 				if (jsonarray != null) {
 					DBUtils.clearTableData("circlelist");// 清空本地表 保存最新数据
 				}
 				Logger.debug(this, "jsarry:" + jsonarray.length());
-				for (int i = 0; i < jsonarray.length(); i++) {
+				for (int i = jsonarray.length() - 1; i >= 0; i--) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					CircleModle modle = new CircleModle();
 					String id = object.getString("id");
@@ -135,13 +126,9 @@ public class Home implements OnClickListener {
 
 		@Override
 		protected void onPostExecute(String result) {
-			listModle = serverListModle;// 用服务器数据替换本地数据
-			for (int i = 0; i < listModle.size(); i++) {
-				System.out.println("name:" + listModle.get(i).getCirName());
-			}
-			adapter = new CircleAdapter(mcontext, serverListModle, gView,
-					(Activity) mcontext);
-			adapter.notifyDataSetChanged();
+			listModle.clear();
+			listModle = serverListModle;
+			adapter.setData(listModle);
 			progressDialog.dismiss();
 		}
 
@@ -149,8 +136,23 @@ public class Home implements OnClickListener {
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
 			progressDialog = new ProgressDialog(mcontext);
+			if (listModle.size() > 1) {
+				return;
+			}
 			progressDialog.show();
 		}
+	}
+
+	/**
+	 * 更新圈子列表
+	 * 
+	 * @param modle
+	 */
+	public static void refreshCircleList(CircleModle modle) {
+		listModle.add(listModle.size() - 1, modle);
+		adapter.setData(listModle);
+		System.out.println("更新更新");
+
 	}
 
 	/**
@@ -160,17 +162,13 @@ public class Home implements OnClickListener {
 	 * @param num
 	 */
 	private void insertData(String id, String name, String img) {
-		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
-		}
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
 		values.put("cirID", id);
 		values.put("cirName", name);
 		values.put("cirImg", img);
 		Logger.debug(this, "id1:" + id);
-		db.insert("circlelist", null, values);
-		db.close();
+		DBUtils.insertData("circlelist", values);
 	}
 
 	/**
@@ -195,7 +193,6 @@ public class Home implements OnClickListener {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View v, int position,
 					long arg3) {
-				System.out.println("position:" + position);
 				if (position == listModle.size() - 1) {
 					Intent intent = new Intent();
 					intent.setClass(mcontext, SelectContactsActivity.class);
@@ -232,4 +229,5 @@ public class Home implements OnClickListener {
 		}
 
 	}
+
 }

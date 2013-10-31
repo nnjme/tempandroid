@@ -5,13 +5,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.R.integer;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -22,9 +17,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts.Photo;
@@ -34,27 +27,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.changlianxi.modle.ContactModle;
-import com.changlianxi.modle.SelectContactModle;
 import com.changlianxi.util.BitmapUtils;
-import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
-import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
 /**
@@ -66,11 +48,9 @@ import com.changlianxi.util.Utils;
 public class SelectContactsActivity extends Activity implements OnClickListener {
 	private ListView listview;// 显示联系人的列表
 	private List<ContactModle> data;// 用来存放联系人
-	private ArrayList<SelectContactModle> listmodle = new ArrayList<SelectContactModle>();// 存放已选择的联系人
 	private AsyncQueryHandler asyncQuery;
 	private LinearLayout layBot;// 用来显示或隐藏选择数量
 	private Button btfinish;
-	private final String TAG = "SelectContactsActivity:";
 	private ImageView back;
 	private LinearLayout addicon;
 	private CheckboxAdapter adapter;
@@ -176,39 +156,6 @@ public class SelectContactsActivity extends Activity implements OnClickListener 
 
 	}
 
-	// /**
-	// * listview的点击事件
-	// */
-	// @Override
-	// public void onItemClick(AdapterView<?> arg0, View v, int position, long
-	// arg3) {
-	// CheckBox cbox = (CheckBox) v.findViewById(R.id.checkBox1);
-	// cbox.setChecked(!cbox.isChecked());
-	// TextView name = (TextView) v.findViewById(R.id.name);
-	// TextView num = (TextView) v.findViewById(R.id.num);
-	// if (cbox.isChecked()) {
-	// SelectContactModle modle = new SelectContactModle();
-	// modle.setPosition(position);
-	// modle.setName(name.getText().toString());
-	// modle.setNum(num.getText().toString());
-	// listmodle.add(modle);
-	// // addicon(modle.getBmp());
-	// } else {
-	// for (int i = 0; i < listmodle.size(); i++) {
-	// if (listmodle.get(i).getPosition() == position) {
-	// listmodle.remove(i);
-	// break;
-	//
-	// }
-	// }
-	// }
-	// // String corPosition = "<font color=\"#ff7800\">" + listmodle.size()
-	// // + "</font>";
-	// layBot.setVisibility(View.VISIBLE);
-	// // txt.setText(Html.fromHtml("已选择" + corPosition + "人"));
-	// btfinish.setText("完成" + listmodle.size());
-	// }
-
 	class ViewHolder {
 		LinearLayout laybg;
 		TextView name;
@@ -219,7 +166,6 @@ public class SelectContactsActivity extends Activity implements OnClickListener 
 
 	private void delicon(String position) {
 		if (position != null) {
-			int pi = Integer.valueOf(position);
 			for (int i = 0; i < addicon.getChildCount(); i++) {
 				if (addicon.getChildAt(i).getTag().equals(position)) {
 					addicon.removeViewAt(i);

@@ -11,7 +11,6 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
@@ -432,7 +431,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 			Uri thisUri = data.getData();// 获得图片的uri
 			// 这里开始的第二部分，获取图片的路径：
 			String[] proj = { MediaStore.Images.Media.DATA };
-			@SuppressWarnings("deprecation")
 			Cursor cursor = managedQuery(thisUri, proj, null, null, null);
 			// 按我个人理解 这个是获得用户选择的图片的索引值
 			int column_index = cursor
@@ -496,7 +494,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 	protected String getAbsoluteImagePath(Uri uri) {
 		String imagePath = "";
 		String[] proj = { MediaStore.Images.Media.DATA };
-		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(uri, proj, null, null, null);
 
 		if (cursor != null) {
@@ -520,7 +517,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 		String latestImage = null;
 		String[] items = { MediaStore.Images.Media._ID,
 				MediaStore.Images.Media.DATA };
-		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(
 				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, items, null,
 				null, MediaStore.Images.Media._ID + " desc");
@@ -551,7 +547,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 		String[] proj = { MediaStore.Images.Media._ID,
 				MediaStore.Images.Media.DISPLAY_NAME };
 
-		@SuppressWarnings("deprecation")
 		Cursor cursor = managedQuery(
 				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, proj,
 				MediaStore.Images.Media.DISPLAY_NAME + "='" + imgName + "'",
@@ -587,8 +582,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 			return 0;
 		}
 
-		@SuppressWarnings("deprecation")
-		@SuppressLint("NewApi")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ViewHolder holder = null;

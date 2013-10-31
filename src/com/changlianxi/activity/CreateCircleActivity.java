@@ -32,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.db.DBUtils;
+import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.ContactModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.util.BitmapUtils;
@@ -41,6 +42,7 @@ import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
+import com.changlianxi.view.Home;
 
 public class CreateCircleActivity extends Activity implements OnClickListener {
 	private List<ContactModle> contactsList = new ArrayList<ContactModle>();
@@ -94,7 +96,6 @@ public class CreateCircleActivity extends Activity implements OnClickListener {
 			Uri thisUri = data.getData();// 获得图片的uri
 			// 这里开始的第二部分，获取图片的路径：
 			String[] proj = { MediaStore.Images.Media.DATA };
-			@SuppressWarnings("deprecation")
 			Cursor cursor = managedQuery(thisUri, proj, null, null, null);
 			// 按我个人理解 这个是获得用户选择的图片的索引值
 			int column_index = cursor
@@ -338,6 +339,11 @@ public class CreateCircleActivity extends Activity implements OnClickListener {
 		values.put("cirName", editCirName.getText().toString());
 		values.put("cirImg", cirIconPath);
 		DBUtils.insertData("circlelist", values);
+		CircleModle modle = new CircleModle();
+		modle.setCirIcon(cirIconPath);
+		modle.setCirID(cid);
+		modle.setCirName(editCirName.getText().toString());
+		Home.refreshCircleList(modle);
 	}
 
 	@Override

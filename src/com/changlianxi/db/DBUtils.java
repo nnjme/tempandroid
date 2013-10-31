@@ -205,4 +205,47 @@ public class DBUtils {
 		db.delete("circlelist", null, null);
 		db.close();
 	}
+
+	/**
+	 * 根根据圈子ID查找圈子信息
+	 * 
+	 * @param cirID
+	 */
+	public static CircleModle findCircleInfoById(String cirID) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		CircleModle modle = new CircleModle();
+		Cursor cursor = db.query("circlelist", null, "cirID='" + cirID + "'",
+				null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			String name = cursor.getString(cursor.getColumnIndex("cirName"));
+			String img = cursor.getString(cursor.getColumnIndex("cirImg"));
+			modle.setCirIcon(img);
+			modle.setCirName(name);
+			System.out.println("cirName:" + name);
+		} else {
+			cursor.close();
+			db.close();
+			return null;
+		}
+		cursor.close();
+		db.close();
+		return modle;
+	}
+
+	/**
+	 * 根据圈子id编辑圈子信息
+	 * 
+	 * @param cv
+	 * @param cirID
+	 */
+	public static void editCircleInfo(ContentValues cv, String cirID) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		db.update("circlelist", cv, "cirID=?", new String[] { cirID });
+
+	}
 }

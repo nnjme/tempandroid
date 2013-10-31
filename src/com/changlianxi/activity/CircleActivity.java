@@ -11,13 +11,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 
+import com.changlianxi.popwindow.CircleSettingPopwindow;
+import com.changlianxi.popwindow.CircleSettingPopwindow.ExitCircleCallBack;
+
 /**
  * 点击圈子之后进入的界面
  * 
  * @author teeker_bin
  * 
  */
-@SuppressWarnings("deprecation")
 public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private Button cy, lt, dt, cz;
 	private TabHost mTabHost;// 用来承载activity的TabHost
@@ -26,6 +28,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private Intent intent;
 	private Intent gintent;// 成长itent
 	private String ciecleName;// 圈子名称
+	private Button btnMore;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,8 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		cz.setOnClickListener(this);
 		dt = (Button) findViewById(R.id.dt);
 		dt.setOnClickListener(this);
+		btnMore = (Button) findViewById(R.id.more);
+		btnMore.setOnClickListener(this);
 		mTabHost = (TabHost) findViewById(R.id.tabhost);
 		mTabHost.setup(this.getLocalActivityManager());
 		mTabHost.addTab(mTabHost.newTabSpec("chengyuan")
@@ -100,7 +105,16 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 			mTabHost.setCurrentTab(3);
 			setSelectColor(v);
 			break;
-
+		case R.id.more:
+			CircleSettingPopwindow pop = new CircleSettingPopwindow(this, v,
+					id, new ExitCircleCallBack() {
+						@Override
+						public void exitCircle() {
+							finish();
+						}
+					});
+			pop.show();
+			break;
 		default:
 			break;
 		}

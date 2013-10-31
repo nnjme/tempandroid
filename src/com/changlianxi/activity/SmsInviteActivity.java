@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.changlianxi.modle.ContactModle;
-import com.changlianxi.util.Utils;
 
 public class SmsInviteActivity extends Activity implements OnClickListener {
 	private List<ContactModle> contactsList = new ArrayList<ContactModle>();

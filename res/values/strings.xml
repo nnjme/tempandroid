@@ -31,5 +31,6 @@
     <string name="title_activity_create_ciecle">CreateCiecleActivity</string>
     <string name="title_activity_sms_invite">SmsInviteActivity</string>
     <string name="sms_content">您可以访问http://changlianxi.com查看详情</string>
+    <string name="title_activity_circle_setting">CircleSettingActivity</string>
 
 </resources>
