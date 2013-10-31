@@ -458,8 +458,10 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 				return;
 			}
 			String imgName = FileUtils.getFileName(thisLarge);
-			bitmap = loadImgThumbnail(imgName,
-					MediaStore.Images.Thumbnails.MICRO_KIND);
+			System.out.println("imgName:" + imgName);
+			bitmap = BitmapUtils.loadImgThumbnail(imgName,
+					MediaStore.Images.Thumbnails.MICRO_KIND,
+					ReleaseGrowthActivity.this);
 			if (bitmap != null) {
 				modle.setBmp(bitmap);
 			}

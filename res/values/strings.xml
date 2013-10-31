@@ -28,5 +28,8 @@
     <string name="title_activity_user_info">UserInfoActivity</string>
     <string name="title_activity_release_growth_main">ReleaseGrowthMainActivity</string>
     <string name="title_activity_add_circle_member">AddCircleMemberActivity</string>
+    <string name="title_activity_create_ciecle">CreateCiecleActivity</string>
+    <string name="title_activity_sms_invite">SmsInviteActivity</string>
+    <string name="sms_content">您可以访问http://changlianxi.com查看详情</string>
 
 </resources>

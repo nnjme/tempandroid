@@ -1,6 +1,7 @@
 package com.changlianxi.activity;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,17 +11,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.R.integer;
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts.Photo;
@@ -59,16 +63,13 @@ import com.changlianxi.util.Utils;
  * @author teeker_bin
  * 
  */
-public class SelectContactsActivity extends Activity implements
-		OnItemClickListener, OnClickListener {
+public class SelectContactsActivity extends Activity implements OnClickListener {
 	private ListView listview;// 显示联系人的列表
 	private List<ContactModle> data;// 用来存放联系人
 	private ArrayList<SelectContactModle> listmodle = new ArrayList<SelectContactModle>();// 存放已选择的联系人
 	private AsyncQueryHandler asyncQuery;
 	private LinearLayout layBot;// 用来显示或隐藏选择数量
 	private Button btfinish;
-	private JSONArray jsonAry = new JSONArray();
-	private JSONObject jsonObj;
 	private final String TAG = "SelectContactsActivity:";
 	private ImageView back;
 	private LinearLayout addicon;
@@ -105,20 +106,6 @@ public class SelectContactsActivity extends Activity implements
 		listview = (ListView) findViewById(R.id.contactList);
 		// listview.setOnItemClickListener(this);
 		listview.setCacheColorHint(0);
-		listview.setOnScrollListener(new OnScrollListener() {
-
-			@Override
-			public void onScrollStateChanged(AbsListView view, int scrollState) {
-				layBot.setVisibility(View.GONE);
-
-			}
-
-			@Override
-			public void onScroll(AbsListView view, int firstVisibleItem,
-					int visibleItemCount, int totalItemCount) {
-
-			}
-		});
 
 	}
 
@@ -172,7 +159,7 @@ public class SelectContactsActivity extends Activity implements
 					}
 					ContactModle modle = new ContactModle();
 					modle.setName(contactName);
-					modle.setNum(phoneNumber);
+					modle.setNum(phoneNumber.replace(" ", ""));
 					modle.setBmp(contactPhoto);
 					modle.setSelected(false);
 					data.add(modle);
@@ -189,38 +176,38 @@ public class SelectContactsActivity extends Activity implements
 
 	}
 
-	/**
-	 * listview的点击事件
-	 */
-	@Override
-	public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
-		CheckBox cbox = (CheckBox) v.findViewById(R.id.checkBox1);
-		cbox.setChecked(!cbox.isChecked());
-		TextView name = (TextView) v.findViewById(R.id.name);
-		TextView num = (TextView) v.findViewById(R.id.num);
-		if (cbox.isChecked()) {
-			SelectContactModle modle = new SelectContactModle();
-			modle.setPosition(position);
-			modle.setName(name.getText().toString());
-			modle.setNum(num.getText().toString());
-			listmodle.add(modle);
-			addicon(modle.getBmp());
-		} else {
-			for (int i = 0; i < listmodle.size(); i++) {
-				if (listmodle.get(i).getPosition() == position) {
-					listmodle.remove(i);
-					delicon(listmodle.get(i).getPosition());
-					break;
-
-				}
-			}
-		}
-		// String corPosition = "<font color=\"#ff7800\">" + listmodle.size()
-		// + "</font>";
-		layBot.setVisibility(View.VISIBLE);
-		// txt.setText(Html.fromHtml("已选择" + corPosition + "人"));
-		btfinish.setText("完成" + listmodle.size());
-	}
+	// /**
+	// * listview的点击事件
+	// */
+	// @Override
+	// public void onItemClick(AdapterView<?> arg0, View v, int position, long
+	// arg3) {
+	// CheckBox cbox = (CheckBox) v.findViewById(R.id.checkBox1);
+	// cbox.setChecked(!cbox.isChecked());
+	// TextView name = (TextView) v.findViewById(R.id.name);
+	// TextView num = (TextView) v.findViewById(R.id.num);
+	// if (cbox.isChecked()) {
+	// SelectContactModle modle = new SelectContactModle();
+	// modle.setPosition(position);
+	// modle.setName(name.getText().toString());
+	// modle.setNum(num.getText().toString());
+	// listmodle.add(modle);
+	// // addicon(modle.getBmp());
+	// } else {
+	// for (int i = 0; i < listmodle.size(); i++) {
+	// if (listmodle.get(i).getPosition() == position) {
+	// listmodle.remove(i);
+	// break;
+	//
+	// }
+	// }
+	// }
+	// // String corPosition = "<font color=\"#ff7800\">" + listmodle.size()
+	// // + "</font>";
+	// layBot.setVisibility(View.VISIBLE);
+	// // txt.setText(Html.fromHtml("已选择" + corPosition + "人"));
+	// btfinish.setText("完成" + listmodle.size());
+	// }
 
 	class ViewHolder {
 		LinearLayout laybg;
@@ -230,43 +217,34 @@ public class SelectContactsActivity extends Activity implements
 		ImageView img;
 	}
 
-	private void delicon(int position) {
-		addicon.removeViewAt(position);
+	private void delicon(String position) {
+		if (position != null) {
+			int pi = Integer.valueOf(position);
+			for (int i = 0; i < addicon.getChildCount(); i++) {
+				if (addicon.getChildAt(i).getTag().equals(position)) {
+					addicon.removeViewAt(i);
+					break;
+				}
+			}
+		}
 
 	}
 
-	private void addicon(Bitmap bmp) {
+	private void addImg(Bitmap bmp, String tag) {
 		ImageView img = new ImageView(this);
 		int width = Utils.getSecreenWidth(this);
 		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width / 7,
 				width / 7);
 		lp.setMargins(3, 3, 3, 3);
 		img.setLayoutParams(lp);
+		img.setTag(tag);
 		if (bmp == null) {
 			img.setImageResource(R.drawable.home_image);
 		} else {
-			img.setImageBitmap(bmp);
+			img.setImageBitmap(BitmapUtils.toRoundBitmap(bmp));
 		}
 		addicon.addView(img);
 	}
-
-	// /**
-	// * 构建json串
-	// *
-	// */
-	// private void BuildJson(String name, String num) {
-	// try {
-	// jsonObj = new JSONObject();
-	// jsonObj.put("name", name);
-	// jsonObj.put("cellphone", num);
-	// jsonAry.put(jsonObj);
-	//
-	// } catch (JSONException e) {
-	// Logger.error(this, e);
-	//
-	// e.printStackTrace();
-	// }
-	// }
 
 	@Override
 	public void onClick(View v) {
@@ -275,68 +253,27 @@ public class SelectContactsActivity extends Activity implements
 			finish();
 			break;
 		case R.id.btnfinish:
+			List<ContactModle> listModle = new ArrayList<ContactModle>();
 			HashMap<Integer, Boolean> state = adapter.state;
-			String options = "选择的项是:";
 			for (int j = 0; j < adapter.getCount(); j++) {
-				System.out.println("state.get(" + j + ")==" + state.get(j));
 				if (state.get(j) != null) {
 					ContactModle modle = (ContactModle) adapter.getItem(j);
-					String username = modle.getName();
-					String num = modle.getNum();
-					options += "\n" + num + "." + username;
+					modle.setBmp(null);
+					listModle.add(modle);
 				}
 			}
-			// 显示选择内容
-			Toast.makeText(getApplicationContext(), options, Toast.LENGTH_LONG)
-					.show();
-			// finish();
+			Intent intent = new Intent();
+			Bundle bundle = new Bundle();
+			bundle.putSerializable("contactsList", (Serializable) listModle);
+			intent.putExtras(bundle);
+			intent.setClass(this, CreateCircleActivity.class);
+			startActivity(intent);
+			finish();
 			break;
-
 		default:
 			break;
 		}
 
-	}
-
-	/**
-	 * 异步提交修改数据到服务器
-	 * 
-	 */
-	class SubmitTask extends AsyncTask<String, Integer, String> {
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			// map.put("cid", cid);
-			map.put("uid", Utils.uid);
-			map.put("token", SharedUtils.getString("token", ""));
-			map.put("persons", jsonAry.toString());
-			String json = HttpUrlHelper.postData(map, "/people/iinviteMore");
-			Logger.debug(this, TAG + json);
-			return json;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			try {
-				JSONObject object = new JSONObject(result);
-				int rt = object.getInt("rt");
-				if (rt == 1) {
-					Utils.showToast("邀请成功！");
-				} else {
-					Utils.showToast("邀请失败！");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-		}
 	}
 
 	class CheckboxAdapter extends BaseAdapter {
@@ -374,7 +311,7 @@ public class SelectContactsActivity extends Activity implements
 		@Override
 		public View getView(final int position, View convertView,
 				ViewGroup parent) {
-			ViewHolder holder;
+			final ViewHolder holder;
 			if (convertView == null) {
 				holder = new ViewHolder();
 				LayoutInflater mInflater = LayoutInflater.from(context);
@@ -401,20 +338,30 @@ public class SelectContactsActivity extends Activity implements
 			}
 			holder.name.setText(listData.get(position).getName());
 			holder.num.setText(listData.get(position).getNum());
-			holder.check
-					.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-						@Override
-						public void onCheckedChanged(CompoundButton buttonView,
-								boolean isChecked) {
-							// TODO Auto-generated method stub
-							if (isChecked) {
-								state.put(position, isChecked);
-								layBot.setVisibility(View.VISIBLE);
-							} else {
-								state.remove(position);
-							}
-						}
-					});
+			holder.check.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					if (holder.check.isChecked()) {
+						state.put(position, true);
+						layBot.setVisibility(View.VISIBLE);
+						addImg(listData.get(position).getBmp(), state.size()
+								- 1 + "");
+						listData.get(position).setPosition(
+								state.size() - 1 + "");
+						// System.out.println("size:"
+						// + listData.get(position).getPosition());
+						btfinish.setText("完成(" + state.size() + ")");
+					} else {
+						System.out.println("aa:"
+								+ listData.get(position).getPosition());
+						state.remove(position);
+						btfinish.setText("完成(" + state.size() + ")");
+						delicon(listData.get(position).getPosition());
+
+					}
+				}
+			});
 			holder.check
 					.setChecked((state.get(position) == null ? false : true));
 			return convertView;

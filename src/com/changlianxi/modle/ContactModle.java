@@ -1,5 +1,7 @@
 package com.changlianxi.modle;
 
+import java.io.Serializable;
+
 import android.graphics.Bitmap;
 
 /**
@@ -8,11 +10,24 @@ import android.graphics.Bitmap;
  * @author teeker_bin
  * 
  */
-public class ContactModle {
+public class ContactModle implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String name = "";// 联系人姓名
 	private String num = "";// 联系人号码
 	private Bitmap bmp;// 联系人头像
 	private boolean selected = false;
+	private String position;// 位置 删除时用
+
+	public String getPosition() {
+		return position;
+	}
+
+	public void setPosition(String position) {
+		this.position = position;
+	}
 
 	public boolean isSelected() {
 		return selected;

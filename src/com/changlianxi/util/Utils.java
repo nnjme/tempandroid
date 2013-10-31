@@ -42,6 +42,8 @@ import com.changlianxi.modle.ContactModle;
  * 
  */
 public class Utils {
+	public static final int REQUEST_CODE_GETIMAGE_BYSDCARD = 0;// 选择图片
+	public static final int REQUEST_CODE_GETIMAGE_BYCAMERA = 1;// 拍照
 	private static final String[] PHONES_PROJECTION = new String[] {
 			Phone.DISPLAY_NAME, Phone.NUMBER, Photo._ID, Phone.CONTACT_ID };
 	/** 电话号码 **/
@@ -55,7 +57,7 @@ public class Utils {
 	private static final int PHONE_CONTACT_ID = 3;
 	private static List<ContactModle> contactList = new ArrayList<ContactModle>();
 	private static TelephonyManager mTelephonyManager;
-	public static String uid = "5";
+	public static String uid = "3";
 
 	/**
 	 * 手机号码验证
@@ -94,6 +96,25 @@ public class Utils {
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 
+	}
+
+	/***
+	 * 半角转换为全角
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public static String ToDBC(String input) {
+		char[] c = input.toCharArray();
+		for (int i = 0; i < c.length; i++) {
+			if (c[i] == 12288) {
+				c[i] = (char) 32;
+				continue;
+			}
+			if (c[i] > 65280 && c[i] < 65375)
+				c[i] = (char) (c[i] - 65248);
+		}
+		return new String(c);
 	}
 
 	/**

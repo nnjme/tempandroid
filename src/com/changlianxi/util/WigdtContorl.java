@@ -3,6 +3,8 @@ package com.changlianxi.util;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 /* 
@@ -117,5 +119,25 @@ public class WigdtContorl {
 
 	public interface Visible {
 		public void setVisible(boolean flag);
+	}
+
+	/**
+	 * 设定控件的宽高值
+	 * 
+	 * @param img
+	 * @param context
+	 * @param width
+	 * @param marginTop
+	 * @param marginLeft
+	 * @param marginRight
+	 * @param marginButtom
+	 */
+	public static void setViewWidth(ImageView img, Context context, int width,
+			int marginTop, int marginLeft, int marginRight, int marginButtom) {
+		int Screenwidth = Utils.getSecreenWidth(context);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+				Screenwidth / width, Screenwidth / width);
+		lp.setMargins(marginLeft, marginTop, marginRight, marginButtom);
+		img.setLayoutParams(lp);
 	}
 }

@@ -2,6 +2,7 @@ package com.changlianxi.adapter;
 
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
@@ -32,11 +33,11 @@ public class CircleAdapter extends BaseAdapter {
 	private AsyncImageLoader ImageLoader;
 
 	public CircleAdapter(Context context, List<CircleModle> listModle,
-			GridView listView) {
+			GridView listView, Activity activity) {
 		this.listmodle = listModle;
 		this.mcontext = context;
 		this.listView = listView;
-		ImageLoader = new AsyncImageLoader();
+		ImageLoader = new AsyncImageLoader(activity);
 	}
 
 	public CircleAdapter(Context context) {

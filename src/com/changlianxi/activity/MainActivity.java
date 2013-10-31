@@ -5,11 +5,11 @@ import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 
+import com.changlianxi.util.Logger;
 import com.changlianxi.view.FlipperLayout;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
 import com.changlianxi.view.Home;
 import com.changlianxi.view.SetMenu;
- 
 
 public class MainActivity extends Activity implements OnOpenListener {
 	/**
@@ -45,6 +45,12 @@ public class MainActivity extends Activity implements OnOpenListener {
 		mRoot.addView(mHome.getView(), params);
 		setContentView(mRoot);
 		setListener();
+	}
+
+	@Override
+	protected void onStart() {
+		Logger.debug(this, "onStartonStart");
+		super.onStart();
 	}
 
 	/**

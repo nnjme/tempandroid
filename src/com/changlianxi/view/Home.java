@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,7 +23,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.activity.SelectContactsActivity;
@@ -37,7 +35,6 @@ import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
- 
 
 /**
  * 圈子首页界面的view
@@ -51,6 +48,7 @@ public class Home implements OnClickListener {
 	private LinearLayout mMenu;
 	private OnOpenListener mOnOpenListener;
 	private List<CircleModle> listModle = new ArrayList<CircleModle>();
+	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
 	private GridView gView;
 	private CircleAdapter adapter;
 	private DataBase dbase = DataBase.getInstance();
@@ -66,16 +64,19 @@ public class Home implements OnClickListener {
 		setListener();
 		listModle = DBUtils.getCircleList();
 		showAdapter();
-		new GetCircleListTask().execute();
 	}
 
 	private void showAdapter() {
 		CircleModle modle = new CircleModle();
 		modle.setCirIcon("");
 		modle.setCirName("新建圈子");
+		serverListModle.add(modle);
 		listModle.add(modle);
-		adapter = new CircleAdapter(mcontext, listModle, gView);
+		adapter = new CircleAdapter(mcontext, listModle, gView,
+				(Activity) mcontext);
 		gView.setAdapter(adapter);
+		new GetCircleListTask().execute();
+
 	}
 
 	/**
@@ -97,30 +98,32 @@ public class Home implements OnClickListener {
 			// 你要执行的方法
 			try {
 				JSONObject jsonobject = new JSONObject(result);
-				String num = jsonobject.getString("num");
-				System.out
-						.println("circleNum:" + num + "  " + listModle.size());
-				if (listModle.size() - 1 == Integer.valueOf(num)) {
-					Logger.debug(this, "加载本地圈子数据");
-					return null;
-				}
+				// String num = jsonobject.getString("num");
+				// System.out
+				// .println("circleNum:" + num + "  " + listModle.size());
+				// if (listModle.size() - 1 == Integer.valueOf(num)) {
+				// Logger.debug(this, "加载本地圈子数据");
+				// return null;
+				// }
 				JSONArray jsonarray = jsonobject.getJSONArray("circles");
+				if (jsonarray != null) {
+					DBUtils.clearTableData("circlelist");// 清空本地表 保存最新数据
+				}
 				Logger.debug(this, "jsarry:" + jsonarray.length());
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					CircleModle modle = new CircleModle();
 					String id = object.getString("id");
-					Logger.debug(this, "id:" + id);
 					String logo = object.getString("logo");
 					String name = object.getString("name");
-					Logger.debug(this, "circlename:" + name);
+					Logger.debug(this, "circlename:" + name + "   icon:" + logo);
 					String status = object.getString("status");
 					modle.setCirImg(1);
 					modle.setCirID(id);
 					modle.setCirIcon(logo);
 					modle.setCirName(name);
 					modle.setCirStatus(status);
-					listModle.add(listModle.size() - 1, modle);
+					serverListModle.add(serverListModle.size() - 1, modle);
 					insertData(id, name, logo);
 				}
 			} catch (JSONException e) {
@@ -132,9 +135,14 @@ public class Home implements OnClickListener {
 
 		@Override
 		protected void onPostExecute(String result) {
+			listModle = serverListModle;// 用服务器数据替换本地数据
+			for (int i = 0; i < listModle.size(); i++) {
+				System.out.println("name:" + listModle.get(i).getCirName());
+			}
+			adapter = new CircleAdapter(mcontext, serverListModle, gView,
+					(Activity) mcontext);
 			adapter.notifyDataSetChanged();
 			progressDialog.dismiss();
-
 		}
 
 		@Override
@@ -187,7 +195,11 @@ public class Home implements OnClickListener {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View v, int position,
 					long arg3) {
+				System.out.println("position:" + position);
 				if (position == listModle.size() - 1) {
+					Intent intent = new Intent();
+					intent.setClass(mcontext, SelectContactsActivity.class);
+					mcontext.startActivity(intent);
 					return;
 				}
 				TextView txt = (TextView) v.findViewById(R.id.circleName);
@@ -213,9 +225,6 @@ public class Home implements OnClickListener {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.createCircle:
-			Intent intent = new Intent();
-			intent.setClass(mcontext, SelectContactsActivity.class);
-			mcontext.startActivity(intent);
 			break;
 
 		default:

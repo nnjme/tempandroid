@@ -46,7 +46,8 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="20dip"
             android:button="@drawable/checkbox"
-         android:focusable="false" />
+            android:checked="false"
+            android:focusable="false" />
     </LinearLayout>
 
 </LinearLayout>

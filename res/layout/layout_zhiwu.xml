@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="5dip"
+    android:gravity="center" >
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="圈子职务"
+        android:visibility="invisible" />
+
+    <EditText
+        android:id="@+id/zhiwu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@null"
+        android:focusable="true"
+        android:hint="输入职务名称"
+        android:textSize="15sp" >
+    </EditText>
+
+    <ImageView
+        android:id="@+id/delView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/icon_del" />
+
+</LinearLayout>

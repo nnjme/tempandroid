@@ -199,7 +199,7 @@ public class HttpUrlHelper {
 	}
 
 	/**
-	 * 上传图片接口
+	 * 上传成长记录图片接口
 	 * 
 	 * @param url
 	 *            服务器地址
@@ -232,7 +232,7 @@ public class HttpUrlHelper {
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				strPostResult = EntityUtils.toString(response.getEntity(),
 						"utf-8");
-				Logger.debug(HttpUrlHelper.class, "strPostResult:"
+				Logger.debug("HttpUrlHelper.postDataFile", "strPostResult:"
 						+ strPostResult);
 				return strPostResult;
 			} else {
@@ -252,6 +252,62 @@ public class HttpUrlHelper {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					Logger.error("HttpUrlHelper.postDataFile", e);
+
+					e.printStackTrace();
+				}
+			}
+			client.getConnectionManager().shutdown();
+		}
+		return strPostResult;
+
+	}
+	/**
+	 * 上传圈子logo图片
+	 * @param url
+	 * @param file
+	 * @param cid
+	 * @param uid
+	 * @param gid
+	 * @param token
+	 * @return
+	 */
+	public static String postCircleLogo(String url, File file, String cid,
+			String uid,  String token) {
+		String strPostResult = "链接失败";
+		HttpClient client = new DefaultHttpClient();
+		HttpPost post = new HttpPost(url);
+		MultipartEntity mpEntity = new MultipartEntity();
+		try {
+			FileBody fileBody = new FileBody(file);
+			mpEntity.addPart("logo", fileBody);
+			mpEntity.addPart("cid", new StringBody(cid));
+			mpEntity.addPart("uid", new StringBody(uid));
+			mpEntity.addPart("token", new StringBody(token));
+ 			post.setEntity(mpEntity);
+			HttpResponse response = client.execute(post);
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				strPostResult = EntityUtils.toString(response.getEntity(),
+						"utf-8");
+				Logger.debug("HttpUrlHelper.postDataFile", "strPostResult:"
+						+ strPostResult);
+				return strPostResult;
+			} else {
+				return strPostResult;
+			}
+		} catch (Exception e) {
+			Logger.debug("HttpUrlHelper.postDataFile", e);
+
+		} finally {
+			if (mpEntity != null) {
+				try {
+					mpEntity.consumeContent();
+				} catch (UnsupportedOperationException e) {
+					Logger.debug("HttpUrlHelper.postDataFile", e);
+
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					Logger.debug("HttpUrlHelper.postDataFile", e);
 
 					e.printStackTrace();
 				}

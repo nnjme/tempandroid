@@ -10,7 +10,6 @@ import java.io.InputStream;
 import android.content.Context;
 import android.os.Environment;
 
- 
 public class FileUtils {
 	/**
 	 * 写文本文�? 在Android系统中，文件保存�?/data/data/PACKAGE_NAME/files 目录�?
@@ -131,7 +130,7 @@ public class FileUtils {
 	}
 
 	/**
-	 * 根据文件绝对路径获取文件�?
+	 * 根据文件绝对路径获取文件名称
 	 * 
 	 * @param filePath
 	 * @return

@@ -4,8 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
@@ -14,6 +19,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.provider.MediaStore;
 
 /**
  * bitmap工作类
@@ -104,7 +110,7 @@ public class BitmapUtils {
 		FileOutputStream b = null;
 		try {
 			b = new FileOutputStream(filename);
-			bmp.compress(Bitmap.CompressFormat.JPEG, 100, b);// 把数据写入文件
+			bmp.compress(Bitmap.CompressFormat.PNG, 100, b);// 把数据写入文件
 		} catch (FileNotFoundException e) {
 			Logger.error(BitmapUtils.class, e);
 			e.printStackTrace();
@@ -118,4 +124,35 @@ public class BitmapUtils {
 			}
 		}
 	}
+
+	/**
+	 * 获取图片缩略�? 只有Android2.1以上版本支持
+	 * 
+	 * @param imgName
+	 * @param kind
+	 *            MediaStore.Images.Thumbnails.MICRO_KIND
+	 * @return
+	 */
+	public static Bitmap loadImgThumbnail(String imgName, int kind,
+			Activity activity) {
+		Bitmap bitmap = null;
+		String[] proj = { MediaStore.Images.Media._ID,
+				MediaStore.Images.Media.DISPLAY_NAME };
+
+		@SuppressWarnings("deprecation")
+		Cursor cursor = activity.managedQuery(
+				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, proj,
+				MediaStore.Images.Media.DISPLAY_NAME + "='" + imgName + "'",
+				null, null);
+
+		if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
+			ContentResolver crThumb = activity.getContentResolver();
+			BitmapFactory.Options options = new BitmapFactory.Options();
+			options.inSampleSize = 3;
+			bitmap = MediaStore.Images.Thumbnails.getThumbnail(crThumb,
+					cursor.getInt(0), kind, options);
+		}
+		return bitmap;
+	}
+
 }

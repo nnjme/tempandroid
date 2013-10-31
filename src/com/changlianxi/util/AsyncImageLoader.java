@@ -6,13 +6,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
- 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
+
+import com.changlianxi.activity.CLXApplication;
 
 /**
  * 异步下载图片类
@@ -24,15 +27,20 @@ public class AsyncImageLoader {
 	private MemoryCache cache;
 	private static final String SUFFIX = ".cach";// 后缀名
 	private Bitmap bmp;
+	private Activity activity;
 
-	public AsyncImageLoader() {
+	public AsyncImageLoader(Activity activity) {
 		cache = new MemoryCache();
+		this.activity = activity;
 	}
 
 	public Bitmap loaDrawable(final String imgUrl,
 			final ImageCallback imageCallback) {
-		if (imgUrl.equals("")) {
-			Logger.debug(this, "null");
+		Logger.debug(this, imgUrl);
+		if (imgUrl == null) {
+			return null;
+		}
+		if (imgUrl.equals("") || imgUrl == null) {
 			return null;
 		}
 
@@ -109,6 +117,15 @@ public class AsyncImageLoader {
 
 	/** 从缓存中获取图片 **/
 	private Bitmap getImage(String url) {
+		if (url.contains("/mnt/")) {
+			String imgName = FileUtils.getFileName(url);
+			Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
+					MediaStore.Images.Thumbnails.MICRO_KIND, activity);
+			if (bitmap == null) {
+				return null;
+			}
+			return BitmapUtils.toRoundBitmap(bitmap);
+		}
 		final String path = Environment.getExternalStorageDirectory()
 				+ File.separator + "clxcache" + "/" + convertUrlToFileName(url);
 		File file = new File(path);
@@ -133,10 +150,11 @@ public class AsyncImageLoader {
 	private Bitmap loadImageFromUrl(String url) {
 		Logger.debug(this, "网络");
 		Bitmap bmp = HttpUtil.GetBitmapFromUrl(url);
-		// Bitmap smallBmp = small(bmp);
-		// 将原来的位图缩小
-		Bitmap rbnmp = BitmapUtils.toRoundBitmap(bmp);
-		bmp.recycle();
+		Bitmap rbnmp = null;
+		if (bmp != null) {
+			rbnmp = BitmapUtils.toRoundBitmap(bmp);
+			bmp.recycle();
+		}
 		// smallBmp.recycle();
 		return rbnmp;
 	}

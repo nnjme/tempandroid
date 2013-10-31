@@ -39,7 +39,7 @@ import android.widget.ProgressBar;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.util.Logger;
- 
+
 /**
  * 大图预览界面 用popwindow实现
  * 

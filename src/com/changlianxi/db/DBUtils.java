@@ -3,6 +3,7 @@ package com.changlianxi.db;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -47,7 +48,9 @@ public class DBUtils {
 				modle.setCirName(name);
 				modle.setCirIcon(imgAdd);
 				data.add(modle);
-				Logger.debug(DBUtils.class, "circleName:" + name + "  id:" + id);
+				// Logger.debug(DBUtils.class, "circleName:" + name + "  id:" +
+				// id
+				// + "  cirImg:" + imgAdd);
 				cursor.moveToNext();
 			}
 		}
@@ -178,5 +181,28 @@ public class DBUtils {
 		cursor.close();
 		db.close();
 		return modle;
+	}
+
+	/**
+	 * 插入数据岛数据库
+	 * 
+	 * @param tableName
+	 *            表名
+	 * @param values
+	 */
+	public static void insertData(String tableName, ContentValues values) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		db.insert(tableName, null, values);
+		db.close();
+	}
+
+	public static void clearTableData(String tableName) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		db.delete("circlelist", null, null);
+		db.close();
 	}
 }

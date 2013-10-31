@@ -26,7 +26,6 @@ import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
- 
 
 /**
  * µÇÂ¼½çÃæ
@@ -49,6 +48,13 @@ public class LoginActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
+		String uid = SharedUtils.getString("uid", "");
+		if (!uid.equals("")) {
+			Intent intent = new Intent();
+			intent.setClass(this, MainActivity.class);
+			startActivity(intent);
+			finish();
+		}
 		initView();
 	}
 
