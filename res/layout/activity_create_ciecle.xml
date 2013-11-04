@@ -92,12 +92,30 @@
                     android:layout_height="wrap_content"
                     android:text="圈子图标" />
 
-                <ImageView
-                    android:id="@+id/circleIcon"
+                <!-- <ImageView -->
+                <!-- android:id="@+id/circleIcon" -->
+                <!-- android:layout_width="wrap_content" -->
+                <!-- android:layout_height="wrap_content" -->
+                <!-- android:layout_marginLeft="25dip" -->
+                <!-- android:src="@drawable/home_image" /> -->
+
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="25dip"
-                    android:src="@drawable/home_image" />
+                    android:layout_height="wrap_content" >
+
+                    <ImageView
+                        android:layout_width="90.0dip"
+                        android:layout_height="90.0dip"
+                        android:layout_centerInParent="true"
+                        android:contentDescription="@null"
+                        android:src="@drawable/cover_avatar" />
+
+                    <com.changlianxi.view.CircularImage
+                        android:id="@+id/circleIcon"
+                        android:layout_width="74.0dip"
+                        android:layout_height="74.0dip"
+                        android:layout_centerInParent="true" />
+                </RelativeLayout>
             </LinearLayout>
 
             <LinearLayout

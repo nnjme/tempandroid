@@ -1,0 +1,61 @@
+package com.changlianxi.task;
+
+import java.io.File;
+import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.os.AsyncTask;
+
+import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.util.HttpUrlHelper;
+
+public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
+	private UpLoadPic upload;// 上传图片完成接口
+	private Map<String, Object> map;
+	private String url;
+	private String picPath = "";
+	private String rt = "";
+
+	public UpLoadPicAsyncTask(Map<String, Object> map, String url,
+			String picPath) {
+		this.map = map;
+		this.url = url;
+		this.picPath = picPath;
+	}
+
+	public void setCallBack(UpLoadPic upload) {
+		this.upload = upload;
+	}
+
+	// 可变长的输入参数，与AsyncTask.exucute()对应
+
+	@Override
+	protected void onPreExecute() {
+		// 任务启动，可以在这里显示一个对话框，这里简单处理
+	}
+
+	@Override
+	protected String doInBackground(String... params) {
+		File file = new File(picPath);
+		String result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl + url,
+				map, file);
+		try {
+			JSONObject jsonobject = new JSONObject(result);
+			rt = jsonobject.getString("rt");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return rt;
+	}
+
+	@Override
+	protected void onPostExecute(String result) {
+		if (result.equals("1")) {
+			upload.upLoadFinish(true);
+		} else {
+			upload.upLoadFinish(false);
+		}
+	}
+}

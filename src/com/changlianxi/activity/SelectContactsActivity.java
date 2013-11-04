@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -213,6 +212,7 @@ public class SelectContactsActivity extends Activity implements OnClickListener 
 			bundle.putSerializable("contactsList", (Serializable) listModle);
 			intent.putExtras(bundle);
 			intent.setClass(this, CreateCircleActivity.class);
+			intent.putExtra("type", "more");
 			startActivity(intent);
 			finish();
 			break;

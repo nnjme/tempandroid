@@ -15,16 +15,6 @@ import android.text.TextUtils;
  */
 public class DateUtils {
 
-	public static final String YMD = "yyyyMMdd";
-	public static final String YMD_SLASH = "yyyy/MM/dd";
-	public static final String YMD_DASH = "yyyy-MM-dd";
-	public static final String YMD_DASH_WITH_TIME = "yyyy-MM-dd H:m";
-	public static final String YDM_SLASH = "yyyy/dd/MM";
-	public static final String YDM_DASH = "yyyy-dd-MM";
-	public static final String HM = "HHmm";
-	public static final String HM_COLON = "HH:mm";
-	public static final long DAY = 24 * 60 * 60 * 1000L;
-
 	private static final Map<String, DateFormat> DFS = new HashMap<String, DateFormat>();
 
 	private DateUtils() {

@@ -9,13 +9,9 @@ import java.io.OutputStream;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
-
-import com.changlianxi.activity.CLXApplication;
 
 /**
  * 异步下载图片类
@@ -117,20 +113,24 @@ public class AsyncImageLoader {
 
 	/** 从缓存中获取图片 **/
 	private Bitmap getImage(String url) {
-		if (url.contains("/mnt/")) {
-			String imgName = FileUtils.getFileName(url);
-			Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
-					MediaStore.Images.Thumbnails.MICRO_KIND, activity);
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inSampleSize = 1;
+		if (url.contains(FileUtils.getRootDir())) {
+			// String imgName = FileUtils.getFileName(url);
+			Bitmap bitmap = BitmapFactory.decodeFile(url, options);
+			// Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
+			// MediaStore.Images.Thumbnails.MICRO_KIND, activity);
 			if (bitmap == null) {
 				return null;
 			}
-			return BitmapUtils.toRoundBitmap(bitmap);
+			return bitmap;
+			// return BitmapUtils.toRoundBitmap(bitmap);
 		}
 		final String path = Environment.getExternalStorageDirectory()
 				+ File.separator + "clxcache" + "/" + convertUrlToFileName(url);
 		File file = new File(path);
 		if (file.exists()) {
-			Bitmap bmp = BitmapFactory.decodeFile(path);
+			Bitmap bmp = BitmapFactory.decodeFile(path, options);
 			if (bmp == null) {
 				file.delete();
 			} else {
@@ -150,27 +150,17 @@ public class AsyncImageLoader {
 	private Bitmap loadImageFromUrl(String url) {
 		Logger.debug(this, "网络");
 		Bitmap bmp = HttpUtil.GetBitmapFromUrl(url);
-		Bitmap rbnmp = null;
-		if (bmp != null) {
-			rbnmp = BitmapUtils.toRoundBitmap(bmp);
+		// Bitmap rbnmp = null;
+		// if (bmp != null) {
+		// rbnmp = BitmapUtils.toRoundBitmap(bmp);
+		// bmp.recycle();
+		// }
+		// smallBmp.recycle();
+		Bitmap bitmap = BitmapUtils.scaleBitmap(bmp);
+		if (bmp != null && !bmp.isRecycled()) {
 			bmp.recycle();
 		}
-		// smallBmp.recycle();
-		return rbnmp;
-	}
-
-	/**
-	 * 对图片进行缩放
-	 * 
-	 * @param bitmap
-	 * @return
-	 */
-	private Bitmap small(Bitmap bitmap) {
-		Matrix matrix = new Matrix();
-		matrix.postScale(0.3f, 0.3f); // 长和宽放大缩小的比例
-		Bitmap resizeBmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-				bitmap.getHeight(), matrix, true);
-		return resizeBmp;
+		return bitmap;
 	}
 
 	public interface ImageCallback {

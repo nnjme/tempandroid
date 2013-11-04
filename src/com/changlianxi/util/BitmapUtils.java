@@ -6,12 +6,13 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
@@ -19,7 +20,10 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.provider.MediaStore;
+
+import com.changlianxi.modle.SelectPicModle;
 
 /**
  * bitmap工作类
@@ -126,6 +130,56 @@ public class BitmapUtils {
 	}
 
 	/**
+	 * 动态计算图片的inSampleSize
+	 * 
+	 * @param options
+	 * @param minSideLength
+	 * @param maxNumOfPixels
+	 * @return
+	 */
+	public static int computeSampleSize(BitmapFactory.Options options,
+			int minSideLength, int maxNumOfPixels) {
+		int initialSize = computeInitialSampleSize(options, minSideLength,
+				maxNumOfPixels);
+
+		int roundedSize;
+		if (initialSize <= 8) {
+			roundedSize = 1;
+			while (roundedSize < initialSize) {
+				roundedSize <<= 1;
+			}
+		} else {
+			roundedSize = (initialSize + 7) / 8 * 8;
+		}
+
+		return roundedSize;
+	}
+
+	private static int computeInitialSampleSize(BitmapFactory.Options options,
+			int minSideLength, int maxNumOfPixels) {
+		double w = options.outWidth;
+		double h = options.outHeight;
+
+		int lowerBound = (maxNumOfPixels == -1) ? 1 : (int) Math.ceil(Math
+				.sqrt(w * h / maxNumOfPixels));
+		int upperBound = (minSideLength == -1) ? 128 : (int) Math.min(
+				Math.floor(w / minSideLength), Math.floor(h / minSideLength));
+
+		if (upperBound < lowerBound) {
+			// return the larger one when there is no overlapping zone.
+			return lowerBound;
+		}
+
+		if ((maxNumOfPixels == -1) && (minSideLength == -1)) {
+			return 1;
+		} else if (minSideLength == -1) {
+			return lowerBound;
+		} else {
+			return upperBound;
+		}
+	}
+
+	/**
 	 * 获取图片缩略�? 只有Android2.1以上版本支持
 	 * 
 	 * @param imgName
@@ -133,13 +187,12 @@ public class BitmapUtils {
 	 *            MediaStore.Images.Thumbnails.MICRO_KIND
 	 * @return
 	 */
-	public static Bitmap loadImgThumbnail(String imgName, int kind,
+	public static Bitmap loadImgThumbnail(String path, int kind,
 			Activity activity) {
+		String imgName = FileUtils.getFileName(path);
 		Bitmap bitmap = null;
 		String[] proj = { MediaStore.Images.Media._ID,
 				MediaStore.Images.Media.DISPLAY_NAME };
-
-		@SuppressWarnings("deprecation")
 		Cursor cursor = activity.managedQuery(
 				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, proj,
 				MediaStore.Images.Media.DISPLAY_NAME + "='" + imgName + "'",
@@ -148,11 +201,79 @@ public class BitmapUtils {
 		if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
 			ContentResolver crThumb = activity.getContentResolver();
 			BitmapFactory.Options options = new BitmapFactory.Options();
-			options.inSampleSize = 3;
+			options.inSampleSize = 4;
 			bitmap = MediaStore.Images.Thumbnails.getThumbnail(crThumb,
 					cursor.getInt(0), kind, options);
 		}
 		return bitmap;
+	}
+
+	/**
+	 * 按比例缩放图片
+	 * 
+	 * @param bmp
+	 *            要缩放的图片
+	 * @param width
+	 *            放缩以后的宽
+	 * @param height
+	 *            缩放以后的高
+	 * @return
+	 */
+	public static Bitmap scaleBitmap(Bitmap bmp) {
+		if (bmp == null) {
+			return null;
+		}
+		// 获取这个图片的宽和高
+		int width = bmp.getWidth();
+		int height = bmp.getHeight();
+		// 定义预转换成的图片的宽度和高度
+		int newWidth = width / 2;
+		int newHeight = height / 2;
+		// 计算缩放率，新尺寸除原始尺寸
+		float scaleWidth = ((float) newWidth) / width;
+		float scaleHeight = ((float) newHeight) / height;
+		// 创建操作图片用的matrix对象
+		Matrix matrix = new Matrix();
+		// 缩放图片动作
+		matrix.postScale(scaleWidth, scaleHeight);
+		// 创建新的图片
+		Bitmap resizedBitmap = Bitmap.createBitmap(bmp, 0, 0, width, height,
+				matrix, true);
+		bmp.recycle();
+		return resizedBitmap;
+	}
+
+	/**
+	 * 获取从图库中选择的图片和地址
+	 * 
+	 * @param context
+	 * @param data
+	 * @return
+	 */
+	public static SelectPicModle getPickPic(Activity context, Intent data) {
+		SelectPicModle modle = new SelectPicModle();
+		Uri thisUri = data.getData();// 获得图片的uri
+		// 这里开始的第二部分，获取图片的路径：
+		String[] proj = { MediaStore.Images.Media.DATA };
+		Cursor cursor = context.managedQuery(thisUri, proj, null, null, null);
+		// 按我个人理解 这个是获得用户选择的图片的索引值
+		int column_index = cursor
+				.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+		cursor.moveToFirst();
+		// 最后根据索引值获取图片路径
+		String picPath = cursor.getString(column_index);
+		Logger.debug("getPickPic:", picPath);
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inSampleSize = 1;
+		Bitmap bitmap = BitmapFactory.decodeFile(picPath, options);
+		// Bitmap bitmap = loadImgThumbnail(picPath,
+		// MediaStore.Images.Thumbnails.MICRO_KIND, context);
+		modle.setPicPath(picPath);
+		if (bitmap != null) {
+			modle.setBmp(bitmap);
+		}
+		return modle;
+
 	}
 
 }

@@ -177,7 +177,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener {
 		@Override
 		protected String doInBackground(String... params) {
 			Map<String, Object> mapYz = new HashMap<String, Object>();
-			mapYz.put("uid", Utils.uid);
+			mapYz.put("uid", SharedUtils.getString("uid", ""));
 			mapYz.put("auth_code", ediCode.getText().toString());
 			mapYz.put("type", "retrievePasswd");
 			String result = HttpUrlHelper.postData(mapYz,
@@ -240,7 +240,6 @@ public class FindPasswordActivity extends Activity implements OnClickListener {
 				if (rt == 1) {
 					uid = object.getString("uid");
 					SharedUtils.setString("uid", uid);
-					Utils.uid = uid;
 					group.setView(find2);
 
 				} else {
@@ -271,7 +270,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener {
 		@Override
 		protected String doInBackground(String... params) {
 			Map<String, Object> mapPwd = new HashMap<String, Object>();
-			mapPwd.put("uid", Utils.uid);
+			mapPwd.put("uid", SharedUtils.getString("uid", ""));
 			mapPwd.put("passwd", ediPasswd.getText().toString());
 			String result = HttpUrlHelper.postData(mapPwd, "/users/isetPasswd");
 			Logger.debug(this, "result:" + result);

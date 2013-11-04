@@ -14,12 +14,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,27 +28,33 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.inteface.UpLoadCircleLogo;
+import com.changlianxi.inteface.PostCallBack;
+import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.ContactModle;
+import com.changlianxi.modle.MemberInfoModle;
+import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.CircleLogoAsyncTask;
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
-import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.util.InfoHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
-import com.changlianxi.util.WigdtContorl;
+import com.changlianxi.view.CircularImage;
 import com.changlianxi.view.Home;
 
 public class CreateCircleActivity extends Activity implements OnClickListener,
-		UpLoadCircleLogo {
+		UpLoadPic, PostCallBack {
 	private List<ContactModle> contactsList = new ArrayList<ContactModle>();
 	private ImageView btnBack;
 	private ImageView editClean;
 	private EditText editCirName;
-	private ImageView cirImg;
+	private CircularImage cirImg;
 	private SelectPicPopwindow popWindow;
 	private String cirIconPath;
 	private LinearLayout layadd;
@@ -63,26 +66,25 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	private JSONObject jsonObj;
 	private ProgressDialog progressDialog;
 	private String cid = "";// 创建圈子返回的uid 邀请成员和上传 logo用
+	private String type;// more 标示 邀请多个成员；one标示 添加一个成员
+	private MemberInfoModle infoModle;
+	private String pid = ""; // 上传单个用户时返回的pid 供上传用户头像时使用
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_create_ciecle);
-		Bundle bundle = getIntent().getExtras();
-		contactsList = (List<ContactModle>) bundle
-				.getSerializable("contactsList");
-		System.out.println("size:" + contactsList.size());
+		getActivityValue();
 		btnBack = (ImageView) findViewById(R.id.back);
 		btnBack.setOnClickListener(this);
 		editClean = (ImageView) findViewById(R.id.editClean);
 		editClean.setOnClickListener(this);
 		editCirName = (EditText) findViewById(R.id.circleName);
 		description = (EditText) findViewById(R.id.description);
-		cirImg = (ImageView) findViewById(R.id.circleIcon);
+		cirImg = (CircularImage) findViewById(R.id.circleIcon);
 		cirImg.setOnClickListener(this);
-		WigdtContorl.setViewWidth(cirImg, this, 5, 5, 15, 0, 5);
+		// WigdtContorl.setViewWidth(cirImg, this, 4, 5, 15, 0, 5);
 		layadd = (LinearLayout) findViewById(R.id.layAdd);
 		zhiwu = (LinearLayout) findViewById(R.id.zhiwu);
 		layadd.setOnClickListener(this);
@@ -90,32 +92,48 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		createCir.setOnClickListener(this);
 	}
 
+	/**
+	 * 得到上一个activi传过来的值
+	 */
+	@SuppressWarnings("unchecked")
+	private void getActivityValue() {
+		Bundle bundle = getIntent().getExtras();
+		type = getIntent().getStringExtra("type");
+		if (type.equals("one")) {
+			infoModle = (MemberInfoModle) bundle.getSerializable("modle");
+			return;
+		}
+		contactsList = (List<ContactModle>) bundle
+				.getSerializable("contactsList");
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		System.out.println("onActivityResultonActivityResult");
-		if (requestCode == Utils.REQUEST_CODE_GETIMAGE_BYSDCARD
+		Bitmap bitmap = null;
+		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
-			Uri thisUri = data.getData();// 获得图片的uri
-			// 这里开始的第二部分，获取图片的路径：
-			String[] proj = { MediaStore.Images.Media.DATA };
-			Cursor cursor = managedQuery(thisUri, proj, null, null, null);
-			// 按我个人理解 这个是获得用户选择的图片的索引值
-			int column_index = cursor
-					.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			cursor.moveToFirst();
-			// 最后根据索引值获取图片路径
-			cirIconPath = cursor.getString(column_index);
-			String imgName = FileUtils.getFileName(cirIconPath);
-			Logger.debug(this, "cirIconPath:" + cirIconPath);
-			Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
-					MediaStore.Images.Thumbnails.MICRO_KIND,
-					CreateCircleActivity.this);
-			if (bitmap == null) {
-				System.out.println("nummnullnll");
+			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
+			cirIconPath = modle.getPicPath();
+			cirImg.setImageBitmap(modle.getBmp());
+		}// 拍摄图片
+		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+			if (resultCode != RESULT_OK) {
+				return;
 			}
+			super.onActivityResult(requestCode, resultCode, data);
+			Bundle bundle = data.getExtras();
+			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
+
 			if (bitmap != null) {
-				cirImg.setImageBitmap(BitmapUtils.toRoundBitmap(bitmap));
+				String dir = "/clx/camera/";
+				Utils.createDir(dir);
+				String name = InfoHelper.getFileName() + ".jpg";
+				String fileName = Utils.getgetAbsoluteDir(dir) + name;
+				BitmapUtils.createImgToFile(bitmap, fileName);
+				cirIconPath = fileName;
+				cirImg.setImageBitmap(bitmap);
 			}
+
 		}
 	}
 
@@ -169,6 +187,26 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 
 		}
 		return value;
+	}
+
+	/**
+	 * 邀请一个成员
+	 */
+	private void IiviteOneMember() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("cid", cid);
+		map.put("uid", SharedUtils.getString("uid", ""));
+		map.put("token", SharedUtils.getString("token", ""));
+		map.put("name", infoModle.getName());
+		map.put("cellphone", infoModle.getCellPhone());
+		map.put("email", infoModle.getEmail());
+		map.put("gendar", infoModle.getGendar());
+		map.put("birthday", infoModle.getBirthday());
+		map.put("employer", infoModle.getEmployer());
+		map.put("jobtitle", infoModle.getJobTitle());
+		PostAsyncTask task = new PostAsyncTask(this, map, "/people/iinviteOne");
+		task.setTaskCallBack(this);
+		task.execute();
 	}
 
 	/**
@@ -338,9 +376,16 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		}
 	}
 
+	/**
+	 * 上传图片返回结果处理 包括圈子logo以及 个人用户头像
+	 */
 	@Override
 	public void upLoadFinish(boolean flag) {
 		if (flag) {
+			if (type.equals("one")) {// 上传单个成员
+				IiviteOneMember();
+				return;
+			}
 			new IinviteMoreitTask().execute();
 		} else {
 			Utils.showToast("圈子图标上传失败!");
@@ -348,4 +393,61 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		}
 	}
 
+	/**
+	 * 单个用户时的返回结果做处理
+	 */
+	@Override
+	public void taskFinish(String result) {
+		String rep = ""; // 该成员是否已经存在1-YES,0-NO
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt == 1) {
+				pid = object.getString("pid");
+				rep = object.getString("rep");
+				if (rep.equals("1")) {
+					Utils.showToast("该用户已存在");
+					return;
+				}
+				if (!infoModle.getAvator().equals("")) {
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("cid", cid);
+					map.put("uid", SharedUtils.getString("uid", ""));
+					map.put("token", SharedUtils.getString("token", ""));
+					map.put("pid", pid);
+					UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
+							"/people/iuploadAvatar", infoModle.getAvator());
+					picTask.setCallBack(new UpLoadPic() {
+						@Override
+						public void upLoadFinish(boolean flag) {
+							progressDialog.dismiss();
+							if (flag) {
+								Utils.showToast("邀请成功");
+								finish();
+							} else {
+								Utils.showToast("邀请失败");
+							}
+						}
+					});
+					picTask.execute();
+					return;
+				}
+				Utils.showToast("添加成功");
+				finish();
+			} else {
+				Utils.showToast("添加失败");
+				progressDialog.dismiss();
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (progressDialog.isShowing() && progressDialog != null) {
+			progressDialog.dismiss();
+		}
+		super.onDestroy();
+	}
 }

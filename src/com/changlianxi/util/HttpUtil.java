@@ -17,8 +17,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import com.changlianxi.util.BitmapUtils;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -134,7 +132,6 @@ public class HttpUtil {
 		// 注意字符串连接时不能带空格
 
 		String result = "";
-
 		HttpGet httpGet = new HttpGet(url);
 		HttpResponse response;
 		try {
@@ -158,30 +155,6 @@ public class HttpUtil {
 
 	}
 
-	public static Bitmap GetNetBitmap(String url) {
-		Bitmap bitmap = null;
-		InputStream in = null;
-		BufferedOutputStream out = null;
-		try {
-			in = new BufferedInputStream(new URL(url).openStream(),
-					IO_BUFFER_SIZE);
-			final ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
-			out = new BufferedOutputStream(dataStream, IO_BUFFER_SIZE);
-			copy(in, out);
-			out.flush();
-			byte[] data = dataStream.toByteArray();
-			bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-			data = null;
-			Bitmap rounbitmap = BitmapUtils.toRoundBitmap(bitmap);// 将原来的位图缩小
-			bitmap.recycle();// 释放内存
-			return rounbitmap;
-		} catch (IOException e) {
-			e.printStackTrace();
-			Logger.error("HttpUtil.GetNetBitmap", e);
-			return null;
-		}
-	}
-
 	/**
 	 * 通过网络获取图片
 	 * 
@@ -192,6 +165,10 @@ public class HttpUtil {
 		Bitmap bitmap = null;
 		InputStream in = null;
 		BufferedOutputStream out = null;
+		BitmapFactory.Options opts = new BitmapFactory.Options();
+		opts.inJustDecodeBounds = true;
+		opts.inSampleSize = 4;
+		opts.inJustDecodeBounds = false;
 		try {
 			in = new BufferedInputStream(new URL(url).openStream(),
 					IO_BUFFER_SIZE);
@@ -200,8 +177,10 @@ public class HttpUtil {
 			copy(in, out);
 			out.flush();
 			byte[] data = dataStream.toByteArray();
-			bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+			bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
 			data = null;
+			in.close();
+			out.close();
 			return bitmap;
 		} catch (IOException e) {
 			e.printStackTrace();

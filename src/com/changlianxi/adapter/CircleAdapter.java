@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,7 +17,7 @@ import com.changlianxi.activity.R;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.util.AsyncImageLoader;
 import com.changlianxi.util.AsyncImageLoader.ImageCallback;
-import com.changlianxi.util.Utils;
+import com.changlianxi.view.CircularImage;
 
 /**
  * 圈子显示的自定义adapter
@@ -74,7 +73,7 @@ public class CircleAdapter extends BaseAdapter {
 			holder = new ViewHolder();
 			convertView = LayoutInflater.from(mcontext).inflate(
 					R.layout.circle_item, null);
-			holder.circleImg = (ImageView) convertView
+			holder.circleImg = (CircularImage) convertView
 					.findViewById(R.id.circleImg);
 			holder.circleName = (TextView) convertView
 					.findViewById(R.id.circleName);
@@ -82,11 +81,10 @@ public class CircleAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		int width = Utils.getSecreenWidth(mcontext) - 60;
-		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-				width / 4, width / 4);
-		params.setMargins(20, 20, 20, 20);
-		holder.circleImg.setLayoutParams(params);
+		// int width = Utils.getSecreenWidth(mcontext) - 60;
+		// FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+		// width / 4, width / 4);
+		// holder.circleImg.setLayoutParams(params);
 		String imgUrl = listmodle.get(position).getCirIcon();
 		if (imgUrl.equals("addroot")) {
 			holder.circleImg.setImageResource(R.drawable.root_add);
@@ -119,7 +117,7 @@ public class CircleAdapter extends BaseAdapter {
 	}
 
 	class ViewHolder {
-		ImageView circleImg;
+		CircularImage circleImg;
 		TextView circleName;
 	}
 

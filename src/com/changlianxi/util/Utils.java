@@ -16,11 +16,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.Contacts.Photo;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -42,22 +42,8 @@ import com.changlianxi.modle.ContactModle;
  * 
  */
 public class Utils {
-	public static final int REQUEST_CODE_GETIMAGE_BYSDCARD = 0;// 选择图片
-	public static final int REQUEST_CODE_GETIMAGE_BYCAMERA = 1;// 拍照
-	private static final String[] PHONES_PROJECTION = new String[] {
-			Phone.DISPLAY_NAME, Phone.NUMBER, Photo._ID, Phone.CONTACT_ID };
-	/** 电话号码 **/
-	private static final int PHONES_NUMBER_INDEX = 1;
-
-	/** 联系人显示名称 **/
-	private static final int PHONES_DISPLAY_NAME_INDEX = 0;
-	/** 联系人头像id **/
-	private static final int PHONE_PHOTO_ID = 2;
-	/** 联系人id **/
-	private static final int PHONE_CONTACT_ID = 3;
 	private static List<ContactModle> contactList = new ArrayList<ContactModle>();
 	private static TelephonyManager mTelephonyManager;
-	public static String uid = "3";
 
 	/**
 	 * 手机号码验证
@@ -169,22 +155,24 @@ public class Utils {
 	private static List<ContactModle> getContactList(ContentResolver resolver,
 			Uri uri, Context mContext) {
 		// 获取查询结果游标
-		Cursor phoneCursor = resolver.query(uri, PHONES_PROJECTION, null, null,
-				null);
+		Cursor phoneCursor = resolver.query(uri, Constants.PHONES_PROJECTION,
+				null, null, null);
 		if (phoneCursor != null) {
 			while (phoneCursor.moveToNext()) {
 				// 得到手机号码
-				String phoneNumber = phoneCursor.getString(PHONES_NUMBER_INDEX);
+				String phoneNumber = phoneCursor
+						.getString(Constants.PHONES_NUMBER_INDEX);
 				// 当手机号码为空的或者为空字段 跳过当前循环
 				if (TextUtils.isEmpty(phoneNumber))
 					continue;
 				// 得到联系人名称
 				String contactName = phoneCursor
-						.getString(PHONES_DISPLAY_NAME_INDEX);
+						.getString(Constants.PHONES_DISPLAY_NAME_INDEX);
 				// 得到联系人ID
-				Long contactid = phoneCursor.getLong(PHONE_CONTACT_ID);
+				Long contactid = phoneCursor
+						.getLong(Constants.PHONE_CONTACT_ID);
 				// 得到联系人头像ID
-				Long photoid = phoneCursor.getLong(PHONE_PHOTO_ID);
+				Long photoid = phoneCursor.getLong(Constants.PHONE_PHOTO_ID);
 				// 得到联系人头像Bitamp
 				Bitmap contactPhoto = null;
 				// photoid 大于0 表示联系人有头像 如果没有给此人设置头像则给他一个默认的
@@ -217,21 +205,23 @@ public class Utils {
 		ContentResolver resolver = mContext.getContentResolver();
 		// 获取手机联系人
 		Cursor phoneCursor = resolver.query(Phone.CONTENT_URI,
-				PHONES_PROJECTION, null, null, null);
+				Constants.PHONES_PROJECTION, null, null, null);
 		if (phoneCursor != null) {
 			while (phoneCursor.moveToNext()) {
 				// 得到手机号码
-				String phoneNumber = phoneCursor.getString(PHONES_NUMBER_INDEX);
+				String phoneNumber = phoneCursor
+						.getString(Constants.PHONES_NUMBER_INDEX);
 				// 当手机号码为空的或者为空字段 跳过当前循环
 				if (TextUtils.isEmpty(phoneNumber))
 					continue;
 				// 得到联系人名称
 				String contactName = phoneCursor
-						.getString(PHONES_DISPLAY_NAME_INDEX);
+						.getString(Constants.PHONES_DISPLAY_NAME_INDEX);
 				// 得到联系人ID
-				Long contactid = phoneCursor.getLong(PHONE_CONTACT_ID);
+				Long contactid = phoneCursor
+						.getLong(Constants.PHONE_CONTACT_ID);
 				// 得到联系人头像ID
-				Long photoid = phoneCursor.getLong(PHONE_PHOTO_ID);
+				Long photoid = phoneCursor.getLong(Constants.PHONE_PHOTO_ID);
 				// 得到联系人头像Bitamp
 				Bitmap contactPhoto = null;
 				// photoid 大于0 表示联系人有头像 如果没有给此人设置头像则给他一个默认的
@@ -402,5 +392,23 @@ public class Utils {
 		return Environment.getExternalStorageDirectory().getAbsolutePath()
 				+ dir;
 
+	}
+
+	/**
+	 * 
+	 * @Description 检查网络状态
+	 * @param context
+	 * @return boolean
+	 */
+	public static boolean isNetworkAvailable() {
+		ConnectivityManager cm = (ConnectivityManager) CLXApplication
+				.getInstance().getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (cm.getActiveNetworkInfo() != null
+				&& cm.getActiveNetworkInfo().isAvailable()
+				&& cm.getActiveNetworkInfo().isConnected()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

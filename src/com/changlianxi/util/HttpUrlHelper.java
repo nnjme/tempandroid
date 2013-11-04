@@ -36,11 +36,6 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-
-import com.changlianxi.activity.CLXApplication;
-
 /**
  * 有关http辅助操作类
  * 
@@ -49,7 +44,7 @@ import com.changlianxi.activity.CLXApplication;
  */
 public class HttpUrlHelper {
 	public static final String TAG = "HttpUrlHelper";
-	public static final String strUrl = "http://clx.jieme.com";// 服务器地址
+	public static final String strUrl = "http://clx.teeker.com";// 服务器地址
 
 	/**
 	 * 获取请求服务端的方法，进行流操作，并接收服务器端返回的相关数据
@@ -239,19 +234,15 @@ public class HttpUrlHelper {
 				return strPostResult;
 			}
 		} catch (Exception e) {
-			Logger.error("HttpUrlHelper.postDataFile", e);
-
 		} finally {
 			if (mpEntity != null) {
 				try {
 					mpEntity.consumeContent();
 				} catch (UnsupportedOperationException e) {
-					Logger.error("HttpUrlHelper.postDataFile", e);
 
 					e.printStackTrace();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					Logger.error("HttpUrlHelper.postDataFile", e);
 
 					e.printStackTrace();
 				}
@@ -323,20 +314,60 @@ public class HttpUrlHelper {
 	}
 
 	/**
+	 * 上传图片方法
 	 * 
-	 * @Description 检查网络状态
-	 * @param context
-	 * @return boolean
+	 * @param url
+	 * @param map
+	 * @param file
+	 * @return
 	 */
-	public static boolean isNetworkAvailable() {
-		ConnectivityManager cm = (ConnectivityManager) CLXApplication
-				.getInstance().getSystemService(Context.CONNECTIVITY_SERVICE);
-		if (cm.getActiveNetworkInfo() != null
-				&& cm.getActiveNetworkInfo().isAvailable()
-				&& cm.getActiveNetworkInfo().isConnected()) {
-			return true;
-		} else {
-			return false;
+	public static String upLoadPic(String url, Map<String, Object> map,
+			File file) {
+		String strPostResult = "链接失败";
+		HttpClient client = new DefaultHttpClient();
+		HttpPost post = new HttpPost(url);
+		MultipartEntity mpEntity = new MultipartEntity();
+		Iterator<?> mapite = map.entrySet().iterator();
+		FileBody fileBody = new FileBody(file);
+		mpEntity.addPart("avatar", fileBody);
+
+		try {
+			while (mapite.hasNext()) {// 循环遍历需要传递给服务器的请求参数
+				@SuppressWarnings("rawtypes")
+				Map.Entry testDemo = (Map.Entry) mapite.next();
+				Object key = testDemo.getKey();
+				Object value = testDemo.getValue();
+				mpEntity.addPart(key.toString(),
+						new StringBody(value.toString()));
+			}
+			post.setEntity(mpEntity);
+			HttpResponse response = client.execute(post);
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				strPostResult = EntityUtils.toString(response.getEntity(),
+						"utf-8");
+				Logger.debug("HttpUrlHelper.postDataFile", "strPostResult:"
+						+ strPostResult);
+				return strPostResult;
+			} else {
+				return strPostResult;
+			}
+		} catch (Exception e) {
+		} finally {
+			if (mpEntity != null) {
+				try {
+					mpEntity.consumeContent();
+				} catch (UnsupportedOperationException e) {
+
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+
+					e.printStackTrace();
+				}
+			}
+			client.getConnectionManager().shutdown();
 		}
+		return strPostResult;
+
 	}
 }

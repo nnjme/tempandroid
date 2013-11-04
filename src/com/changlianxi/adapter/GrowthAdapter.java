@@ -218,7 +218,7 @@ public class GrowthAdapter extends BaseAdapter {
 			String rt = "";
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", params[0]);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("gid", params[1]);
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("timestamp", 0);

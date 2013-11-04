@@ -32,16 +32,12 @@ import com.changlianxi.util.ImageManager;
 public class MyAdapter extends BaseAdapter {
 	private List<MemberModle> list;
 	private Context context;
-	// private AsyncImageLoader ImageLoader;
-	// private ListView listView;
 	private HashMap<String, Integer> alphaIndexer;// 保存每个索引在list中的位置�?-0，A-4，B-10�?
 	private String[] sections;// 每个分组的索引表【A,B,C,F...�?
 
 	public MyAdapter(Context context, List<MemberModle> list, ListView listView) {
 		this.context = context;
 		this.list = list;
-		// this.listView = listView;
-		// ImageLoader = new AsyncImageLoader();
 		this.alphaIndexer = new HashMap<String, Integer>();
 		this.sections = new String[list.size()];
 		for (int i = 1; i < list.size(); i++) {
@@ -61,6 +57,11 @@ public class MyAdapter extends BaseAdapter {
 	public int getCount() {
 
 		return list.size();
+	}
+
+	public void setData(List<MemberModle> list) {
+		this.list = list;
+		notifyDataSetChanged();
 	}
 
 	@Override
@@ -105,28 +106,6 @@ public class MyAdapter extends BaseAdapter {
 			ImageManager.from(context).displayImage(holder.img, path,
 					R.drawable.root_default, 100, 100);
 		}
-		// String imgUrl = list.get(position).getImg();
-		// ImageView imageView = holder.img;
-		// imageView.setTag(imgUrl);
-		// Bitmap cachedImage = ImageLoader.loaDrawable(imgUrl,
-		// new ImageCallback() {
-		// @Override
-		// public void imageLoaded(Bitmap imageDrawable,
-		// String imageUrl) {
-		// ImageView imageViewByTag = (ImageView) listView
-		// .findViewWithTag(imageUrl);
-		// if (imageViewByTag != null) {
-		// // imageViewByTag.setImageDrawable(imageDrawable);
-		// imageViewByTag.setImageBitmap(imageDrawable);
-		// }
-		// }
-		// });
-		// if (cachedImage != null) {
-		// // vHolder.img.setImageDrawable(cachedImage);
-		// holder.img.setImageBitmap(cachedImage);
-		// } else {
-		// holder.img.setImageResource(R.drawable.root_default);
-		// }
 		holder.info.setText(list.get(position).getEmployer());
 		holder.name.setText(list.get(position).getName());
 		showAlpha(position, holder);

@@ -14,10 +14,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.changlianxi.util.EditWather;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Utils;
@@ -154,7 +153,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		btnext.setOnClickListener(this);
 		ediNum = (EditText) reg1.findViewById(R.id.num);
 		ediNum.setInputType(InputType.TYPE_CLASS_NUMBER);
-		ediNum.addTextChangedListener(new EditWather(1));
+		ediNum.addTextChangedListener(new EditWather(ediNum));
 		mSpinner = (Spinner) reg1.findViewById(R.id.spinner1);
 		// 绑定 Adapter到控件
 		mSpinner.setAdapter(adapter);
@@ -184,64 +183,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		txtabout = (TextView) reg3.findViewById(R.id.about);
 		txtabout.setText(Html.fromHtml("<u>" + "关于注册时保护隐私的说明" + "</u>"));// 下划线
 		ediPassword = (EditText) reg3.findViewById(R.id.editPassword);
-	}
-
-	/**
-	 * 手机号码补空格
-	 * 
-	 * @author teeker_bin
-	 * 
-	 */
-	class EditWather implements TextWatcher {
-		EditText text;
-
-		public EditWather(int type) {
-			if (type == 1) {
-				text = ediNum;
-			} else {
-
-				text = emailNum;
-			}
-		}
-
-		@Override
-		public void afterTextChanged(Editable s) {
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count,
-				int after) {
-
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before,
-				int count) {
-			StringBuffer sb = new StringBuffer(s);
-			if (count == 1) {
-				if (s.length() == 4) {
-					sb.insert(3, "-");
-					text.setText(sb.toString());
-					text.setSelection(5);
-				}
-				if (s.length() == 9) {
-					sb.insert(8, "-");
-					text.setText(sb.toString());
-					text.setSelection(10);
-				}
-
-			} else if (count == 0) {
-				if (s.length() == 4) {
-					text.setText(s.subSequence(0, s.length() - 1));
-					text.setSelection(3);
-				}
-				if (s.length() == 9) {
-					text.setText(s.subSequence(0, s.length() - 1));
-					text.setSelection(8);
-				}
-			}
-		}
-
 	}
 
 	/**

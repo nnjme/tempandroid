@@ -60,11 +60,12 @@ public class AsyncLoadListImageActivity extends Activity implements
 	private TextView selectedChar;// 显示选择字母
 	private File cache;// 缓存文件夹
 	private List<MemberModle> listModles = new ArrayList<MemberModle>();// 存储成员列表
+	private List<MemberModle> serverListModles = new ArrayList<MemberModle>();// 获取服务器成员列表
 	int position;// 当前字母子listview中所对应的位置
 	private String id;// 圈子ID
 	private String ciecleName;// 圈子名称
 	private String circleUser;// 圈子成员表名称
-	private static ImageView btadd;
+	private ImageView btadd;
 	private ImageView btback;
 	private TextView txtciecleName;
 	private ProgressDialog progressDialog;
@@ -82,7 +83,11 @@ public class AsyncLoadListImageActivity extends Activity implements
 		listModles = DBUtils.getUserList(ciecleName);
 		initView();
 		setMyAdapter();
-		new GetUserListTask().execute();
+		if (Utils.isNetworkAvailable()) {
+			new GetUserListTask().execute();
+		} else {
+			Utils.showToast("请检查网络");
+		}
 	}
 
 	private void setMyAdapter() {
@@ -150,9 +155,6 @@ public class AsyncLoadListImageActivity extends Activity implements
 	 */
 	private void insertData(String id, String name, String img,
 			String employer, String sortkey) {
-		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
-		}
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
 		values.put("userID", id);
@@ -160,8 +162,7 @@ public class AsyncLoadListImageActivity extends Activity implements
 		values.put("userImg", img);
 		values.put("employer", employer);
 		values.put("sortkey", sortkey);
-		db.insert(ciecleName, null, values);
-		db.close();
+		DBUtils.insertData(ciecleName, values);
 	}
 
 	/**
@@ -213,13 +214,10 @@ public class AsyncLoadListImageActivity extends Activity implements
 					+ "/circles/imembers/" + id);
 			try {
 				JSONObject jsonobject = new JSONObject(jsonStr);
-				String num = jsonobject.getString("num");
-				Logger.debug(this, "num:" + num + "  " + listModles.size());
-				if (listModles.size() == Integer.valueOf(num)) {
-					Logger.debug(this, "加载本地数据");
-					return "";
-				}
 				JSONArray jsonarray = jsonobject.getJSONArray("members");
+				if (jsonarray != null) {
+					DBUtils.clearTableData(ciecleName);// 清空本地表 保存最新数据
+				}
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					MemberModle modle = new MemberModle();
@@ -238,7 +236,8 @@ public class AsyncLoadListImageActivity extends Activity implements
 				}
 				MyComparator compartor = new MyComparator();
 				Collections.sort(meModle, compartor);
-				listModles.addAll(meModle);
+				// listModles.addAll(meModle);
+				serverListModles.addAll(meModle);
 			} catch (JSONException e) {
 				Logger.error(this, e);
 				e.printStackTrace();
@@ -248,9 +247,10 @@ public class AsyncLoadListImageActivity extends Activity implements
 
 		@Override
 		protected void onPostExecute(String result) {
-			if (result == null) {
-				adapter.notifyDataSetChanged();
-			}
+			listModles.clear();
+			listModles = serverListModles;
+			adapter.setData(listModles);
+			// adapter.notifyDataSetChanged();
 			progressDialog.dismiss();
 
 		}
@@ -264,37 +264,36 @@ public class AsyncLoadListImageActivity extends Activity implements
 	}
 
 	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == 1 && resultCode == 2) {
+			{
+				MemberModle modle = null;
+				Bundle bundle = data.getExtras();
+				modle = (MemberModle) bundle.getSerializable("modle");
+				System.out.println("patha:" + modle.getImg());
+				listModles.add(modle);
+				MyComparator compartor = new MyComparator();
+				Collections.sort(listModles, compartor);
+				adapter.setData(listModles);
+				insertData(modle.getId(), modle.getName(), modle.getImg(),
+						modle.getEmployer(), modle.getSort_key());
+			}
+
+		}
+	}
+
+	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		int position = arg2 - 2;
-
 		String pid = listModles.get(position).getId();
-		// String name = listModles.get(position).getName();
-		// String img = listModles.get(position).getImg();
-		// String job = listModles.get(position).getJob();
-		Logger.debug(this, "cid:" + id + "uid:" + Utils.uid + "pid:" + pid
-				+ "token:" + SharedUtils.getString("token", ""));
+		Logger.debug(
+				this,
+				"cid:" + id + "uid:" + SharedUtils.getString("uid", "")
+						+ "pid:" + pid + "token:"
+						+ SharedUtils.getString("token", ""));
 
-		// Map<String, Object> map = new HashMap<String, Object>();
-		// map.put("cid", id);
-		// map.put("uid", "5");
-		// map.put("pid", pid);
-		// map.put("token", SharedUtils.getString("token", ""));
-		// map.put("timestamp", 0);
-		// String json = HttpUrlHelper.postData(map, "/people/idetail");
 		Intent it = new Intent();
-		// MemberInfoModle modle = DBUtils.getUserInfo(circleUser, pid);
-		// if (modle == null) {
-		// String jsonStr = HttpUtil
-		// .queryStringForGet("http://clx.jieme.com/people/idetail/"
-		// + pid);
-		// System.out.println("json:" + jsonStr);
-		// it.putExtra("info", jsonStr);
-		// it.putExtra("userlistname", circleUser);
-		// } else {
-		// Bundle bundle = new Bundle();
-		// bundle.putSerializable("infoModle", modle);
-		// it.putExtras(bundle);
-		// }
 		it.putExtra("cid", id);
 		it.putExtra("pid", pid);
 		it.putExtra("username", listModles.get(position).getName());
@@ -314,9 +313,10 @@ public class AsyncLoadListImageActivity extends Activity implements
 			break;
 		case R.id.btadd:
 			Intent it = new Intent();
-			it.setClass(this, SelectContactsActivity.class);
+			it.setClass(this, AddOneMemberActivity.class);
 			it.putExtra("cid", id);
-			startActivity(it);
+			it.putExtra("type", "add");// 添加成员
+			startActivityForResult(it, 1);
 			break;
 		default:
 			break;

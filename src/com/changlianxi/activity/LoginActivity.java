@@ -11,9 +11,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -22,6 +20,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.util.EditWather;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -70,63 +69,8 @@ public class LoginActivity extends Activity implements OnClickListener {
 		btLogin.setOnClickListener(this);
 		ediNum = (EditText) findViewById(R.id.edtNum);
 		ediNum.setInputType(InputType.TYPE_CLASS_NUMBER);
-		ediNum.addTextChangedListener(new EditWather());
+		ediNum.addTextChangedListener(new EditWather(ediNum));
 		ediPassword = (EditText) findViewById(R.id.edtPassword);
-	}
-
-	/**
-	 * 手机号码分段显示操作
-	 * 
-	 * @author teeker_bin
-	 * 
-	 */
-	class EditWather implements TextWatcher {
-
-		@Override
-		public void afterTextChanged(Editable s) {
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count,
-				int after) {
-
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before,
-				int count) {
-			StringBuffer sb = new StringBuffer(s);
-			if (count == 1) {
-				if (s.length() == 4) {
-					sb.insert(3, "-");
-					ediNum.setText(sb.toString());
-					ediNum.setSelection(5);
-				}
-				if (s.length() == 9) {
-					sb.insert(8, "-");
-					ediNum.setText(sb.toString());
-					ediNum.setSelection(10);
-				}
-				// if (s.length() == 11) {
-				// ediNum.setText(s + " ");
-				// ediNum.setSelection(11);
-				// }
-
-			} else if (count == 0) {
-				if (s.length() == 4) {
-					ediNum.setText(s.subSequence(0, s.length() - 1));
-					ediNum.setSelection(3);
-				}
-				if (s.length() == 9) {
-					ediNum.setText(s.subSequence(0, s.length() - 1));
-					ediNum.setSelection(8);
-				}
-				// if (s.length() == 11) {
-				// ediNum.setText(s.subSequence(0, s.length() - 1));
-				// ediNum.setSelection(10);
-				// }
-			}
-		}
 	}
 
 	/**
@@ -217,7 +161,6 @@ public class LoginActivity extends Activity implements OnClickListener {
 			}
 			SharedUtils.setString("uid", uid);
 			SharedUtils.setString("token", token);
-			Utils.uid = uid;
 			Intent it = new Intent();
 			it.setClass(LoginActivity.this, MainActivity.class);
 			startActivity(it);

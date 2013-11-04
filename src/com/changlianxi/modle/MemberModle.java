@@ -1,12 +1,18 @@
 package com.changlianxi.modle;
 
+import java.io.Serializable;
+
 /**
  * . 圈子成员列表显示信息
  * 
  * @author teeker_bin
  * 
  */
-public class MemberModle {
+public class MemberModle implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String name = "";// 姓名
 	private String img = "";// 头像地址
 	private String employer = "";// 工作单位

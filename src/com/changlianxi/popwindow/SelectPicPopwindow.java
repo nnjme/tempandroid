@@ -13,7 +13,7 @@ import android.widget.Button;
 import android.widget.PopupWindow;
 
 import com.changlianxi.activity.R;
-import com.changlianxi.util.Utils;
+import com.changlianxi.util.Constants;
 
 /**
  * 选择图片 拍照 选择框
@@ -80,18 +80,20 @@ public class SelectPicPopwindow implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
+		dismiss();
 		switch (v.getId()) {
 		case R.id.btn_cancel:
-			dismiss();
 			break;
 		case R.id.btn_pick_photo:
 			Intent it = new Intent(Intent.ACTION_GET_CONTENT);
 			it.setType("image/*");
 			((Activity) mContext).startActivityForResult(it,
-					Utils.REQUEST_CODE_GETIMAGE_BYSDCARD);
-			dismiss();
+					Constants.REQUEST_CODE_GETIMAGE_BYSDCARD);
 			break;
 		case R.id.btn_take_photo:
+			Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+			((Activity) mContext).startActivityForResult(intent,
+					Constants.REQUEST_CODE_GETIMAGE_BYCAMERA);
 			break;
 		default:
 			break;

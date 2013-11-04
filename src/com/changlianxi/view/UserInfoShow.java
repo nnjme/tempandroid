@@ -35,7 +35,6 @@ import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.UserInfoUtils;
-import com.changlianxi.util.Utils;
 
 /**
  * 用户资料显示View 主要对用户资料的分类显示
@@ -193,7 +192,7 @@ public class UserInfoShow {
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("pid", pid);
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("timestamp", 0);

@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import android.os.AsyncTask;
 
-import com.changlianxi.inteface.UpLoadCircleLogo;
+import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -19,14 +19,14 @@ import com.changlianxi.util.SharedUtils;
 public class CircleLogoAsyncTask extends AsyncTask<String, Integer, String> {
 	private String cirIconPath = "";
 	private String cid = "";
-	private UpLoadCircleLogo upload;// 上传图片完成接口
+	private UpLoadPic upload;// 上传图片完成接口
 
 	public CircleLogoAsyncTask(String cirPath, String cid) {
 		this.cirIconPath = cirPath;
 		this.cid = cid;
 	}
 
-	public void setCallBack(UpLoadCircleLogo upload) {
+	public void setCallBack(UpLoadPic upload) {
 		this.upload = upload;
 	}
 

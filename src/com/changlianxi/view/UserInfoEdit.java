@@ -561,7 +561,7 @@ public class UserInfoEdit implements OnClickListener {
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("pid", pid);
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("person", jsonAry.toString());

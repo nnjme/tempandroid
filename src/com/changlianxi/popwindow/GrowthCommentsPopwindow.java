@@ -173,7 +173,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	 * @return
 	 */
 	private boolean isPermission(String uid) {
-		if (uid.equals(Utils.uid)) {
+		if (uid.equals(SharedUtils.getString("uid", ""))) {
 			return true;
 		}
 		return false;
@@ -189,7 +189,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("gid", gid);
 			String result = HttpUrlHelper.postData(map, "/growth/icomments");
@@ -251,7 +251,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("gid", gid);
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("content", params[0]);
@@ -300,7 +300,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("gid", gid);
 			map.put("token", SharedUtils.getString("token", ""));
 			String result = HttpUrlHelper

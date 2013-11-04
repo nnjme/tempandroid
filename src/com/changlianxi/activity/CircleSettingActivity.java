@@ -1,6 +1,5 @@
 package com.changlianxi.activity;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,26 +28,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.inteface.UpLoadCircleLogo;
+import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.CircleLogoAsyncTask;
 import com.changlianxi.util.AsyncImageLoader;
 import com.changlianxi.util.AsyncImageLoader.ImageCallback;
 import com.changlianxi.util.BitmapUtils;
-import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.util.InfoHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
-import com.changlianxi.util.WigdtContorl;
+import com.changlianxi.view.CircularImage;
 
 public class CircleSettingActivity extends Activity implements OnClickListener,
-		UpLoadCircleLogo {
+		UpLoadPic {
 	private ImageView btnBack;
 	private ImageView editClean;
 	private EditText editCirName;
-	private ImageView cirImg;
+	private CircularImage cirImg;
 	private SelectPicPopwindow popWindow;
 	private String cirIconPath = "";
 	private String newCirIconPath = "";// 改变之后的地址
@@ -78,9 +78,9 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 		editClean.setOnClickListener(this);
 		editCirName = (EditText) findViewById(R.id.circleName);
 		description = (EditText) findViewById(R.id.description);
-		cirImg = (ImageView) findViewById(R.id.circleIcon);
+		cirImg = (CircularImage) findViewById(R.id.circleIcon);
 		cirImg.setOnClickListener(this);
-		WigdtContorl.setViewWidth(cirImg, this, 5, 5, 15, 0, 5);
+		// WigdtContorl.setViewWidth(cirImg, this, 5, 5, 15, 0, 5);
 		layadd = (LinearLayout) findViewById(R.id.layAdd);
 		zhiwu = (LinearLayout) findViewById(R.id.zhiwu);
 		layadd.setOnClickListener(this);
@@ -89,6 +89,11 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 		getCircleInfo(cid);
 	}
 
+	/**
+	 * 获取修改圈子信息
+	 * 
+	 * @param cid
+	 */
 	private void getCircleInfo(String cid) {
 		CircleModle modle = DBUtils.findCircleInfoById(cid);
 		cirName.setText(modle.getCirName());
@@ -111,8 +116,8 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		System.out.println("onActivityResultonActivityResult");
-		if (requestCode == Utils.REQUEST_CODE_GETIMAGE_BYSDCARD
+		Bitmap bitmap = null;
+		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			Uri thisUri = data.getData();// 获得图片的uri
 			// 这里开始的第二部分，获取图片的路径：
@@ -125,25 +130,32 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 			// 最后根据索引值获取图片路径
 			newCirIconPath = cursor.getString(column_index);
 			Logger.debug(this, "cirIconPath:" + newCirIconPath);
-			Bitmap bitmap = getLocalPicByPath(newCirIconPath);
+			bitmap = BitmapUtils.loadImgThumbnail(newCirIconPath,
+					MediaStore.Images.Thumbnails.MICRO_KIND,
+					CircleSettingActivity.this);
 			if (bitmap != null) {
-				cirImg.setImageBitmap(BitmapUtils.toRoundBitmap(bitmap));
+				cirImg.setImageBitmap(bitmap);
 			}
-		}
-	}
+		}// 拍摄图片
+		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+			if (resultCode != RESULT_OK) {
+				return;
+			}
+			super.onActivityResult(requestCode, resultCode, data);
+			Bundle bundle = data.getExtras();
+			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
 
-	/**
-	 * .获取图片缩略图
-	 * 
-	 * @param path
-	 * @return
-	 */
-	private Bitmap getLocalPicByPath(String path) {
-		String imgName = FileUtils.getFileName(path);
-		Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
-				MediaStore.Images.Thumbnails.MICRO_KIND,
-				CircleSettingActivity.this);
-		return bitmap;
+			if (bitmap != null) {
+				String dir = "/clx/camera/";
+				Utils.createDir(dir);
+				String name = InfoHelper.getFileName() + ".jpg";
+				String fileName = Utils.getgetAbsoluteDir(dir) + name;
+				BitmapUtils.createImgToFile(bitmap, fileName);
+				cirIconPath = fileName;
+				cirImg.setImageBitmap(bitmap);
+			}
+
+		}
 	}
 
 	/**

@@ -23,15 +23,14 @@ import android.widget.TextView;
 import com.changlianxi.adapter.GrowthAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthImgModle;
+import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
-import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyListView;
 import com.changlianxi.view.MyListView.OnRefreshListener;
-import com.changlianxi.modle.GrowthModle;
 
 /**
  * 成长记录显示界面
@@ -96,7 +95,7 @@ public class GrowthActivity extends Activity implements OnClickListener {
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("timestamp", 0);
 			String result = HttpUrlHelper.postData(map, "/growth/ilist");

@@ -25,9 +25,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.activity.AddCircleMemberActivity;
 import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.R;
-import com.changlianxi.activity.SelectContactsActivity;
 import com.changlianxi.adapter.CircleAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleModle;
@@ -72,7 +72,11 @@ public class Home implements OnClickListener {
 		adapter = new CircleAdapter(mcontext, listModle, gView,
 				(Activity) mcontext);
 		gView.setAdapter(adapter);
-		new GetCircleListTask().execute();
+		if (Utils.isNetworkAvailable()) {
+			new GetCircleListTask().execute();
+		} else {
+			Utils.showToast("请检查网络");
+		}
 
 	}
 
@@ -87,12 +91,13 @@ public class Home implements OnClickListener {
 		@Override
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("timestamp", 0);
 			String result = HttpUrlHelper.postData(map, "/circles/ilist/"
-					+ Utils.uid);
-			Logger.debug(this, "HOME:" + "   uid:" + Utils.uid);
+					+ SharedUtils.getString("uid", ""));
+			Logger.debug(this,
+					"HOME:" + "   uid:" + SharedUtils.getString("uid", ""));
 			// 你要执行的方法
 			try {
 				JSONObject jsonobject = new JSONObject(result);
@@ -120,12 +125,16 @@ public class Home implements OnClickListener {
 			} catch (JSONException e) {
 				Logger.error(this, e);
 				e.printStackTrace();
+				return null;
 			}
-			return null;
+			return result;
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
+			if (result == null) {// 异常时不执行一下操作
+				return;
+			}
 			listModle.clear();
 			listModle = serverListModle;
 			adapter.setData(listModle);
@@ -149,6 +158,7 @@ public class Home implements OnClickListener {
 	 * @param modle
 	 */
 	public static void refreshCircleList(CircleModle modle) {
+		System.out.println("refulsh:" + modle.getCirIcon());
 		listModle.add(listModle.size() - 1, modle);
 		adapter.setData(listModle);
 		System.out.println("更新更新");
@@ -195,7 +205,7 @@ public class Home implements OnClickListener {
 					long arg3) {
 				if (position == listModle.size() - 1) {
 					Intent intent = new Intent();
-					intent.setClass(mcontext, SelectContactsActivity.class);
+					intent.setClass(mcontext, AddCircleMemberActivity.class);
 					mcontext.startActivity(intent);
 					return;
 				}

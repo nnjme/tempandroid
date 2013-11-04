@@ -33,8 +33,6 @@ public class InfoHelper {
 	 * @return
 	 */
 	public static String getCamerPath() {
-		// return Environment.getExternalStorageDirectory() + File.separator +
-		// "FounderNews" + File.separator;
 		return Environment.getExternalStorageDirectory() + File.separator;
 	}
 

@@ -19,9 +19,8 @@ import android.widget.EditText;
 
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
-
- 
 
 public class RegisterFinishActivity extends Activity implements OnClickListener {
 	private Button btStartUse;
@@ -61,7 +60,7 @@ public class RegisterFinishActivity extends Activity implements OnClickListener 
 		@Override
 		protected String doInBackground(String... params) {
 			Map<String, Object> map1 = new HashMap<String, Object>();
-			map1.put("uid", Utils.uid);
+			map1.put("uid", SharedUtils.getString("uid", ""));
 			map1.put("f", "nickname");
 			map1.put("v", editNC.getText().toString());
 			String result = HttpUrlHelper.postData(map1, "/users/isetUserInfo");

@@ -1,6 +1,5 @@
 package com.changlianxi.activity;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,7 +12,6 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -23,42 +21,34 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.popwindow.SelectPicPopwindow;
+import com.changlianxi.task.UpLoadGrowthPicTask;
 import com.changlianxi.util.BitmapUtils;
-import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.InfoHelper;
 import com.changlianxi.util.Logger;
-import com.changlianxi.util.MediaUtils;
 import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.GrowthImgGridView;
 
-public class ReleaseGrowthActivity extends Activity implements OnClickListener {
+public class ReleaseGrowthActivity extends Activity implements OnClickListener,
+		UpLoadPic {
 	private ImageView addPic;
-	private Button btpick;
-	private Button btcamear;
-	private Button btcancle;
-	private static final int REQUEST_CODE_GETIMAGE_BYSDCARD = 0;// 选择图片
-	private static final int REQUEST_CODE_GETIMAGE_BYCAMERA = 1;// 拍照
-	private String thisLarge = null, theSmall = null;
-	private PopupWindow mPopupWindow;
 	private TextView time;
 	private EditText location;// 地点输入框
 	private EditText content;// 内容输入框
@@ -126,52 +116,14 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 		}
 	}
 
-	/**
-	 * 弹出popwindow选择框
-	 * 
-	 * @param v
-	 */
-	private void showPopWindow(View v) {
-		View view = LayoutInflater.from(this).inflate(R.layout.alert_dialog,
-				null);
-		btpick = (Button) view.findViewById(R.id.btn_pick_photo);
-		btcamear = (Button) view.findViewById(R.id.btn_take_photo);
-		btcancle = (Button) view.findViewById(R.id.btn_cancel);
-		btcancle.setOnClickListener(this);
-		btcamear.setOnClickListener(this);
-		btpick.setOnClickListener(this);
-		mPopupWindow = new PopupWindow(view, 300, 300);
-		mPopupWindow.setOutsideTouchable(true);
-		mPopupWindow.showAtLocation(v, Gravity.CENTER,
-				LayoutParams.MATCH_PARENT, 0);
-	}
-
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.addPicture:
-			showPopWindow(v);
-			break;
-		case R.id.btn_pick_photo:
-			Intent it = new Intent(Intent.ACTION_GET_CONTENT);
-			it.setType("image/*");
-			startActivityForResult(it, REQUEST_CODE_GETIMAGE_BYSDCARD);
-			mPopupWindow.dismiss();
-			break;
-		case R.id.btn_take_photo:
-			Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-			String camerName = InfoHelper.getFileName();
-			String fileName = "Share" + camerName + ".tmp";
-			File camerFile = new File(InfoHelper.getCamerPath(), fileName);
-			theSmall = InfoHelper.getCamerPath() + fileName;
-			thisLarge = getLatestImage();
-			Uri originalUri = Uri.fromFile(camerFile);
-			intent.putExtra(MediaStore.EXTRA_OUTPUT, originalUri);
-			startActivityForResult(intent, REQUEST_CODE_GETIMAGE_BYCAMERA);
-			mPopupWindow.dismiss();
+			SelectPicPopwindow pop = new SelectPicPopwindow(this, v);
+			pop.show();
 			break;
 		case R.id.btn_cancel:
-			mPopupWindow.dismiss();
 			break;
 		case R.id.btnUpload:
 			new UpDataTask().execute(content.getText().toString(), time
@@ -196,22 +148,25 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 	 */
 	class UpDataTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
+		UpLoadGrowthPicTask picTask;
+
 		@Override
 		protected String doInBackground(String... params) {
 			String rt = "";
 			String time = String.valueOf(new Date().getTime());
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
-			map.put("uid", Utils.uid);
+			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("gid", gid);
 			map.put("content", params[0]);
 			map.put("location", params[2]);
 			map.put("time", time.substring(0, time.length() - 3));
 			map.put("token", SharedUtils.getString("token", ""));
 			String result = HttpUrlHelper.postData(map, "/growth/igrowth");
-			Logger.debug(this, "cid" + cid + "  uid:" + Utils.uid + "    gid:"
-					+ gid + " content:" + params[0] + "  location:" + params[2]
-					+ "  time:" + params[1]);
+			Logger.debug(this,
+					"cid" + cid + "  uid:" + SharedUtils.getString("uid", "")
+							+ "    gid:" + gid + " content:" + params[0]
+							+ "  location:" + params[2] + "  time:" + params[1]);
 			Logger.debug(this, "Growthresult:" + result);
 			try {
 				JSONObject jsonobject = new JSONObject(result);
@@ -220,7 +175,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 					gid = jsonobject.getString("gid");
 				}
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				Logger.error(this, e);
 
 				e.printStackTrace();
@@ -239,10 +193,18 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 					return;
 				}
 				if (type.equals("add")) {
-					new UpLoadPicTask().execute();
-					return;
+					// new UpLoadPicTask().execute();
+					List<String> picPath = new ArrayList<String>();
+					for (PicModle modle : listBmp) {
+						picPath.add(modle.getPath());
+					}
+					picTask = new UpLoadGrowthPicTask(picPath, cid, gid);
+				} else {
+					picTask = new UpLoadGrowthPicTask(newAdd, cid, gid);
 				}
-				new UpLoadNewAddPicTask().execute();
+				picTask.setGrowthCallBack(ReleaseGrowthActivity.this);
+				picTask.execute();
+				// new UpLoadNewAddPicTask().execute();
 			} else {
 				Utils.showToast("发布失败!");
 				progressDialog.dismiss();
@@ -260,106 +222,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 	}
 
 	/**
-	 * 上传图片到服务器
-	 * 
-	 */
-	class UpLoadPicTask extends AsyncTask<Object, Integer, Object> {
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		String rt = "1";
-
-		@Override
-		protected Object doInBackground(Object... params) {
-			String result = "";
-			for (int i = 0; i < listBmp.size(); i++) {
-				File file = new File(listBmp.get(i).getPath());
-				if (file != null) {
-					result = HttpUrlHelper.postDataFile(HttpUrlHelper.strUrl
-							+ "/growth/iuploadImage", file, cid, Utils.uid,
-							gid, SharedUtils.getString("token", ""));
-					Logger.debug(this, "Picresult:" + result);
-				}
-				try {
-					JSONObject jsonobject = new JSONObject(result);
-					rt = jsonobject.getString("rt");
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					Logger.error(this, e);
-
-					e.printStackTrace();
-				}
-				// if (!rt.equals("1")) {
-				// Utils.showToast("第" + i + "张图片上传失败!");
-				// }
-			}
-
-			return rt;
-		}
-
-		@Override
-		protected void onPostExecute(Object result) {
-			if (result.equals("1")) {
-				Utils.showToast("成长记录已发布!");
-			} else {
-				Utils.showToast("发布失败!");
-			}
-			if (progressDialog != null && progressDialog.isShowing()) {
-				progressDialog.dismiss();
-			}
-			finish();
-
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-		}
-	}
-
-	/**
-	 * 上传修改时新增图片图片到服务器
-	 * 
-	 */
-	class UpLoadNewAddPicTask extends AsyncTask<Object, Integer, Object> {
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		String rt = "1";
-
-		@Override
-		protected Object doInBackground(Object... params) {
-			String result = "";
-			for (int i = 0; i < newAdd.size(); i++) {
-				File file = new File(newAdd.get(i));
-				if (file != null) {
-					result = HttpUrlHelper.postDataFile(HttpUrlHelper.strUrl
-							+ "/growth/iuploadImage", file, cid, Utils.uid,
-							gid, SharedUtils.getString("token", ""));
-					Logger.debug(this, "EditPicresult:" + result);
-				}
-				try {
-					JSONObject jsonobject = new JSONObject(result);
-					rt = jsonobject.getString("rt");
-				} catch (JSONException e) {
-					Logger.error(this, e);
-					e.printStackTrace();
-				}
-
-			}
-
-			return rt;
-		}
-
-		@Override
-		protected void onPostExecute(Object result) {
-			Logger.debug(this, "UpLoadNewAddPicTask完成");
-			new DelTask().execute();
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-		}
-	}
-
-	/**
 	 * 删除图片 编辑时可能使用
 	 * 
 	 */
@@ -372,12 +234,11 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 			for (int i = 0; i < delID.size(); i++) {
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("cid", cid);
-				map.put("uid", Utils.uid);
+				map.put("uid", SharedUtils.getString("uid", ""));
 				map.put("gid", gid);
 				map.put("imgid", delID.get(i));
 				map.put("token", SharedUtils.getString("token", ""));
 				if (delID.get(i) == null) {
-
 					continue;
 				}
 				Logger.debug(this, "cid:" + cid + " gid:" + gid + "  imgid:"
@@ -422,55 +283,65 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 		Bitmap bitmap;
 		PicModle modle = new PicModle();
 
-		if (requestCode == REQUEST_CODE_GETIMAGE_BYSDCARD) {
+		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD) {
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			if (data == null)
+			if (data == null) {
 				return;
-			Uri thisUri = data.getData();// 获得图片的uri
-			// 这里开始的第二部分，获取图片的路径：
-			String[] proj = { MediaStore.Images.Media.DATA };
-			Cursor cursor = managedQuery(thisUri, proj, null, null, null);
-			// 按我个人理解 这个是获得用户选择的图片的索引值
-			int column_index = cursor
-					.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			cursor.moveToFirst();
-			// 最后根据索引值获取图片路径
-			String path = cursor.getString(column_index);
-			modle.setPath(path);
+			}
+			SelectPicModle picmodle = BitmapUtils.getPickPic(this, data);
 			if (type.equals("edit")) {
-				newAdd.add(path);
+				newAdd.add(picmodle.getPicPath());
 			}
-			String thePath = InfoHelper
-					.getAbsolutePathFromNoStandardUri(thisUri);
-			// 如果是标准Uri
-			if (StringUtils.isBlank(thePath)) {
-				thisLarge = getAbsoluteImagePath(thisUri);
-			} else {
-				thisLarge = thePath;
-			}
-			String attFormat = FileUtils.getFileFormat(thisLarge);
-			if (!"photo".equals(MediaUtils.getContentType(attFormat))) {
-				Toast.makeText(this, "请选择图片文件！", Toast.LENGTH_SHORT).show();
-				return;
-			}
-			String imgName = FileUtils.getFileName(thisLarge);
-			System.out.println("imgName:" + imgName);
-			bitmap = BitmapUtils.loadImgThumbnail(imgName,
-					MediaStore.Images.Thumbnails.MICRO_KIND,
-					ReleaseGrowthActivity.this);
-			if (bitmap != null) {
-				modle.setBmp(bitmap);
-			}
+			modle.setBmp(picmodle.getBmp());
+			modle.setPath(picmodle.getPicPath());
+			// Uri thisUri = data.getData();// 获得图片的uri
+			// // 这里开始的第二部分，获取图片的路径：
+			// String[] proj = { MediaStore.Images.Media.DATA };
+			// Cursor cursor = managedQuery(thisUri, proj, null, null, null);
+			// // 按我个人理解 这个是获得用户选择的图片的索引值
+			// int column_index = cursor
+			// .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+			// cursor.moveToFirst();
+			// // 最后根据索引值获取图片路径
+			// String path = cursor.getString(column_index);
+			// modle.setPath(path);
+			// if (type.equals("edit")) {
+			// newAdd.add(path);
+			// }
+			// String thePath = InfoHelper
+			// .getAbsolutePathFromNoStandardUri(thisUri);
+			// // 如果是标准Uri
+			// if (StringUtils.isBlank(thePath)) {
+			// thisLarge = getAbsoluteImagePath(thisUri);
+			// } else {
+			// thisLarge = thePath;
+			// }
+			// String attFormat = FileUtils.getFileFormat(thisLarge);
+			// if (!"photo".equals(MediaUtils.getContentType(attFormat))) {
+			// Toast.makeText(this, "请选择图片文件！", Toast.LENGTH_SHORT).show();
+			// return;
+			// }
+			// bitmap = BitmapUtils.loadImgThumbnail(thisLarge,
+			// MediaStore.Images.Thumbnails.MICRO_KIND,
+			// ReleaseGrowthActivity.this);
+			// if (bitmap != null) {
+			// modle.setBmp(bitmap);
+			// }
 		}
 		// 拍摄图片
-		else if (requestCode == REQUEST_CODE_GETIMAGE_BYCAMERA) {
+		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+			if (resultCode != RESULT_OK) {
+				return;
+			}
 			if (resultCode != RESULT_OK) {
 				return;
 			}
 			super.onActivityResult(requestCode, resultCode, data);
-			bitmap = InfoHelper.getScaleBitmap(this, theSmall);
+			Bundle bundle = data.getExtras();
+			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
+
 			if (bitmap != null) {
 				String dir = "/clx/camera/";
 				Utils.createDir(dir);
@@ -480,6 +351,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 				modle.setPath(fileName);
 				modle.setBmp(bitmap);
 			}
+
 		}
 		listBmp.add(modle);
 		adapter.notifyDataSetChanged();
@@ -531,35 +403,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 		}
 
 		return latestImage;
-	}
-
-	/**
-	 * 获取图片缩略�? 只有Android2.1以上版本支持
-	 * 
-	 * @param imgName
-	 * @param kind
-	 *            MediaStore.Images.Thumbnails.MICRO_KIND
-	 * @return
-	 */
-	protected Bitmap loadImgThumbnail(String imgName, int kind) {
-		Bitmap bitmap = null;
-
-		String[] proj = { MediaStore.Images.Media._ID,
-				MediaStore.Images.Media.DISPLAY_NAME };
-
-		Cursor cursor = managedQuery(
-				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, proj,
-				MediaStore.Images.Media.DISPLAY_NAME + "='" + imgName + "'",
-				null, null);
-
-		if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-			ContentResolver crThumb = getContentResolver();
-			BitmapFactory.Options options = new BitmapFactory.Options();
-			options.inSampleSize = 1;
-			bitmap = MediaStore.Images.Thumbnails.getThumbnail(crThumb,
-					cursor.getInt(0), kind, options);
-		}
-		return bitmap;
 	}
 
 	class MyAdapter extends BaseAdapter {
@@ -676,5 +519,23 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener {
 	class ViewHolder {
 		ImageView img;
 		ImageView del;
+	}
+
+	@Override
+	public void upLoadFinish(boolean flag) {
+		if (type.equals("add")) {
+			if (flag) {
+				Utils.showToast("成长记录已发布!");
+			} else {
+				Utils.showToast("发布失败!");
+			}
+			if (progressDialog != null && progressDialog.isShowing()) {
+				progressDialog.dismiss();
+			}
+			finish();
+		} else {
+			new DelTask().execute();
+		}
+
 	}
 }

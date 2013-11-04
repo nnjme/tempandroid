@@ -20,10 +20,10 @@ public class CLXApplication extends Application {
 	@Override
 	public void onCreate() {
 		setInstance(this);
-		Logger.setWriteFile(false); // 设置日志是写文件还是使用标准输出
+		Logger.setWriteFile(true); // 设置日志是写文件还是使用标准输出
 		Logger.setLogLevel(Level.DEBUG); // 日志级别
-		// CrashHandler catchHandler = CrashHandler.getInstance();
-		// catchHandler.init(this);
+		CrashHandler catchHandler = CrashHandler.getInstance();
+		catchHandler.init(this);
 		super.onCreate();
 	}
 }

@@ -48,9 +48,6 @@ public class DBUtils {
 				modle.setCirName(name);
 				modle.setCirIcon(imgAdd);
 				data.add(modle);
-				// Logger.debug(DBUtils.class, "circleName:" + name + "  id:" +
-				// id
-				// + "  cirImg:" + imgAdd);
 				cursor.moveToNext();
 			}
 		}
@@ -66,7 +63,7 @@ public class DBUtils {
 	 */
 	public static List<MemberModle> getUserList(String cirname) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		List<MemberModle> data = new ArrayList<MemberModle>();
 		Cursor cursor = db.query(cirname, null, null, null, null, null, null);
@@ -202,7 +199,7 @@ public class DBUtils {
 		if (!db.isOpen()) {
 			db = dbase.getWritableDatabase();
 		}
-		db.delete("circlelist", null, null);
+		db.delete(tableName, null, null);
 		db.close();
 	}
 
