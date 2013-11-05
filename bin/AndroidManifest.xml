@@ -99,6 +99,19 @@
             android:name=".AddOneMemberActivity"
             android:label="@string/title_activity_add_one_member" >
         </activity>
+        <activity
+            android:name=".MessagesListActivity"
+            android:label="@string/title_activity_messages_list" >
+        </activity>
+        <activity
+            android:name=".MessageActivity"
+            android:label="@string/title_activity_message" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

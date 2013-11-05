@@ -40,8 +40,8 @@ import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.InfoHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -127,7 +127,7 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			if (bitmap != null) {
 				String dir = "/clx/camera/";
 				Utils.createDir(dir);
-				String name = InfoHelper.getFileName() + ".jpg";
+				String name = FileUtils.getFileName() + ".jpg";
 				String fileName = Utils.getgetAbsoluteDir(dir) + name;
 				BitmapUtils.createImgToFile(bitmap, fileName);
 				cirIconPath = fileName;

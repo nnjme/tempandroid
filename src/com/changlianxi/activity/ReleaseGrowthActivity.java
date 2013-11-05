@@ -39,8 +39,8 @@ import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.UpLoadGrowthPicTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.InfoHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -296,39 +296,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			}
 			modle.setBmp(picmodle.getBmp());
 			modle.setPath(picmodle.getPicPath());
-			// Uri thisUri = data.getData();// 获得图片的uri
-			// // 这里开始的第二部分，获取图片的路径：
-			// String[] proj = { MediaStore.Images.Media.DATA };
-			// Cursor cursor = managedQuery(thisUri, proj, null, null, null);
-			// // 按我个人理解 这个是获得用户选择的图片的索引值
-			// int column_index = cursor
-			// .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			// cursor.moveToFirst();
-			// // 最后根据索引值获取图片路径
-			// String path = cursor.getString(column_index);
-			// modle.setPath(path);
-			// if (type.equals("edit")) {
-			// newAdd.add(path);
-			// }
-			// String thePath = InfoHelper
-			// .getAbsolutePathFromNoStandardUri(thisUri);
-			// // 如果是标准Uri
-			// if (StringUtils.isBlank(thePath)) {
-			// thisLarge = getAbsoluteImagePath(thisUri);
-			// } else {
-			// thisLarge = thePath;
-			// }
-			// String attFormat = FileUtils.getFileFormat(thisLarge);
-			// if (!"photo".equals(MediaUtils.getContentType(attFormat))) {
-			// Toast.makeText(this, "请选择图片文件！", Toast.LENGTH_SHORT).show();
-			// return;
-			// }
-			// bitmap = BitmapUtils.loadImgThumbnail(thisLarge,
-			// MediaStore.Images.Thumbnails.MICRO_KIND,
-			// ReleaseGrowthActivity.this);
-			// if (bitmap != null) {
-			// modle.setBmp(bitmap);
-			// }
 		}
 		// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
@@ -345,7 +312,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (bitmap != null) {
 				String dir = "/clx/camera/";
 				Utils.createDir(dir);
-				String name = InfoHelper.getFileName() + ".jpg";
+				String name = FileUtils.getFileName() + ".jpg";
 				String fileName = Utils.getgetAbsoluteDir(dir) + name;
 				BitmapUtils.createImgToFile(bitmap, fileName);
 				modle.setPath(fileName);

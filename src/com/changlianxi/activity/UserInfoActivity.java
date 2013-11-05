@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -52,6 +53,7 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 	private String pid;// ÓÃ»§id
 	private String cid;// È¦×Óid
 	private String username;
+	private LinearLayout sendMessage;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -64,6 +66,8 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 		username = getIntent().getStringExtra("username");
 		pid = getIntent().getStringExtra("pid");
 		cid = getIntent().getStringExtra("cid");
+		sendMessage = (LinearLayout) findViewById(R.id.sendMessage);
+		sendMessage.setOnClickListener(this);
 		layCall = (LinearLayout) findViewById(R.id.call);
 		layCall.setOnClickListener(this);
 		infoShow = new UserInfoShow(this, userlistName, pid, cid);
@@ -165,6 +169,14 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 		// break;
 		case R.id.call:
 			infoShow.moveToCall();
+			break;
+		case R.id.sendMessage:
+			Intent intent = new Intent();
+			intent.putExtra("uid", pid);
+			intent.putExtra("cid", cid);
+			intent.putExtra("name", username);
+			intent.setClass(this, MessageActivity.class);
+			startActivity(intent);
 			break;
 		default:
 			break;

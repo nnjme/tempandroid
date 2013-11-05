@@ -1,6 +1,8 @@
 package com.changlianxi.util;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import android.os.Environment;
 
@@ -23,6 +25,19 @@ public class FileUtils {
 	 */
 	public static String getRootDir() {
 		return Environment.getExternalStorageDirectory().getAbsolutePath();
+	}
+
+	/**
+	 * 使用当前时间戳拼接一个唯�?��文件�?
+	 * 
+	 * @param format
+	 * @return
+	 */
+	public static String getFileName() {
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss_SS");
+		String fileName = format.format(new Timestamp(System
+				.currentTimeMillis()));
+		return fileName;
 	}
 
 	/**

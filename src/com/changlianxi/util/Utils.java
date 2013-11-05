@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -27,6 +28,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -81,6 +83,22 @@ public class Utils {
 				Toast.LENGTH_SHORT);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
+
+	}
+
+	/**
+	 * 隐藏软键盘
+	 */
+	public static void hideSoftInput(Context context) {
+		if (context == null)
+			return;
+		InputMethodManager manager = ((InputMethodManager) context
+				.getSystemService(Activity.INPUT_METHOD_SERVICE));
+		View view = ((Activity) context).getCurrentFocus();
+		if (view == null)
+			return;
+		manager.hideSoftInputFromWindow(view.getWindowToken(),
+				InputMethodManager.HIDE_NOT_ALWAYS);
 
 	}
 

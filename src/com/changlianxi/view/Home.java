@@ -96,8 +96,8 @@ public class Home implements OnClickListener {
 			map.put("timestamp", 0);
 			String result = HttpUrlHelper.postData(map, "/circles/ilist/"
 					+ SharedUtils.getString("uid", ""));
-			Logger.debug(this,
-					"HOME:" + "   uid:" + SharedUtils.getString("uid", ""));
+			System.out.println("HOME:" + "   uid:"
+					+ SharedUtils.getString("uid", ""));
 			// 你要执行的方法
 			try {
 				JSONObject jsonobject = new JSONObject(result);

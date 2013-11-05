@@ -11,12 +11,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,14 +27,15 @@ import android.widget.TextView;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
+import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.CircleLogoAsyncTask;
 import com.changlianxi.util.AsyncImageLoader;
 import com.changlianxi.util.AsyncImageLoader.ImageCallback;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.InfoHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -119,23 +117,9 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 		Bitmap bitmap = null;
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
-			Uri thisUri = data.getData();// 获得图片的uri
-			// 这里开始的第二部分，获取图片的路径：
-			String[] proj = { MediaStore.Images.Media.DATA };
-			Cursor cursor = managedQuery(thisUri, proj, null, null, null);
-			// 按我个人理解 这个是获得用户选择的图片的索引值
-			int column_index = cursor
-					.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			cursor.moveToFirst();
-			// 最后根据索引值获取图片路径
-			newCirIconPath = cursor.getString(column_index);
-			Logger.debug(this, "cirIconPath:" + newCirIconPath);
-			bitmap = BitmapUtils.loadImgThumbnail(newCirIconPath,
-					MediaStore.Images.Thumbnails.MICRO_KIND,
-					CircleSettingActivity.this);
-			if (bitmap != null) {
-				cirImg.setImageBitmap(bitmap);
-			}
+			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
+			cirIconPath = modle.getPicPath();
+			cirImg.setImageBitmap(modle.getBmp());
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
@@ -148,7 +132,7 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 			if (bitmap != null) {
 				String dir = "/clx/camera/";
 				Utils.createDir(dir);
-				String name = InfoHelper.getFileName() + ".jpg";
+				String name = FileUtils.getFileName() + ".jpg";
 				String fileName = Utils.getgetAbsoluteDir(dir) + name;
 				BitmapUtils.createImgToFile(bitmap, fileName);
 				cirIconPath = fileName;

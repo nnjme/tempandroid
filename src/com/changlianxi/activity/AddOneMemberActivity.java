@@ -18,8 +18,8 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,7 +36,7 @@ import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
-import com.changlianxi.util.InfoHelper;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.PinyinUtils;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -228,7 +228,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 			if (bitmap != null) {
 				String dir = "/clx/camera/";
 				Utils.createDir(dir);
-				String name = InfoHelper.getFileName() + ".jpg";
+				String name = FileUtils.getFileName() + ".jpg";
 				String fileName = Utils.getgetAbsoluteDir(dir) + name;
 				BitmapUtils.createImgToFile(bitmap, fileName);
 				imgPath = fileName;

@@ -9,13 +9,19 @@ import com.changlianxi.util.Logger;
 import com.changlianxi.view.FlipperLayout;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
 import com.changlianxi.view.Home;
+import com.changlianxi.view.MessagesList;
 import com.changlianxi.view.SetMenu;
+import com.changlianxi.view.SetMenu.onChangeViewListener;
 
 public class MainActivity extends Activity implements OnOpenListener {
 	/**
 	 * 当前显示内容的容器(继承于ViewGroup)
 	 */
 	private FlipperLayout mRoot;
+	/**
+	 * 私信列表界面
+	 */
+	private MessagesList mMessage;
 	/**
 	 * 菜单界面
 	 */
@@ -58,6 +64,24 @@ public class MainActivity extends Activity implements OnOpenListener {
 	 */
 	private void setListener() {
 		mHome.setOnOpenListener(this);
+		mDesktop.setOnChangeViewListener(new onChangeViewListener() {
+			@Override
+			public void onChangeView(int arg0) {
+				switch (arg0) {
+				case 2:
+					if (mMessage == null) {
+						mMessage = new MessagesList(MainActivity.this);
+						mMessage.setOnOpenListener(MainActivity.this);
+					}
+					mRoot.close(mMessage.getView());
+					break;
+
+				default:
+					break;
+				}
+
+			}
+		});
 
 	}
 

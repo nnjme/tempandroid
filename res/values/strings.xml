@@ -34,5 +34,7 @@
     <string name="title_activity_circle_setting">CircleSettingActivity</string>
     <string name="title_activity_edit_growth">EditGrowthActivity</string>
     <string name="title_activity_add_one_member">AddOneMemberActivity</string>
+    <string name="title_activity_messages_list">MessagesListActivity</string>
+    <string name="title_activity_message">MessageActivity</string>
 
 </resources>

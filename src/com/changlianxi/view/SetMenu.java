@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -21,7 +23,7 @@ import com.changlianxi.util.Logger;
  * 菜单界面
  * 
  */
-public class SetMenu implements OnClickListener {
+public class SetMenu implements OnClickListener, OnItemClickListener {
 	/**
 	 * 当前界面的View
 	 */
@@ -33,6 +35,10 @@ public class SetMenu implements OnClickListener {
 	private MyAdapter adapter;
 	private Button btn;
 	private Activity mactivity;
+	/**
+	 * 接口对象,用来修改显示的View
+	 */
+	private onChangeViewListener mOnChangeViewListener;
 
 	public SetMenu(Context context, Activity activity) {
 		// 绑定布局到当前View
@@ -46,6 +52,7 @@ public class SetMenu implements OnClickListener {
 		listview = (ListView) mDesktop.findViewById(R.id.menulist);
 		adapter = new MyAdapter();
 		listview.setAdapter(adapter);
+		listview.setOnItemClickListener(this);
 		btn = (Button) mDesktop.findViewById(R.id.menuback);
 		btn.setOnClickListener(this);
 	}
@@ -76,12 +83,44 @@ public class SetMenu implements OnClickListener {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			convertView = LayoutInflater.from(mcontext).inflate(
-					R.layout.menu_item, null);
-			TextView txt = (TextView) convertView.findViewById(R.id.menutxt);
-			txt.setText(menulist.get(position).toString());
+			ViewHolder holder = null;
+			if (convertView == null) {
+				convertView = LayoutInflater.from(mcontext).inflate(
+						R.layout.menu_item, null);
+				holder = new ViewHolder();
+				holder.txt = (TextView) convertView.findViewById(R.id.menutxt);
+				convertView.setTag(holder);
+
+			} else {
+				holder = (ViewHolder) convertView.getTag();
+
+			}
+			holder.txt.setText(menulist.get(position).toString());
 			return convertView;
 		}
+	}
+
+	class ViewHolder {
+		TextView txt;
+	}
+
+	/**
+	 * 界面修改方法
+	 * 
+	 * @param onChangeViewListener
+	 */
+	public void setOnChangeViewListener(
+			onChangeViewListener onChangeViewListener) {
+		mOnChangeViewListener = onChangeViewListener;
+	}
+
+	/**
+	 * 切换显示界面的接口
+	 * 
+	 * 
+	 */
+	public interface onChangeViewListener {
+		public abstract void onChangeView(int arg0);
 	}
 
 	@Override
@@ -94,6 +133,11 @@ public class SetMenu implements OnClickListener {
 		default:
 			break;
 		}
+	}
 
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int posititon,
+			long arg3) {
+		mOnChangeViewListener.onChangeView(posititon);
 	}
 }

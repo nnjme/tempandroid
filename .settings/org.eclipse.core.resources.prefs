@@ -1,4 +1,4 @@
-#Tue Oct 29 10:48:08 CST 2013
+#Tue Nov 05 14:39:28 CST 2013
 eclipse.preferences.version=1
 encoding//src/com/changlianxi/activity=Gbk
 encoding//src/com/changlianxi/activity/AsyncLoadListImageActivity.java=UTF-8
@@ -19,6 +19,8 @@ encoding//src/com/changlianxi/modle/MemberInfoModle.java=Gbk
 encoding//src/com/changlianxi/modle/SelectContactModle.java=Gbk
 encoding//src/com/changlianxi/util/AsyncImageLoader.java=Gbk
 encoding//src/com/changlianxi/util/CrashHandler.java=Gbk
+encoding//src/com/changlianxi/util/ExpressionUtil.java=UTF-8
+encoding//src/com/changlianxi/util/Expressions.java=UTF-8
 encoding//src/com/changlianxi/util/FileCache.java=Gbk
 encoding//src/com/changlianxi/util/HttpUtil.java=Gbk
 encoding//src/com/changlianxi/util/MD5.java=Gbk
