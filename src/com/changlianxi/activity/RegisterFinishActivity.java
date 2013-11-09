@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,12 +16,14 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
-public class RegisterFinishActivity extends Activity implements OnClickListener {
+public class RegisterFinishActivity extends Activity implements
+		OnClickListener, PostCallBack {
 	private Button btStartUse;
 	private EditText editNC;
 	private ProgressDialog progressDialog;
@@ -41,7 +42,18 @@ public class RegisterFinishActivity extends Activity implements OnClickListener 
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.startUse:
-			new SetNickNameTask().execute();
+			// new SetNickNameTask().execute();
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("f", "name");
+			map.put("token", SharedUtils.getString("token", ""));
+			map.put("v", editNC.getText().toString());
+			PostAsyncTask task = new PostAsyncTask(this, map,
+					"/users/isetUserInfo");
+			task.setTaskCallBack(this);    
+			task.execute();
+			progressDialog = new ProgressDialog(this);
+			progressDialog.show();
 			break;
 
 		default:
@@ -49,52 +61,25 @@ public class RegisterFinishActivity extends Activity implements OnClickListener 
 		}
 	}
 
-	/**
-	 * 设置昵称
-	 * 
-	 */
-	class SetNickNameTask extends AsyncTask<String, Integer, String> {
-		int rt;
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map1 = new HashMap<String, Object>();
-			map1.put("uid", SharedUtils.getString("uid", ""));
-			map1.put("f", "nickname");
-			map1.put("v", editNC.getText().toString());
-			String result = HttpUrlHelper.postData(map1, "/users/isetUserInfo");
-			Logger.debug(this, "SetNickNameresult:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				rt = object.getInt("rt");
-				if (rt == 1) {
-					Intent intent = new Intent();
-					intent.setClass(RegisterFinishActivity.this,
-							LoginActivity.class);
-					startActivity(intent);
-					finish();
-				} else {
-					Utils.showToast("昵称设置失败");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
+	@Override
+	public void taskFinish(String result) {
+		progressDialog.dismiss();
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt == 1) {
+				Intent intent = new Intent();
+				intent.setClass(RegisterFinishActivity.this,
+						LoginActivity.class);
+				startActivity(intent);
+				finish();
+			} else {
+				Utils.showToast("昵称设置失败");
 			}
-		}
+		} catch (JSONException e) {
+			Logger.error(this, e);
 
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(RegisterFinishActivity.this);
-			progressDialog.show();
+			e.printStackTrace();
 		}
 	}
 }

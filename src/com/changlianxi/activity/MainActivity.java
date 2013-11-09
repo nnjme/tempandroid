@@ -1,15 +1,23 @@
 package com.changlianxi.activity;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 
-import com.changlianxi.util.Logger;
+import com.changlianxi.db.DBUtils;
+import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.Constants;
+import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
 import com.changlianxi.view.Home;
 import com.changlianxi.view.MessagesList;
+import com.changlianxi.view.MyCard;
 import com.changlianxi.view.SetMenu;
 import com.changlianxi.view.SetMenu.onChangeViewListener;
 
@@ -22,6 +30,10 @@ public class MainActivity extends Activity implements OnOpenListener {
 	 * 私信列表界面
 	 */
 	private MessagesList mMessage;
+	/**
+	 * 我的名片界面
+	 */
+	private MyCard mCard;
 	/**
 	 * 菜单界面
 	 */
@@ -54,9 +66,41 @@ public class MainActivity extends Activity implements OnOpenListener {
 	}
 
 	@Override
-	protected void onStart() {
-		Logger.debug(this, "onStartonStart");
-		super.onStart();
+	protected void onDestroy() {
+		DBUtils.close();
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		Bitmap bitmap = null;
+		String avatarPath = "";
+		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
+				&& resultCode == RESULT_OK && data != null) {
+			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
+			avatarPath = modle.getPicPath();
+			bitmap = modle.getBmp();
+		}// 拍摄图片
+		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+			if (resultCode != RESULT_OK) {
+				return;
+			}
+			super.onActivityResult(requestCode, resultCode, data);
+			Bundle bundle = data.getExtras();
+			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
+
+			if (bitmap != null) {
+				String dir = "/clx/camera/";
+				Utils.createDir(dir);
+				String name = FileUtils.getFileName() + ".jpg";
+				String fileName = Utils.getgetAbsoluteDir(dir) + name;
+				BitmapUtils.createImgToFile(bitmap, fileName);
+				avatarPath = fileName;
+			}
+
+		}
+		mCard.setAvatarPath(avatarPath, bitmap);
 	}
 
 	/**
@@ -68,6 +112,20 @@ public class MainActivity extends Activity implements OnOpenListener {
 			@Override
 			public void onChangeView(int arg0) {
 				switch (arg0) {
+				case 0:
+					if (mHome == null) {
+						mHome = new Home(MainActivity.this);
+						mHome.setOnOpenListener(MainActivity.this);
+					}
+					mRoot.close(mHome.getView());
+					break;
+				case 1:
+					if (mCard == null) {
+						mCard = new MyCard(MainActivity.this);
+						mCard.setOnOpenListener(MainActivity.this);
+					}
+					mRoot.close(mCard.getView());
+					break;
 				case 2:
 					if (mMessage == null) {
 						mMessage = new MessagesList(MainActivity.this);
@@ -83,6 +141,22 @@ public class MainActivity extends Activity implements OnOpenListener {
 			}
 		});
 
+	}
+
+	/**
+	 * 连续按两次返回键就退出
+	 */
+	private long firstTime;
+
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		if (System.currentTimeMillis() - firstTime < 3000) {
+			finish();
+		} else {
+			firstTime = System.currentTimeMillis();
+			Utils.showToast("再按一次退出程序");
+		}
 	}
 
 	public void open() {

@@ -43,6 +43,7 @@ import com.changlianxi.activity.R;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.inteface.ChangeView;
 import com.changlianxi.modle.Info;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -60,6 +61,7 @@ public class UserInfoEdit implements OnClickListener {
 	private View vEdit;
 	private ListView listview;
 	private List<Info> listData;
+	private List<Info> listOldData;// 保存数据用来比较
 	private MyAdapter adapter;
 	private TextView titleKey;
 	private Button btnFinish;
@@ -90,6 +92,7 @@ public class UserInfoEdit implements OnClickListener {
 		this.cid = cid;
 		this.mContext = context;
 		this.listData = listData;
+		this.listOldData = listData;
 		this.title = UserInfoUtils.infoTitleKey[type];
 		this.type = type;
 		flater = LayoutInflater.from(context);
@@ -117,7 +120,6 @@ public class UserInfoEdit implements OnClickListener {
 
 		@Override
 		public int getCount() {
-			Logger.debug(this, "size:" + listData.size());
 			return listData.size();
 		}
 
@@ -556,6 +558,7 @@ public class UserInfoEdit implements OnClickListener {
 	class SubmitTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		String rt = "";
+		String errorCoce;
 
 		@Override
 		protected String doInBackground(String... params) {
@@ -565,9 +568,8 @@ public class UserInfoEdit implements OnClickListener {
 			map.put("pid", pid);
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("person", jsonAry.toString());
+			Logger.debug(this, "person:" + jsonAry.toString());
 			String json = HttpUrlHelper.postData(map, "/people/iedit");
-			Logger.debug(this, "cid:" + cid + "  pid:" + pid + "  token:"
-					+ SharedUtils.getString("token", "") + "json:" + json);
 			try {
 				JSONObject object = new JSONObject(json);
 				rt = object.getString("rt");
@@ -608,10 +610,12 @@ public class UserInfoEdit implements OnClickListener {
 						}
 					}
 					db.close();
+				} else {
+					errorCoce = object.getString("err");
+					return "error";
 				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
 
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			return rt;
@@ -620,6 +624,10 @@ public class UserInfoEdit implements OnClickListener {
 		@Override
 		protected void onPostExecute(String result) {
 			progressDialog.dismiss();
+			if (result.equals("error")) {
+				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
+				return;
+			}
 			if (result.equals("1")) {
 				Utils.showToast("修改成功！");
 				cv.delView();
@@ -648,7 +656,6 @@ public class UserInfoEdit implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.btnfinish:
 			for (int i = 0; i < listData.size(); i++) {
-				Logger.debug(this, "data.size:" + listData.size());
 				String id = listData.get(i).getId();
 				String start = listData.get(i).getStartDate();
 				String end = listData.get(i).getEndDate();
@@ -662,8 +669,9 @@ public class UserInfoEdit implements OnClickListener {
 						BuildAddJson(type, value);
 					}
 				} else if (editType == 3) {
-					Logger.debug(this, "value:" + value + "  id:" + id
-							+ "  type:" + type);
+					if (listOldData.contains(value)) {
+						continue;
+					}
 					BuildEditJson(value, id, type);
 
 				}

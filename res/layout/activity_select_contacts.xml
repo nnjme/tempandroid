@@ -4,30 +4,31 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/home_menu_bg"
-        android:gravity="center_vertical"
-        android:orientation="horizontal" >
-
-        <ImageView
-            android:id="@+id/back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dip"
-            android:src="@drawable/icon_return" />
+        android:background="@drawable/home_menu_bg" >
 
         <TextView
             android:id="@+id/circleName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
             android:gravity="center"
             android:text="手机联系人"
             android:textColor="#FFFFFF"
-            android:textSize="23sp" />
-    </LinearLayout>
+            android:textSize="@dimen/titleSize" />
+
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:padding="20dip"
+            android:src="@drawable/icon_return" />
+    </RelativeLayout>
 
     <ListView
         android:id="@+id/contactList"

@@ -11,20 +11,27 @@ import org.json.JSONObject;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 
+import com.changlianxi.activity.MessageActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.adapter.MessageListAdapter;
+import com.changlianxi.db.DBUtils;
+import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessagesListModle;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
+import com.changlianxi.view.MyListView.OnRefreshListener;
 
 /**
  * 私信列表展示界面
@@ -32,12 +39,12 @@ import com.changlianxi.view.FlipperLayout.OnOpenListener;
  * @author teeker_bin
  * 
  */
-public class MessagesList implements OnClickListener {
+public class MessagesList implements OnClickListener, OnItemClickListener {
 	private Context mContext;
 	private View mMessages;
 	private OnOpenListener mOnOpenListener;
 	private LinearLayout mMenu;
-	private ListView listview;
+	private MyListView listview;
 	private List<MessagesListModle> listModle = new ArrayList<MessagesListModle>();
 	private MessageListAdapter adapter;
 
@@ -56,24 +63,24 @@ public class MessagesList implements OnClickListener {
 	 */
 	private void initView() {
 		mMenu = (LinearLayout) mMessages.findViewById(R.id.home_menu);
-		listview = (ListView) mMessages.findViewById(R.id.listView);
+		listview = (MyListView) mMessages.findViewById(R.id.listView);
 		listview.setAdapter(adapter);
 	}
 
 	private void setListener() {
-		mMenu.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-				if (mOnOpenListener != null) {
-					mOnOpenListener.open();
-				}
+		mMenu.setOnClickListener(this);
+		listview.setOnItemClickListener(this);
+		listview.setCacheColorHint(0);
+		listview.setonRefreshListener(new OnRefreshListener() {
+			public void onRefresh() {
+				listModle.clear();
+				new GetMessagetTask().execute();
 			}
 		});
-
 	}
 
 	/**
-	 * 获取成员列表
+	 * 获取私信列表
 	 * 
 	 */
 	class GetMessagetTask extends AsyncTask<String, Integer, String> {
@@ -85,7 +92,6 @@ public class MessagesList implements OnClickListener {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
-			map.put("timestamp", 0);
 			String result = HttpUrlHelper.postData(map, "/messages/ilist");
 			try {
 				JSONObject jsonobject = new JSONObject(result);
@@ -93,13 +99,26 @@ public class MessagesList implements OnClickListener {
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					MessagesListModle modle = new MessagesListModle();
+					String avatarPath = "";
+					String name = "";
 					String uid = object.getString("uid");
 					String mid = object.getString("mid");
 					String cid = object.getString("cid");
 					String type = object.getString("type");
 					String msg = object.getString("msg");
+					Logger.debug(this, "msg:" + msg);
 					String time = object.getString("time");
 					String newCount = object.getString("new");
+					String cirName = DBUtils.getCircleNameById(cid);
+					MemberInfoModle info = DBUtils.selectNameAndImgByID(
+							"circle" + cid, uid);
+					if (info != null) {
+						avatarPath = info.getAvator();
+						name = info.getName();
+					}
+					modle.setAvatar(avatarPath);
+					modle.setCirName(cirName);
+					modle.setUserName(name);
 					modle.setUid(uid);
 					modle.setMid(mid);
 					modle.setCid(cid);
@@ -121,6 +140,7 @@ public class MessagesList implements OnClickListener {
 		protected void onPostExecute(String result) {
 			progressDialog.dismiss();
 			adapter.notifyDataSetChanged();
+			listview.onRefreshComplete();
 
 		}
 
@@ -134,7 +154,16 @@ public class MessagesList implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.home_menu:
+			if (mOnOpenListener != null) {
+				mOnOpenListener.open();
+			}
+			break;
 
+		default:
+			break;
+		}
 	}
 
 	public void setOnOpenListener(OnOpenListener onOpenListener) {
@@ -143,6 +172,17 @@ public class MessagesList implements OnClickListener {
 
 	public View getView() {
 		return mMessages;
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		int position = arg2 - 1;
+		Intent intent = new Intent();
+		intent.putExtra("type", "read");// 阅读私信
+		intent.putExtra("uid", listModle.get(position).getUid());// 要读私信者的id
+		intent.putExtra("cid", listModle.get(position).getCid());// 私信所属圈子ID
+		intent.setClass(mContext, MessageActivity.class);
+		mContext.startActivity(intent);
 	}
 
 }

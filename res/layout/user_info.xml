@@ -19,6 +19,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:paddingLeft="10dip"
+            android:paddingRight="20dip"
             android:src="@drawable/icon_return" />
 
         <ImageView
@@ -29,33 +31,33 @@
             android:src="@drawable/icon_more" />
     </RelativeLayout>
 
-    <FrameLayout
-        android:id="@+id/imgframe"
+    <RelativeLayout
+        android:id="@+id/LayAvatar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/layt"
-        android:layout_gravity="center" >
+        android:gravity="center" >
 
         <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/hand_bg" />
+            android:id="@+id/avatarBg"
+            android:layout_width="90.0dip"
+            android:layout_height="90.0dip"
+            android:layout_centerInParent="true"
+            android:contentDescription="@null"
+            android:src="@drawable/pic_bg" />
 
-        <ImageView
-            android:id="@+id/img"
-            android:layout_width="60dip"
-            android:layout_height="60dip"
-            android:layout_gravity="center"
-            android:src="@drawable/hand_pic" />
-    </FrameLayout>
+        <com.changlianxi.view.CircularImage
+            android:id="@+id/avatar"
+            android:layout_width="74.0dip"
+            android:layout_height="74.0dip"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/drag"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/imgframe" >
+        android:layout_below="@+id/LayAvatar" >
 
         <LinearLayout
             android:layout_width="fill_parent"

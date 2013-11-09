@@ -72,7 +72,6 @@ public class GrowthActivity extends Activity implements OnClickListener {
 		txtCirName.setText(circleName);
 		btback = (ImageView) findViewById(R.id.back);
 		btback.setOnClickListener(this);
-
 	}
 
 	/**
@@ -104,8 +103,6 @@ public class GrowthActivity extends Activity implements OnClickListener {
 				JSONObject jsonobject = new JSONObject(result);
 				String cid = jsonobject.getString("cid");
 				String num = jsonobject.getString("num");
-				String oldts = jsonobject.getString("oldts");
-				String newts = jsonobject.getString("newts");
 				JSONArray jsonarray = jsonobject.getJSONArray("growths");
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
@@ -129,7 +126,7 @@ public class GrowthActivity extends Activity implements OnClickListener {
 						String img = imgObj.getString("img");
 						im.setId(imgId);
 						im.setImg(img);
-						im.setSamllImg(StringUtils.JoinString(img));
+						im.setSamllImg(StringUtils.JoinString(img, "_100x100"));
 						imgModle.add(im);
 					}
 					MemberInfoModle md = DBUtils.selectNameAndImgByID("circle"
@@ -146,8 +143,6 @@ public class GrowthActivity extends Activity implements OnClickListener {
 					modle.setImgModle(imgModle);
 					modle.setCid(cid);
 					modle.setNum(num);
-					modle.setOldts(oldts);
-					modle.setNewts(newts);
 					modle.setId(id);
 					modle.setUid(uid);
 					modle.setContent(content);

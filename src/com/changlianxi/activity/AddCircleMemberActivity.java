@@ -35,7 +35,6 @@ public class AddCircleMemberActivity extends Activity implements
 		case R.id.addFromAddBook:
 			intent.setClass(this, SelectContactsActivity.class);
 			startActivity(intent);
-
 			break;
 		case R.id.inputContact:
 			intent.setClass(this, AddOneMemberActivity.class);

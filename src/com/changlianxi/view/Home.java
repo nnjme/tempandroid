@@ -14,12 +14,14 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -30,11 +32,13 @@ import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.adapter.CircleAdapter;
 import com.changlianxi.db.DBUtils;
+import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.BounceScrollView.OnRefreshComplete;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
 
 /**
@@ -43,7 +47,7 @@ import com.changlianxi.view.FlipperLayout.OnOpenListener;
  * @author teeker_bin
  * 
  */
-public class Home implements OnClickListener {
+public class Home implements OnClickListener, OnRefreshComplete {
 	private Context mcontext;
 	private View mHome;
 	private LinearLayout mMenu;
@@ -53,9 +57,14 @@ public class Home implements OnClickListener {
 	private GridView gView;
 	private static CircleAdapter adapter;
 	private ImageView createCircle;
+	private BounceScrollView scrollView;
+	private EditText search;
+	private static DataBase dbase = DataBase.getInstance();
+	private static SQLiteDatabase db;
 
 	public Home(Context context) {
 		mcontext = context;
+		db = dbase.getWritableDatabase();
 		mHome = LayoutInflater.from(context).inflate(R.layout.home, null);
 		findViewById();
 		setListener();
@@ -77,7 +86,6 @@ public class Home implements OnClickListener {
 		} else {
 			Utils.showToast("请检查网络");
 		}
-
 	}
 
 	/**
@@ -96,8 +104,6 @@ public class Home implements OnClickListener {
 			map.put("timestamp", 0);
 			String result = HttpUrlHelper.postData(map, "/circles/ilist/"
 					+ SharedUtils.getString("uid", ""));
-			System.out.println("HOME:" + "   uid:"
-					+ SharedUtils.getString("uid", ""));
 			// 你要执行的方法
 			try {
 				JSONObject jsonobject = new JSONObject(result);
@@ -105,25 +111,29 @@ public class Home implements OnClickListener {
 				if (jsonarray != null) {
 					DBUtils.clearTableData("circlelist");// 清空本地表 保存最新数据
 				}
-				Logger.debug(this, "jsarry:" + jsonarray.length());
 				for (int i = jsonarray.length() - 1; i >= 0; i--) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					CircleModle modle = new CircleModle();
 					String id = object.getString("id");
 					String logo = object.getString("logo");
 					String name = object.getString("name");
-					Logger.debug(this, "circlename:" + name + "   icon:" + logo);
-					String status = object.getString("status");
+					String isNew = object.getString("is_new");
+					if (isNew.equals("1")) {
+						modle.setNew(true);
+					} else {
+						modle.setNew(false);
+
+					}
 					modle.setCirImg(1);
 					modle.setCirID(id);
-					modle.setCirIcon(logo);
+					modle.setCirIcon(StringUtils.JoinString(logo, "_200x200"));
 					modle.setCirName(name);
-					modle.setCirStatus(status);
 					serverListModle.add(serverListModle.size() - 1, modle);
-					insertData(id, name, logo);
+					insertData(id, name,
+							StringUtils.JoinString(logo, "_200x200"));
+					creatTable("circle" + id);
 				}
 			} catch (JSONException e) {
-				Logger.error(this, e);
 				e.printStackTrace();
 				return null;
 			}
@@ -153,16 +163,31 @@ public class Home implements OnClickListener {
 	}
 
 	/**
+	 * 创建表圈子所对应的表
+	 */
+	private static void creatTable(String circleName) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		// 创建圈子所对应的表
+		db.execSQL("CREATE TABLE IF NOT EXISTS "
+				+ circleName
+				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,sortkey varchar)");
+		db.execSQL("create table IF NOT EXISTS "
+				+ circleName
+				+ "userlist"
+				+ "( _id integer PRIMARY KEY AUTOINCREMENT ,tID varchar,personID varchar,key varchar, value varchar,startDate varchar,endDate)");
+	}
+
+	/**
 	 * 更新圈子列表
 	 * 
 	 * @param modle
 	 */
 	public static void refreshCircleList(CircleModle modle) {
-		System.out.println("refulsh:" + modle.getCirIcon());
 		listModle.add(listModle.size() - 1, modle);
 		adapter.setData(listModle);
-		System.out.println("更新更新");
-
+		creatTable("circle" + modle.getCirID());
 	}
 
 	/**
@@ -177,7 +202,6 @@ public class Home implements OnClickListener {
 		values.put("cirID", id);
 		values.put("cirName", name);
 		values.put("cirImg", img);
-		Logger.debug(this, "id1:" + id);
 		DBUtils.insertData("circlelist", values);
 	}
 
@@ -188,10 +212,14 @@ public class Home implements OnClickListener {
 		mMenu = (LinearLayout) mHome.findViewById(R.id.home_menu);
 		gView = (GridView) mHome.findViewById(R.id.gridView1);
 		createCircle = (ImageView) mHome.findViewById(R.id.createCircle);
-		createCircle.setOnClickListener(this);
+		scrollView = (BounceScrollView) mHome
+				.findViewById(R.id.bounceScrollView);
+		search = (EditText) mHome.findViewById(R.id.search);
 	}
 
 	private void setListener() {
+		createCircle.setOnClickListener(this);
+		scrollView.setOnRefreshComplete(this);
 		mMenu.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (mOnOpenListener != null) {
@@ -214,6 +242,7 @@ public class Home implements OnClickListener {
 				Intent it = new Intent();
 				it.setClass(mcontext, CircleActivity.class);
 				it.putExtra("name", name);
+				it.putExtra("is_New", listModle.get(position).isNew());
 				it.putExtra("cirID", listModle.get(position).getCirID());
 				mcontext.startActivity(it);
 			}
@@ -233,11 +262,15 @@ public class Home implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.createCircle:
 			break;
-
 		default:
 			break;
 		}
 
+	}
+
+	@Override
+	public void onComplete() {
+		search.setVisibility(View.VISIBLE);
 	}
 
 }

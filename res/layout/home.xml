@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dip"
                 android:layout_marginLeft="5dip"
-                android:src="@drawable/icon_list_news" />
+                android:src="@drawable/icon_prompt" />
         </LinearLayout>
 
         <ImageView
@@ -44,24 +44,37 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="20dip"
-            android:src="@drawable/icon_personal_information" />
+            android:src="@drawable/icon_contact" />
     </LinearLayout>
 
-    <com.changlianxi.view.PullToRefreshView
-        android:id="@+id/main_pull_refresh_view"
+    <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:background="#FFFFFF"
-        android:focusable="false"
+        android:layout_height="match_parent"
+        android:background="@color/white"
         android:orientation="vertical" >
 
-        <GridView
-            android:id="@+id/gridView1"
+        <EditText
+            android:id="@+id/search"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dip"
+            android:background="@drawable/search"
+            android:visibility="gone" >
+        </EditText>
+
+        <com.changlianxi.view.BounceScrollView
+            android:id="@+id/bounceScrollView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:clickable="true"
-            android:numColumns="3" >
-        </GridView>
-    </com.changlianxi.view.PullToRefreshView>
+            android:orientation="vertical" >
+
+            <com.changlianxi.view.GrowthImgGridView
+                android:id="@+id/gridView1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:numColumns="3" >
+            </com.changlianxi.view.GrowthImgGridView>
+        </com.changlianxi.view.BounceScrollView>
+    </LinearLayout>
 
 </LinearLayout>

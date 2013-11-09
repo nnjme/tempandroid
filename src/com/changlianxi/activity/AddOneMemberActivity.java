@@ -26,17 +26,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.changlianxi.inteface.PostCallBack;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.EditWather;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.Logger;
 import com.changlianxi.util.PinyinUtils;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -62,6 +66,10 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	private ProgressDialog pd;
 	private String pid = "";// 邀请成功的成员ID
 	private String type;// add 添加成员 create 创建圈子
+	private String cmids = "";// 邀请链接中的邀请码，可用来构造邀请链接，在需要发送邀请的情况下才会有值
+	private String code = "";// 成员圈子组合ID，在发送邀请短信接口中有用
+	private String cirName = "";
+	private String rep = "0"; // 该成员是否已经存在
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -71,6 +79,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		type = getIntent().getStringExtra("type");
 		if (type.equals("add")) {
 			cid = getIntent().getStringExtra("cid");
+			cirName = getIntent().getStringExtra("cirName");
 		}
 		initView();
 		setListener();
@@ -85,6 +94,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		addInfo = (LinearLayout) findViewById(R.id.addInfo);
 		btnNext = (Button) findViewById(R.id.next);
 		editMobile = (EditText) findViewById(R.id.editmobile);
+		editMobile.addTextChangedListener(new EditWather(editMobile));
 		editName = (EditText) findViewById(R.id.editname);
 		editEmail = (EditText) findViewById(R.id.editemail);
 		back = (ImageView) findViewById(R.id.back);
@@ -116,7 +126,6 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * 添加职务
 	 */
 	private void addView(String str) {
-		System.out.println("str:" + str);
 		final View view = LayoutInflater.from(this).inflate(
 				R.layout.layout_zhiwu, null);
 		addInfo.addView(view);
@@ -246,7 +255,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		case R.id.next:
 			getValue();
 			String name = editName.getText().toString();
-			String mobile = editMobile.getText().toString();
+			String mobile = editMobile.getText().toString().replace("-", "");
 			if (mobile.length() == 0) {
 				Utils.showToast("手机号不能为空!");
 				return;
@@ -310,17 +319,20 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void taskFinish(String result) {
-		String rep = ""; // 该成员是否已经存在1-YES,0-NO
+		Logger.debug(this, "result:" + result);
 		try {
 			JSONObject object = new JSONObject(result);
 			int rt = object.getInt("rt");
 			if (rt == 1) {
 				pid = object.getString("pid");
 				rep = object.getString("rep");
-				if (rep.equals("1")) {
-					Utils.showToast("该用户已存在");
-					return;
-				}
+				cmids = object.getString("cmid");
+				code = object.getString("code");
+				// if (rep.equals("1")) {
+				// Utils.showToast("该用户已存在");
+				// pd.dismiss();
+				// return;
+				// }
 				if (!imgPath.equals("")) {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("cid", cid);
@@ -335,16 +347,42 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 				}
 				Utils.showToast("添加成功");
 				pd.dismiss();
-				Intent intent = setBackIntent();
-				setResult(2, intent);
-				finish();
+				setModle();
+				if (rep.equals("0")) {
+					intentSmsPreviewActivity();
+				}
 			} else {
 				pd.dismiss();
-				Utils.showToast("添加失败");
+				String errorCoce = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
 			}
 		} catch (JSONException e) {
+			pd.dismiss();
+			Utils.showToast("异常错误");
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 跳转到短信预览界面
+	 */
+	private void intentSmsPreviewActivity() {
+		List<SmsPrevieModle> listModle = new ArrayList<SmsPrevieModle>();
+		SmsPrevieModle modle = new SmsPrevieModle();
+		modle.setName(editName.getText().toString());
+		modle.setNum(editMobile.getText().toString().replace("-", ""));
+		modle.setContent("亲爱的" + editName.getText().toString() + ",邀请您加入"
+				+ cirName + "圈子.您可以访问http://clx.teeker.com/" + code + "查看详情");
+		listModle.add(modle);
+		Intent intent = new Intent();
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("contactsList", (Serializable) listModle);
+		intent.putExtras(bundle);
+		intent.putExtra("cmids", cmids);
+		intent.putExtra("cid", cid);
+		intent.setClass(this, SmsPreviewActivity.class);
+		startActivity(intent);
+		finish();
 	}
 
 	/**
@@ -352,19 +390,15 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * 
 	 * @return
 	 */
-	private Intent setBackIntent() {
+	private void setModle() {
 		MemberModle modle = new MemberModle();
 		modle.setId(pid);
 		modle.setName(editName.getText().toString());
 		modle.setEmployer(employer);
 		modle.setImg(imgPath);
 		modle.setSort_key(PinyinUtils.getPinyin(editName.getText().toString()));
-		Intent intent = new Intent();
-		Bundle bundle = new Bundle();
-		bundle.putSerializable("modle", (Serializable) modle);
-		intent.putExtras(bundle);
-		return intent;
-
+		CLXApplication.setModle(modle);
+		finish();
 	}
 
 	/**
@@ -375,11 +409,12 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		pd.dismiss();
 		if (flag) {
 			Utils.showToast("添加成功");
-			Intent intent = setBackIntent();
-			setResult(2, intent);
-			finish();
+			setModle();
+			if (rep.equals("0")) {
+				intentSmsPreviewActivity();
+			}
 		} else {
-			Utils.showToast("添加失败");
+			Utils.showToast("图标上传失败");
 		}
 	}
 }

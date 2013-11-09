@@ -13,8 +13,6 @@ public class GrowthModle {
 	private String name = "";// 发布成长记录人的姓名
 	private String cid = "";// 圈子id
 	private String num = "";// 圈子数量
-	private String oldts = "";// 请求参数中的时间戳
-	private String newts = "";// 本次访问服务器端的时间戳
 	private String id = "";// 成长id
 	private String uid = "";// 发布者id
 	private String content = "";// 发布内容
@@ -82,22 +80,6 @@ public class GrowthModle {
 
 	public void setNum(String num) {
 		this.num = num;
-	}
-
-	public String getOldts() {
-		return oldts;
-	}
-
-	public void setOldts(String oldts) {
-		this.oldts = oldts;
-	}
-
-	public String getNewts() {
-		return newts;
-	}
-
-	public void setNewts(String newts) {
-		this.newts = newts;
 	}
 
 	public String getId() {

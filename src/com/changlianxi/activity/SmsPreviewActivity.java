@@ -8,14 +8,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.changlianxi.adapter.SmsAdaprter;
-import com.changlianxi.modle.ContactModle;
+import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.util.Logger;
 
 /**
@@ -27,10 +27,11 @@ import com.changlianxi.util.Logger;
 public class SmsPreviewActivity extends Activity implements OnClickListener {
 	private ImageView back;
 	private ListView listview;
-	private List<ContactModle> contactsList = new ArrayList<ContactModle>();
-	private String circleName;
+	private List<SmsPrevieModle> contactsList = new ArrayList<SmsPrevieModle>();
+	private String cmids;
 	private SmsAdaprter adapter;
 	private Button btnsend;
+	private String cid;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -39,16 +40,17 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sms_preview);
 		Bundle bundle = getIntent().getExtras();
-		contactsList = (List<ContactModle>) bundle
+		contactsList = (List<SmsPrevieModle>) bundle
 				.getSerializable("contactsList");
+		cid = getIntent().getStringExtra("cid");
 		Logger.debug(this, "contactsList:" + contactsList.size());
-		circleName = getIntent().getStringExtra("circleName");
+		cmids = getIntent().getStringExtra("cmids");
 		back = (ImageView) findViewById(R.id.back);
 		back.setOnClickListener(this);
 		btnsend = (Button) findViewById(R.id.btnsend);
 		btnsend.setOnClickListener(this);
 		listview = (ListView) findViewById(R.id.listView1);
-		adapter = new SmsAdaprter(this, contactsList, circleName);
+		adapter = new SmsAdaprter(this, contactsList);
 		listview.setAdapter(adapter);
 	}
 
@@ -63,6 +65,8 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 			Bundle bundle = new Bundle();
 			bundle.putSerializable("contactsList", (Serializable) contactsList);
 			intent.putExtras(bundle);
+			intent.putExtra("cmids", cmids);
+			intent.putExtra("cid", cid);
 			intent.setClass(this, SmsInviteActivity.class);
 			startActivity(intent);
 			finish();

@@ -2,8 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="10dip"
-    android:layout_marginRight="10dip"
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
@@ -27,17 +25,19 @@
             android:id="@+id/editnum"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_top_corner_no_bottom_line"
+            android:layout_marginLeft="1dip"
+            android:layout_marginRight="1dip"
+            android:background="@drawable/input_top_radius"
             android:hint="输入手机号码"
             android:maxLength="13"
-            android:padding="15dip"
+            android:padding="17dip"
             android:textSize="20dip" />
 
         <Button
             android:id="@+id/btnext"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_bottom_corner_no_top_line"
+            android:background="@drawable/gray_bottom_radius"
             android:padding="15dip"
             android:text="下一步"
             android:textColor="@color/white"

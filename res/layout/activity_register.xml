@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/registration_bg"
+    android:background="@drawable/login_wrap_bg"
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
@@ -10,7 +10,7 @@
         android:id="@+id/layLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/account_top_bg"
+        android:background="@drawable/back2"
         android:gravity="center"
         android:orientation="vertical" >
 
@@ -18,15 +18,16 @@
             android:id="@+id/imageView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/icon_unfold" />
+            android:layout_marginBottom="10dip"
+            android:layout_marginTop="10dip"
+            android:src="@drawable/have_login" /> <!-- <TextView -->
+        <!-- android:id="@+id/textView1" -->
+        <!-- android:layout_width="wrap_content" -->
+        <!-- android:layout_height="wrap_content" -->
+        <!-- android:text="已有账号，登录" -->
+        <!-- android:textColor="@color/white" -->
+        <!-- android:textSize="25dip" /> -->
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="已有账号，登录"
-            android:textColor="@color/white"
-            android:textSize="25dip" />
     </LinearLayout>
 
     <com.changlianxi.view.MyViewGroup

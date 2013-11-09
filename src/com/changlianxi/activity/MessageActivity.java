@@ -10,8 +10,8 @@ import java.util.Queue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -25,8 +25,8 @@ import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -43,12 +43,18 @@ import android.widget.TextView;
 
 import com.changlianxi.adapter.MessageAdapter;
 import com.changlianxi.db.DBUtils;
+import com.changlianxi.inteface.GetMessagesCallBack;
+import com.changlianxi.inteface.PushMessages;
+import com.changlianxi.inteface.SendMessageAndChatCallBack;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
+import com.changlianxi.task.GetMessagesTask;
+import com.changlianxi.task.SendMessageThread;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Expressions;
-import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.PushMessageReceiver;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
@@ -59,7 +65,8 @@ import com.changlianxi.util.Utils;
  * 
  */
 public class MessageActivity extends Activity implements OnClickListener,
-		OnItemClickListener {
+		OnItemClickListener, PushMessages, GetMessagesCallBack,
+		SendMessageAndChatCallBack {
 	private List<MessageModle> listModle = new ArrayList<MessageModle>();
 	private Button btnSend;// 发送按钮
 	private EditText editContent;// 内容输入框
@@ -69,14 +76,12 @@ public class MessageActivity extends Activity implements OnClickListener,
 	private String ruid;// 接受私信者id
 	private MessageAdapter adapter;
 	private String cid;
-	private String rName;
 	private ImageView imgAdd;
 	private LinearLayout layAdd;
 	private LinearLayout layoutExpression;
 	private RelativeLayout expression;
 	private boolean layAddIsShow = false;
 	private Queue<HashMap<String, Object>> queueMap = new LinkedList<HashMap<String, Object>>();// 用于发送私信的队列
-	private boolean running = true;
 	private ViewPager viewPager;
 	private ArrayList<GridView> grids;
 	private ImageView[] imageViews;// 圆点
@@ -87,12 +92,16 @@ public class MessageActivity extends Activity implements OnClickListener,
 	private int[] expressionImages2;
 	private String[] expressionImageNames2;
 	private int page = 0;// 标记表情当前页
+	private String type = "";// read 读私信 write 写私信
+	private ProgressDialog pd;
+	private SendMessageThread messageThread;
+	private String avatarPath;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case 0:
-				Utils.showToast("发送失败");
+				Utils.showToast((String) msg.obj);
 				break;
 			default:
 				break;
@@ -107,12 +116,56 @@ public class MessageActivity extends Activity implements OnClickListener,
 		setContentView(R.layout.activity_message);
 		ruid = getIntent().getStringExtra("uid");
 		cid = getIntent().getStringExtra("cid");
-		rName = getIntent().getStringExtra("name");
+		type = getIntent().getStringExtra("type");
 		findViewById();
 		setListener();
 		initExpression();
 		initViewPager();
-		new SendMessageThread().start();
+		PushMessageReceiver.setPushMessageCallBack(this);
+		getSeverMessage();
+		getNameById();
+		messageThread = new SendMessageThread("/messages/isend");
+		messageThread.setRun(true);
+		messageThread.setQueueMap(queueMap);
+		messageThread.setMessageAndChatCallBack(this);
+		messageThread.start();
+	}
+
+	private void getNameById() {
+		MemberInfoModle modle = DBUtils.selectNameAndImgByID("circle" + cid,
+				ruid);
+		if (modle != null) {
+			name.setText(modle.getName());
+		}
+		MemberInfoModle info = DBUtils.selectNameAndImgByID("circle" + cid,
+				SharedUtils.getString("uid", ""));
+		if (info == null) {
+			Utils.showToast("未知错误 tableName:" + "circle" + cid + "  uid:"
+					+ SharedUtils.getString("uid", ""));
+		} else {
+			avatarPath = info.getAvator();
+		}
+	}
+
+	/**
+	 * 获取私信内容
+	 */
+	private void getSeverMessage() {
+		if (!type.equals("read")) {
+			return;
+		}
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("uid", SharedUtils.getString("uid", ""));
+		map.put("token", SharedUtils.getString("token", ""));
+		map.put("ruid", ruid);
+		map.put("timestamp", System.currentTimeMillis());
+		pd = new ProgressDialog(this);
+		pd.show();
+		GetMessagesTask task = new GetMessagesTask(this, map,
+				"/messages/imessages");
+		task.setTaskCallBack(this);
+		task.execute();
+
 	}
 
 	private void initExpression() {
@@ -140,7 +193,6 @@ public class MessageActivity extends Activity implements OnClickListener,
 		listview = (ListView) findViewById(R.id.listView);
 		back = (ImageView) findViewById(R.id.back);
 		name = (TextView) findViewById(R.id.name);
-		name.setText(rName);
 		adapter = new MessageAdapter(this, listModle);
 		listview.setAdapter(adapter);
 		viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -260,6 +312,7 @@ public class MessageActivity extends Activity implements OnClickListener,
 						+ SharedUtils.getString("token", "") + " content:"
 						+ editContent.getText().toString());
 		queueMap.offer(map);
+		messageThread.setQueueMap(queueMap);
 	}
 
 	// ** 指引页面改监听器 */
@@ -297,12 +350,11 @@ public class MessageActivity extends Activity implements OnClickListener,
 				Utils.showToast("发送内容不能为空");
 				return;
 			}
-			MemberInfoModle info = DBUtils.selectNameAndImgByID("circle" + cid,
-					SharedUtils.getString("uid", ""));
+
 			MessageModle modle = new MessageModle();
 			modle.setContent(editContent.getText().toString());
 			modle.setSelf(true);
-			modle.setAvatar(info.getAvator());
+			modle.setAvatar(avatarPath);
 			modle.setTime(DateUtils.getCurrDateStr());
 			listModle.add(modle);
 			adapter.notifyDataSetChanged();
@@ -332,34 +384,10 @@ public class MessageActivity extends Activity implements OnClickListener,
 		}
 	}
 
-	private class SendMessageThread extends Thread {
-		@SuppressLint("HandlerLeak")
-		public void run() {
-			while (running) {
-				if (queueMap.size() > 0) {
-					HashMap<String, Object> map = queueMap.poll();
-					String result = HttpUrlHelper.postData(map,
-							"/messages/isend");
-					Logger.debug(this, result);
-					String rt = "";
-					try {
-						JSONObject object = new JSONObject(result);
-						rt = object.getString("rt");
-						if (!rt.equals("1")) {
-							mHandler.sendEmptyMessage(0);
-						}
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-
-	}
-
 	@Override
 	protected void onDestroy() {
-		running = false;
+		messageThread.setRun(false);
+		messageThread = null;
 		super.onDestroy();
 	}
 
@@ -395,5 +423,77 @@ public class MessageActivity extends Activity implements OnClickListener,
 				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		// 编辑框设置数据
 		editContent.append(spannableString);
+	}
+
+	@Override
+	public void getPushMessages(String str) {
+		String contetn = "";
+		String time = "";
+		String uid = "";
+		String name = "";
+		String avatarPath = "";
+		try {
+			JSONObject json = new JSONObject(str);
+			contetn = json.getString("c");
+			time = json.getString("m");
+			uid = json.getString("uid");
+			if (uid.equals(SharedUtils.getString("uid", ""))) {
+				return;
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		MemberInfoModle info = DBUtils
+				.selectNameAndImgByID("circle" + cid, uid);
+		if (info != null) {
+			avatarPath = info.getAvator();
+			name = info.getName();
+		}
+		MessageModle modle = new MessageModle();
+		modle.setAvatar(avatarPath);
+		modle.setName(name);
+		modle.setContent(contetn);
+		modle.setSelf(false);
+		modle.setTime(time);
+		listModle.add(modle);
+		adapter.notifyDataSetChanged();
+		listview.setSelection(listModle.size());// 每次发送之后将listview滑动到最低端
+	}
+
+	@Override
+	public void getMessages(List<MessageModle> list) {
+		pd.dismiss();
+		if (list == null) {
+			Utils.showToast("获取失败");
+			return;
+		}
+		listModle = list;
+		System.out.println("list.size()" + listModle.size());
+		adapter.setData(listModle);
+	}
+
+	/**
+	 * 发送消息后的回调接口
+	 */
+	@Override
+	public void getReturnStrAndMid(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			String rt = object.getString("rt");
+			if (!rt.equals("1")) {
+				String errorCoce = object.getString("err");
+				String strError = ErrorCodeUtil.convertToChines(errorCoce);
+				// mHandler.sendEmptyMessage(0);
+				Message msg = mHandler.obtainMessage();
+				msg.what = 0;
+				msg.obj = strError;
+				mHandler.sendMessage(msg);
+				return;
+			}
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 }

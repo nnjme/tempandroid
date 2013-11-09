@@ -1,6 +1,5 @@
 package com.changlianxi.util;
 
- 
 import android.text.TextUtils;
 
 public class StringUtils {
@@ -30,10 +29,12 @@ public class StringUtils {
 	 * @param str
 	 * @return
 	 */
-	public static String JoinString(String str) {
-		return str.substring(0, str.length() - 4) + "_100x100"
-				+ str.substring(str.length() - 4);
-
+	public static String JoinString(String str, String joinStr) {
+		if (str.equals("") || str == null) {
+			return "";
+		}
+		int point = str.lastIndexOf('.');
+		return str.substring(0, point) + joinStr + str.substring(point);
 	}
 
 	/**

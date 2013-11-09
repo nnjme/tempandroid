@@ -32,7 +32,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="刘丹丹"
-                    android:textSize="20sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/textView1"
@@ -41,14 +41,14 @@
                     android:layout_marginLeft="5dip"
                     android:layout_marginRight="5dip"
                     android:text="-"
-                    android:textSize="20sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/cirName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="朋友圈"
-                    android:textSize="20sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/count"
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:text="09-14"
                     android:textColor="@color/default_font_color"
-                    android:textSize="20sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -90,7 +90,7 @@
                     android:layout_height="wrap_content"
                     android:text="43454343543643543"
                     android:textColor="@color/default_font_color"
-                    android:textSize="20sp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

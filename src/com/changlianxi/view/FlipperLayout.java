@@ -1,7 +1,5 @@
 package com.changlianxi.view;
 
-import com.changlianxi.util.Logger;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -13,26 +11,15 @@ import android.view.ViewGroup;
 import android.widget.Scroller;
 
 /**
- * 自己重写的ViewGroup,用与滑动切换界面使用,
+ * 自己重写的ViewGroup,用与滑动切换界面使用,代码不详解,慢点看的话应该能看懂的...
  * 
+ * @author rendongwei
  * 
  */
 public class FlipperLayout extends ViewGroup {
 
 	private Scroller mScroller;
-	/**
-	 * Android里Scroller类是为了实现View平滑滚动的一个Helper类。通常在自定义的View时使用，
-	 * 在View中定义一个私有成员mScroller = new
-	 * Scroller(context)。设置mScroller滚动的位置时，并不会导致View的滚动
-	 * ，通常是用mScroller记录/计算View滚动的位置，再重写View的computeScroll()，完成实际的滚动
-	 */
 	private VelocityTracker mVelocityTracker;
-	/**
-	 * 用来追踪触摸事件（flinging事件和其他手势事件）的速率。用obtain()函数来获得类的实例，用addMovement(
-	 * MotionEvent)函数将motion
-	 * event加入到VelocityTracker类实例中，当你使用到速率时，使用computeCurrentVelocity
-	 * (int)初始化速率的单位，并获得当前的事件的速率，然后使用getXVelocity() 或getXVelocity()获得横向和竖向的速率。
-	 */
 	private int mWidth;
 
 	public static final int SCREEN_STATE_CLOSE = 0;
@@ -53,7 +40,7 @@ public class FlipperLayout extends ViewGroup {
 		super(context);
 		mScroller = new Scroller(context);
 		mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-				200, getResources().getDisplayMetrics());
+				120, getResources().getDisplayMetrics());
 
 	}
 
@@ -74,11 +61,6 @@ public class FlipperLayout extends ViewGroup {
 		}
 	}
 
-	/**
-	 * 当控件的父元素正要放置该控件时调用.父元素会问子控件一个问题，“你想要用多大地方啊？”，然后传入两个参数——
-	 * widthMeasureSpec和heightMeasureSpec. 这两个参数指明控件可获得的空间以及关于这个空间描述的元数据.
-	 * 更好的方法是你传递View的高度和宽度到setMeasuredDimension方法里,这样可以直接告诉父控件，需要多大地方放置子控件
-	 */
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		int width = MeasureSpec.getSize(widthMeasureSpec);
@@ -252,21 +234,11 @@ public class FlipperLayout extends ViewGroup {
 		setContentView(view);
 	}
 
-	/**
-	 * computeScroll：主要功能是计算拖动的位移量、更新背景、设置要显示的屏幕(setCurrentScreen(mCurrentScreen
-	 * );)。
-	 * 
-	 * 重写computeScroll()的原因
-	 * 
-	 * 调用startScroll()是不会有滚动效果的，只有在computeScroll()获取滚动情况，做出滚动的响应
-	 * computeScroll在父控件执行drawChild时，会调用这个方法
-	 */
 	public void computeScroll() {
 		super.computeScroll();
 		if (mScroller.computeScrollOffset()) {
 			getChildAt(1).scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
 			postInvalidate();
-			Logger.debug(this, "-------------");
 		} else {
 			if (mScreenState == SCREEN_STATE_OPEN) {
 				if (mOnUgcDismissListener != null) {

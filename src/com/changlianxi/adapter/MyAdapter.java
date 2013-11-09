@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,19 +92,6 @@ public class MyAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		String path;
-		if (list != null && position < list.size()) {
-			path = list.get(position).getImg();
-		} else {
-			path = "camera_default";
-		}
-		Log.i("path", "path:" + path + "::position" + position);
-		if (path.contains("default")) {
-			holder.img.setImageResource(R.drawable.root_default);
-		} else {
-			ImageManager.from(context).displayImage(holder.img, path,
-					R.drawable.root_default, 100, 100);
-		}
 		holder.info.setText(list.get(position).getEmployer());
 		holder.name.setText(list.get(position).getName());
 		showAlpha(position, holder);
@@ -113,8 +99,14 @@ public class MyAdapter extends BaseAdapter {
 			holder.changeBg.setBackgroundColor(Color.WHITE);
 		} else {
 			holder.changeBg.setBackgroundColor(context.getResources().getColor(
-
-			R.color.user_item));
+					R.color.user_item));
+		}
+		String path = list.get(position).getImg();
+		if (path.equals("") || path == null) {
+			holder.img.setBackgroundResource(R.drawable.hand_pic);
+		} else {
+			ImageManager.from(context).displayImage(holder.img, path,
+					R.drawable.root_default, 100, 100);
 		}
 		return convertView;
 	}

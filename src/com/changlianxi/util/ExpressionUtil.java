@@ -47,7 +47,6 @@ public class ExpressionUtil {
 
 	public static SpannableString getExpressionString(Context context,
 			String str, String zhengze) {
-		System.out.println("进来的内容 = " + str);
 		SpannableString spannableString = new SpannableString(str);
 		Pattern sinaPatten = Pattern.compile(zhengze, Pattern.CASE_INSENSITIVE); // 通过传入的正则表达式来生成一个pattern
 		try {

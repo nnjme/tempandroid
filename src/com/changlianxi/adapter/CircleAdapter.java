@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.util.AsyncImageLoader;
+import com.changlianxi.util.WigdtContorl;
 import com.changlianxi.util.AsyncImageLoader.ImageCallback;
 import com.changlianxi.view.CircularImage;
 
@@ -77,18 +78,18 @@ public class CircleAdapter extends BaseAdapter {
 					.findViewById(R.id.circleImg);
 			holder.circleName = (TextView) convertView
 					.findViewById(R.id.circleName);
+			holder.circleBg = (ImageView) convertView
+					.findViewById(R.id.circleBg);
+			holder.isnew = (TextView) convertView.findViewById(R.id.isnew);
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		// int width = Utils.getSecreenWidth(mcontext) - 60;
-		// FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-		// width / 4, width / 4);
-		// holder.circleImg.setLayoutParams(params);
+		WigdtContorl
+				.setAvatarWidth(mcontext, holder.circleImg, holder.circleBg);
 		String imgUrl = listmodle.get(position).getCirIcon();
 		if (imgUrl.equals("addroot")) {
-			holder.circleImg.setImageResource(R.drawable.root_add);
-
+			holder.circleImg.setImageResource(R.drawable.pic_add);
 		} else {
 			ImageView imageView = holder.circleImg;
 			imageView.setTag(imgUrl);
@@ -109,8 +110,11 @@ public class CircleAdapter extends BaseAdapter {
 				holder.circleImg.setImageBitmap(cachedImage);
 
 			} else {
-				holder.circleImg.setImageResource(R.drawable.hand_pic);
+				holder.circleImg.setImageResource(R.drawable.pic);
 			}
+		}
+		if (listmodle.get(position).isNew()) {
+			holder.isnew.setVisibility(View.VISIBLE);
 		}
 		holder.circleName.setText(listmodle.get(position).getCirName());
 		return convertView;
@@ -118,7 +122,9 @@ public class CircleAdapter extends BaseAdapter {
 
 	class ViewHolder {
 		CircularImage circleImg;
+		ImageView circleBg;
 		TextView circleName;
+		TextView isnew;
 	}
 
 }

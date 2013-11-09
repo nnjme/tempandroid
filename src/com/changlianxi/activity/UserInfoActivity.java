@@ -1,10 +1,14 @@
 package com.changlianxi.activity;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,16 +18,24 @@ import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.changlianxi.inteface.ChangeView;
+import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.Info;
+import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.popwindow.SelectPicPopwindow;
+import com.changlianxi.task.UpLoadPicAsyncTask;
+import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.Constants;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.ImageManager;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
 import com.changlianxi.util.WigdtContorl.Visible;
 import com.changlianxi.view.MyViewGroup;
@@ -37,13 +49,11 @@ import com.changlianxi.view.UserInfoShow;
  * 
  */
 public class UserInfoActivity extends Activity implements Visible, ChangeView,
-		OnClickListener {
+		OnClickListener, UpLoadPic {
 	private RelativeLayout drag;
-	private FrameLayout imgFrame;
 	private Button scrollDrag;
 	private TextView txtname;
 	private ImageView imgback;
-	private ImageView iconImg;
 	private String iconPath;
 	private String userlistName;// 资料存储表
 	private MyViewGroup rGroup;
@@ -54,6 +64,11 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 	private String cid;// 圈子id
 	private String username;
 	private LinearLayout sendMessage;
+	private RelativeLayout layAvatar;
+	private ImageView avatar;
+	private ImageView avatarBg;
+	private ProgressDialog pd;
+	private int flag = 0;// 0标示显示界面 1 编辑界面
 
 	@SuppressLint("NewApi")
 	@Override
@@ -66,6 +81,11 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 		username = getIntent().getStringExtra("username");
 		pid = getIntent().getStringExtra("pid");
 		cid = getIntent().getStringExtra("cid");
+		layAvatar = (RelativeLayout) findViewById(R.id.LayAvatar);
+		layAvatar.setOnClickListener(this);
+		avatar = (ImageView) findViewById(R.id.avatar);
+		avatarBg = (ImageView) findViewById(R.id.avatarBg);
+		WigdtContorl.setAvatarWidth(this, avatar, avatarBg);
 		sendMessage = (LinearLayout) findViewById(R.id.sendMessage);
 		sendMessage.setOnClickListener(this);
 		layCall = (LinearLayout) findViewById(R.id.call);
@@ -76,7 +96,6 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 		scrollDrag = (Button) infoShow.getView().findViewById(R.id.scrolldrag);
 		scrollDrag.setOnTouchListener(MyTouchListener);
 		drag = (RelativeLayout) findViewById(R.id.drag);
-		imgFrame = (FrameLayout) findViewById(R.id.imgframe);
 		drag.setOnTouchListener(MyTouchListener);
 		drag.post(new Runnable() {
 			@Override
@@ -89,18 +108,17 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 		txtname.setText(username);
 		imgback = (ImageView) findViewById(R.id.back);
 		imgback.setOnClickListener(this);
-		iconImg = (ImageView) findViewById(R.id.img);
-		ImageManager.from(this).displayImage(iconImg, iconPath, -1, 60, 60);
-		iconImg.post(new Runnable() {
-
+		Logger.debug(this, "iconPath:" + iconPath);
+		avatar.post(new Runnable() {
 			@Override
 			public void run() {
 				int[] location = new int[2];
 				// iconImg.getLocationInWindow(location); // 获取在当前窗口内的绝对坐标
-				iconImg.getLocationOnScreen(location);// 获取在整个屏幕内的绝对坐标
-				WigdtContorl.moveY = location[1] - iconImg.getHeight();
+				avatar.getLocationOnScreen(location);// 获取在整个屏幕内的绝对坐标
+				WigdtContorl.moveY = location[1] - avatar.getHeight();
 				Logger.debug(this, "moveY:" + WigdtContorl.moveY);
-
+				ImageManager.from(UserInfoActivity.this).displayImage(avatar,
+						iconPath, -1, avatar.getWidth(), avatar.getWidth());
 			}
 		});
 		WigdtContorl.setVisible(this);
@@ -123,12 +141,11 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 				y2 = (int) (y1 - event.getY());
 				if (y2 > 0) {
 					WigdtContorl.setLayoutY_UP(drag, y2, UserInfoActivity.this,
-							imgFrame);
+							layAvatar);
 				} else {
 					WigdtContorl.setLayoutY_Down(drag, y2,
-							UserInfoActivity.this, imgFrame);
+							UserInfoActivity.this, layAvatar);
 				}
-				Logger.debug(this, "move:" + y2 + "  y1:" + y1);
 				break;
 			}
 			case MotionEvent.ACTION_UP: {
@@ -155,18 +172,24 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 			scrollDrag.setVisibility(View.VISIBLE);
 
 		}
-		imgFrame.setAnimation(ani1);
+		layAvatar.setAnimation(ani1);
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.back:
+			if (flag == 1) {
+				rGroup.delView();
+				flag = 0;
+				return;
+			}
 			finish();
 			break;
-		// case R.id.edt_basic_info:
-		// rGroup.setView(vEditor);
-		// break;
+		case R.id.LayAvatar:
+			SelectPicPopwindow pop = new SelectPicPopwindow(this, v);
+			pop.show();
+			break;
 		case R.id.call:
 			infoShow.moveToCall();
 			break;
@@ -174,7 +197,7 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 			Intent intent = new Intent();
 			intent.putExtra("uid", pid);
 			intent.putExtra("cid", cid);
-			intent.putExtra("name", username);
+			intent.putExtra("type", "write");
 			intent.setClass(this, MessageActivity.class);
 			startActivity(intent);
 			break;
@@ -185,20 +208,84 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 	}
 
 	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		Bitmap bitmap = null;
+		String avatarPath = "";
+		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
+				&& resultCode == RESULT_OK && data != null) {
+			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
+			avatarPath = modle.getPicPath();
+			bitmap = modle.getBmp();
+		}// 拍摄图片
+		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+			if (resultCode != RESULT_OK) {
+				return;
+			}
+			super.onActivityResult(requestCode, resultCode, data);
+			Bundle bundle = data.getExtras();
+			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
+
+			if (bitmap != null) {
+				String dir = "/clx/camera/";
+				Utils.createDir(dir);
+				String name = FileUtils.getFileName() + ".jpg";
+				String fileName = Utils.getgetAbsoluteDir(dir) + name;
+				BitmapUtils.createImgToFile(bitmap, fileName);
+				avatarPath = fileName;
+			}
+		}
+		avatar.setImageBitmap(bitmap);
+		upLoadPic(avatarPath);
+	}
+
+	/**
+	 * 上传头像
+	 */
+	private void upLoadPic(String avatarPath) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("uid", SharedUtils.getString("uid", ""));
+		map.put("token", SharedUtils.getString("token", ""));
+		map.put("pid", pid);
+		map.put("cid", cid);
+		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
+				"/people/iuploadAvatar", avatarPath);
+		picTask.setCallBack(this);
+		picTask.execute();
+		pd = new ProgressDialog(this);
+		pd.show();
+	}
+
+	@Override
 	public void setViewData(List<Info> data, int type, String cid, String pid,
 			String tableName) {
 		vEdit = new UserInfoEdit(this, data, type, cid, pid, tableName);
 		vEdit.setChangeView(this);
 		rGroup.setInfoEditView(vEdit.getView());
+		flag = 1;
+
 	}
 
 	@Override
 	public void delView() {
 		rGroup.delView();
+		flag = 0;
+
 	}
 
 	@Override
 	public void NotifyData(List<Info> data, int infoType) {
 		infoShow.refushData(data, infoType);
+	}
+
+	@Override
+	public void upLoadFinish(boolean flag) {
+		pd.dismiss();
+		if (flag) {
+			Utils.showToast("上传成功");
+			return;
+		}
+		Utils.showToast("上传失败");
+
 	}
 }

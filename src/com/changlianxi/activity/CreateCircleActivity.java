@@ -28,15 +28,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.inteface.PostCallBack;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
-import com.changlianxi.modle.ContactModle;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.CircleLogoAsyncTask;
 import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
@@ -50,13 +50,14 @@ import com.changlianxi.view.Home;
 
 public class CreateCircleActivity extends Activity implements OnClickListener,
 		UpLoadPic, PostCallBack {
-	private List<ContactModle> contactsList = new ArrayList<ContactModle>();
+	private List<SmsPrevieModle> contactsList = new ArrayList<SmsPrevieModle>();
+	private List<SmsPrevieModle> smsList = new ArrayList<SmsPrevieModle>();// 展示使用
 	private ImageView btnBack;
 	private ImageView editClean;
 	private EditText editCirName;
 	private CircularImage cirImg;
 	private SelectPicPopwindow popWindow;
-	private String cirIconPath;
+	private String cirIconPath = "";
 	private LinearLayout layadd;
 	private LinearLayout zhiwu;
 	private int count;// 添加职务数量
@@ -69,6 +70,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	private String type;// more 标示 邀请多个成员；one标示 添加一个成员
 	private MemberInfoModle infoModle;
 	private String pid = ""; // 上传单个用户时返回的pid 供上传用户头像时使用
+	private String cmids = "";// 邀请成员时返回的邀请成员的id
+	private String code = "";// 邀请链接值 需要邀请时有值
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -101,9 +104,13 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		type = getIntent().getStringExtra("type");
 		if (type.equals("one")) {
 			infoModle = (MemberInfoModle) bundle.getSerializable("modle");
+			SmsPrevieModle smsModle = new SmsPrevieModle();
+			smsModle.setName(infoModle.getName());
+			smsModle.setNum(infoModle.getCellPhone());
+			smsList.add(smsModle);
 			return;
 		}
-		contactsList = (List<ContactModle>) bundle
+		contactsList = (List<SmsPrevieModle>) bundle
 				.getSerializable("contactsList");
 	}
 
@@ -215,6 +222,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	 */
 	class IinviteMoreitTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
+		String rt = "";
+
 		@Override
 		protected String doInBackground(String... params) {
 			for (int i = 0; i < contactsList.size(); i++) {
@@ -227,34 +236,32 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("persons", jsonAry.toString());
 			String json = HttpUrlHelper.postData(map, "/people/iinviteMore");
-			Logger.debug(this, json);
-			return json;
+			Logger.debug(this, "more:" + json);
+			try {
+				JSONObject object = new JSONObject(json);
+				rt = object.getString("rt");
+				if (rt.equals("1")) {
+					String details = object.getString("details");
+					getDetails(details);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			return rt;
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
 			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				int rt = object.getInt("rt");
-				if (rt == 1) {
-					Utils.showToast("邀请成功！");
-					Intent intent = new Intent();
-					Bundle bundle = new Bundle();
-					bundle.putSerializable("contactsList",
-							(Serializable) contactsList);
-					intent.putExtras(bundle);
-					intent.putExtra("circleName", editCirName.getText()
-							.toString());
-					intent.setClass(CreateCircleActivity.this,
-							SmsPreviewActivity.class);
-					startActivity(intent);
+			if (result.equals("1")) {
+				Utils.showToast("邀请成功！");
+				if (code.contains("null")) {
 					finish();
-				} else {
-					Utils.showToast("邀请失败！");
+					return;
 				}
-			} catch (JSONException e) {
-				e.printStackTrace();
+				intentSmsPreviewActivity();
+			} else {
+				Utils.showToast("邀请失败！");
 			}
 		}
 
@@ -262,6 +269,63 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
 		}
+	}
+
+	/**
+	 * 跳转到短信预览界面
+	 */
+	private void intentSmsPreviewActivity() {
+		if (type.equals("one")) {
+			smsList.get(0).setContent(
+					"亲爱的" + infoModle.getName() + ",邀请您加入"
+							+ editCirName.getText().toString()
+							+ "圈子.您可以访问http://clx.teeker.com/a/b/" + "ada"
+							+ "查看详情");
+		}
+		Intent intent = new Intent();
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("contactsList", (Serializable) smsList);
+		intent.putExtras(bundle);
+		intent.putExtra("cmids", cmids);
+		intent.putExtra("cid", cid);
+		intent.setClass(CreateCircleActivity.this, SmsPreviewActivity.class);
+		startActivity(intent);
+		finish();
+	}
+
+	/**
+	 * 解析返回过来的字符串
+	 * 
+	 * @param details
+	 *            实例 　　"details":" 1,4,EO2VqrHI,6;1,5,E6zBbKeg,7"字符串，首先以分号分割，
+	 *            对应每个person的邀请结果
+	 *            ，然后以逗号分割的四部分（第一部分表示结果是否成功，1成功，非1不成功；第二部分是pid，第三部分是邀请code
+	 *            ，第四部分是cmid）
+	 */
+	private void getDetails(String details) {
+		String detail[] = details.split(";");
+		for (int i = 0; i < detail.length; i++) {
+			String str[] = detail[i].split(",");
+			if (str[0].equals("1")) {
+				System.out.println("name:" + contactsList.get(i).getName()
+						+ "  code:" + str[2]);
+				if (str[2].equals("") || str[2] == null) {
+					str[2] = "null";
+				}
+				code += str[2];
+				cmids += str[3] + ",";
+				SmsPrevieModle modle = new SmsPrevieModle();
+				modle.setContent("亲爱的" + contactsList.get(i).getName()
+						+ ",邀请您加入" + editCirName.getText().toString()
+						+ "圈子.您可以访问http://clx.teeker.com/a/b/" + str[2]
+						+ "查看详情");
+				modle.setName(contactsList.get(i).getName());
+				modle.setNum(contactsList.get(i).getNum());
+				smsList.add(modle);
+			}
+
+		}
+
 	}
 
 	/**
@@ -405,8 +469,10 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			if (rt == 1) {
 				pid = object.getString("pid");
 				rep = object.getString("rep");
+				cmids = object.getString("cmid");
 				if (rep.equals("1")) {
 					Utils.showToast("该用户已存在");
+					// finish();// 已经注册直接返回
 					return;
 				}
 				if (!infoModle.getAvator().equals("")) {
@@ -423,7 +489,7 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 							progressDialog.dismiss();
 							if (flag) {
 								Utils.showToast("邀请成功");
-								finish();
+								intentSmsPreviewActivity();
 							} else {
 								Utils.showToast("邀请失败");
 							}
@@ -433,7 +499,7 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 					return;
 				}
 				Utils.showToast("添加成功");
-				finish();
+				intentSmsPreviewActivity();
 			} else {
 				Utils.showToast("添加失败");
 				progressDialog.dismiss();
@@ -445,6 +511,9 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onDestroy() {
+		if (progressDialog == null) {
+			return;
+		}
 		if (progressDialog.isShowing() && progressDialog != null) {
 			progressDialog.dismiss();
 		}

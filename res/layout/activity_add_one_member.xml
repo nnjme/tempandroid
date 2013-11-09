@@ -9,7 +9,7 @@
         android:id="@+id/back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="20dip"
+        android:padding="20dip"
         android:src="@drawable/icon_return" />
 
     <RelativeLayout
@@ -24,7 +24,7 @@
             android:layout_height="90.0dip"
             android:layout_centerInParent="true"
             android:contentDescription="@null"
-            android:src="@drawable/cover_avatar" />
+            android:src="@drawable/pic_bg" />
 
         <com.changlianxi.view.CircularImage
             android:id="@+id/avatarImg"
@@ -133,6 +133,7 @@
                             android:background="@null"
                             android:hint="输入手机号码"
                             android:inputType="number"
+                            android:maxLength="13"
                             android:textSize="15sp" >
 
                             <requestFocus />

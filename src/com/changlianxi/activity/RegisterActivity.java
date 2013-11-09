@@ -21,18 +21,21 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.changlianxi.popwindow.ListViewPopwindow;
+import com.changlianxi.popwindow.ListViewPopwindow.OnlistOnclick;
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.util.EditWather;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyViewGroup;
 
@@ -43,9 +46,8 @@ import com.changlianxi.view.MyViewGroup;
  * 
  */
 public class RegisterActivity extends Activity implements OnClickListener,
-		OnItemSelectedListener {
-	private Spinner mSpinner;// 注册界面的spinner
-	private Spinner emailSpinner;// 邮箱注册界面的spinner
+		PostCallBack {
+	private EditText spinner;
 	private LinearLayout layLogin;
 	private MyViewGroup rGroup;
 	private View reg1, reg2, reg3, emailReg1, emilReg2;// 注册1、2、3界面和邮箱注意1、2界面
@@ -61,19 +63,17 @@ public class RegisterActivity extends Activity implements OnClickListener,
 	private String uid = "";// 成功后才有，代表用户ID
 	private String token = "";
 	private Button emailBtNext;// 邮箱注册的下一步按钮
-	private String[] mItems;
-	private ArrayAdapter<String> adapter;
 	private EditText emailNum, emailEdit;// 邮箱注册界面的手机号码和邮箱控件
 	private TextView emailTxt;// 邮箱注册界面的email显示控件
 	private EditText code;// 注册界面的输入验证码edittext
-	private EditText emailCode;// 邮箱注册界面的输入验证码edittext
+	// private EditText emailCode;// 邮箱注册界面的输入验证码edittext
 	private Button emBtFinish;// 邮箱注册界面的完成验证按钮
 	private TextView txtQh;// 注册界面显示区号的textveiw如显示+86等
-	private TextView emailTxtQh;// 邮箱注册界面显示区号
 	private Button btGetCode;// 注册界面重新获取验证码按钮
 	private int second = 60;// 用于重新获取验证码时间倒计时
 	private TextView txtShowNum;// 注册界面显示用来注册的手机号
 	private ProgressDialog progressDialog;
+	private String type = "";// 1 验证码处理 2 设置密码处理
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -85,7 +85,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 					btGetCode.setEnabled(true);
 					removeMessages(0);
 					btGetCode.setTextColor(Color.WHITE);
-
 					return;
 				}
 				this.sendEmptyMessageDelayed(0, 1000);
@@ -103,6 +102,10 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_register);
 		initView();
+		getWindow()
+				.setSoftInputMode(
+						WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+								| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_UNSPECIFIED);
 	}
 
 	/**
@@ -121,26 +124,19 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		emailReg1 = flater.inflate(R.layout.email_reg1, null);
 		emilReg2 = flater.inflate(R.layout.email_reg2, null);
 		rGroup.addView(reg1, params);
-		// 建立数据源
-		mItems = getResources().getStringArray(R.array.countrys);
-		// 建立Adapter并且绑定数据源
-		adapter = new ArrayAdapter<String>(this, R.layout.spinner_item, mItems);
 		initReg1View();
 		initReg2View();
 		initReg3View();
 		emailTxt = (TextView) emilReg2.findViewById(R.id.emailTxt);
-		emailCode = (EditText) emilReg2.findViewById(R.id.emailEdiCode);
+		// emailCode = (EditText) emilReg2.findViewById(R.id.emailEdiCode);
 		emBtFinish = (Button) emilReg2.findViewById(R.id.email_btfinish);
 		emBtFinish.setOnClickListener(this);
-		emailTxtQh = (TextView) emailReg1.findViewById(R.id.emailtxtQH);
 		emailBtNext = (Button) emailReg1.findViewById(R.id.emailbtnext);
 		emailBtNext.setOnClickListener(this);
 		emailNum = (EditText) emailReg1.findViewById(R.id.emailnum);
 		emailEdit = (EditText) emailReg1.findViewById(R.id.emailEdit);
 		emailNum.setInputType(InputType.TYPE_CLASS_NUMBER);
 		// emailNum.addTextChangedListener(new EditWather(2));
-		emailSpinner = (Spinner) emailReg1.findViewById(R.id.email_spinner);
-		emailSpinner.setAdapter(adapter);
 	}
 
 	/**
@@ -152,12 +148,10 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		btnext = (Button) reg1.findViewById(R.id.next);
 		btnext.setOnClickListener(this);
 		ediNum = (EditText) reg1.findViewById(R.id.num);
-		ediNum.setInputType(InputType.TYPE_CLASS_NUMBER);
 		ediNum.addTextChangedListener(new EditWather(ediNum));
-		mSpinner = (Spinner) reg1.findViewById(R.id.spinner1);
-		// 绑定 Adapter到控件
-		mSpinner.setAdapter(adapter);
-		mSpinner.setOnItemSelectedListener(this);
+		spinner = (EditText) reg1.findViewById(R.id.spinner);
+		spinner.setOnClickListener(this);
+
 	}
 
 	/**
@@ -190,6 +184,8 @@ public class RegisterActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void onClick(View v) {
+		PostAsyncTask task = null;
+		Map<String, Object> map = null;
 		switch (v.getId()) {
 		case R.id.layLogin:
 			finish();
@@ -206,10 +202,31 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			new RegisterTask().execute(txtNum, "", "1");
 			break;
 		case R.id.btfinish_yz:
-			new CheckCodeTask().execute(code.getText().toString());
+			// new CheckCodeTask().execute(code.getText().toString());
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("auth_code", code.getText().toString());
+			map.put("type", "register");
+			task = new PostAsyncTask(this, map, "/users/iverifyAuthCode");
+			task.setTaskCallBack(this);
+			task.execute();
+			progressDialog = new ProgressDialog(this);
+			progressDialog.show();
+			type = "1";
 			break;
 		case R.id.btfinish_register:
-			new SetPasswordTask().execute();
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("uid", uid);
+			map.put("type", "register");
+			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+			map.put("passwd", ediPassword.getText().toString());
+			task = new PostAsyncTask(this, map, "/users/isetPasswd");
+			task.setTaskCallBack(this);
+			task.execute();
+			progressDialog = new ProgressDialog(this);
+			progressDialog.show();
+			type = "2";
 			break;
 		case R.id.emailbtnext:
 			String emtxt = emailEdit.getText().toString();
@@ -222,7 +239,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 
 			break;
 		case R.id.email_btfinish:
-			new CheckCodeTask().execute(emailCode.getText().toString());
 			break;
 		case R.id.bt_get_code:
 			second = 60;
@@ -231,6 +247,17 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			Message msg = new Message();
 			msg.what = 0;
 			mHandler.sendEmptyMessage(0);
+			break;
+		case R.id.spinner:
+			ListViewPopwindow pop = new ListViewPopwindow(this, spinner,
+					getResources().getStringArray(R.array.countrys));
+			pop.show();
+			pop.setOnlistOnclick(new OnlistOnclick() {
+				@Override
+				public void onclick(String str) {
+					spinner.setText(str);
+				}
+			});
 			break;
 		default:
 			break;
@@ -251,7 +278,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		protected String doInBackground(String... params) {
 			txtnum = params[0];
 			emailtxt = params[1];
-
 			type = params[2];
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cellphone", params[0]);
@@ -272,6 +298,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 					msg.what = 0;
 					mHandler.sendEmptyMessage(0);
 					uid = object.getString("uid");
+					SharedUtils.setString("uid", uid);
 					if (type.equals("1")) {
 						rGroup.setView(reg2);
 						txtShowNum.setText(replaceStr(txtnum));
@@ -281,102 +308,9 @@ public class RegisterActivity extends Activity implements OnClickListener,
 					emailTxt.setText(emailtxt);
 
 				} else {
-					Utils.showToast("手机号码已被注册，请更换手机号码！");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(RegisterActivity.this);
-			progressDialog.show();
-		}
-	}
-
-	/**
-	 * 校验验证码是否正确
-	 * 
-	 */
-	class CheckCodeTask extends AsyncTask<String, Integer, String> {
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> mapYz = new HashMap<String, Object>();
-			mapYz.put("uid", uid);
-			mapYz.put("auth_code", params[0]);
-			mapYz.put("type", "register");
-			Logger.debug(this, "uid:" + uid + "  code:" + params[0]);
-			String result = HttpUrlHelper.postData(mapYz,
-					"/users/iverifyAuthCode");
-			Logger.debug(this, "result:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				rt = object.getInt("rt");
-				if (rt == 1) {
-					rGroup.setView(reg3);
-				} else {
-					Utils.showToast("验证失败");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(RegisterActivity.this);
-			progressDialog.show();
-		}
-	}
-
-	/**
-	 * 设置密码
-	 * 
-	 */
-	class SetPasswordTask extends AsyncTask<String, Integer, String> {
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map1 = new HashMap<String, Object>();
-			map1.put("uid", uid);
-			map1.put("passwd", ediPassword.getText().toString());
-			String result = HttpUrlHelper.postData(map1, "/users/isetPasswd");
-			Logger.debug(this, "result:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				rt = object.getInt("rt");
-				if (rt == 1) {
-					token = object.getString("token");
-					Logger.debug(this, "rt:" + rt + "  token:" + token);
-					Intent intent = new Intent();
-					intent.setClass(RegisterActivity.this,
-							RegisterFinishActivity.class);
-					startActivity(intent);
-					finish();
-				} else {
-					Utils.showToast("密码设置失败");
+					// Utils.showToast("手机号码已被注册，请更换手机号码！");
+					String errorCoce = object.getString("err");
+					Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
 				}
 			} catch (JSONException e) {
 				Logger.error(this, e);
@@ -408,31 +342,64 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		return sb.toString();
 	}
 
-	@Override
-	public void onItemSelected(AdapterView<?> arg0, View arg1, int posititon,
-			long arg3) {
-		if (posititon == 0) {
-			return;
-		}
-		switch (posititon) {
-		case 1:
-			emailSpinner.setSelection(posititon);
-			emailTxtQh.setText("+95");
-			break;
-		case 2:
-			emailSpinner.setSelection(posititon);
-			emailTxtQh.setText("+37");
-			break;
-		default:
-			break;
-		}
-		rGroup.setView(emailReg1);
+	/**
+	 * 判断验证码是否正确
+	 * 
+	 * @param result
+	 */
+	private void CheckCode(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			rt = object.getInt("rt");
+			if (rt == 1) {
+				rGroup.setView(reg3);
+			} else {
+				String errorCoce = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
+			}
+		} catch (JSONException e) {
+			Logger.error(this, e);
 
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 判断密码是否设置成功
+	 * 
+	 * @param result
+	 */
+	private void SetPassword(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			rt = object.getInt("rt");
+			if (rt == 1) {
+				token = object.getString("token");
+				SharedUtils.setString("token", token);
+				Logger.debug(this, "rt:" + rt + "  token:" + token);
+				Intent intent = new Intent();
+				intent.setClass(RegisterActivity.this,
+						RegisterFinishActivity.class);
+				startActivity(intent);
+				finish();
+			} else {
+				String errorCoce = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
+			}
+		} catch (JSONException e) {
+			Logger.error(this, e);
+
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	public void onNothingSelected(AdapterView<?> arg0) {
-		// TODO Auto-generated method stub
-
+	public void taskFinish(String result) {
+		progressDialog.dismiss();
+		if (type.equals("1")) {
+			CheckCode(result);
+		} else if (type.equals("2")) {
+			SetPassword(result);
+		}
 	}
 }

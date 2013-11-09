@@ -10,15 +10,22 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -35,7 +42,10 @@ import android.widget.Toast;
 
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.ContactModle;
+import com.changlianxi.modle.MemberInfoModle;
+import com.changlianxi.modle.MessageModle;
 
 /**
  * 公用工具类
@@ -329,7 +339,6 @@ public class Utils {
 			return "/mnt/sdcard/thumbnails" + File.separator + "cache_"
 					+ URLEncoder.encode(key.replace("*", ""), "UTF-8");
 		} catch (Exception e) {
-			Logger.error("Utils.createFilePath", e);
 			e.printStackTrace();
 		}
 
@@ -390,17 +399,6 @@ public class Utils {
 	}
 
 	/**
-	 * 返回指定格式的当前时间字符串，
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static String getCurrDateStr(String str) {
-		SimpleDateFormat format = new SimpleDateFormat(str);
-		return format.format(new Date());
-	}
-
-	/**
 	 * 得到绝对路径
 	 * 
 	 * @param dir
@@ -428,5 +426,89 @@ public class Utils {
 		} else {
 			return false;
 		}
+	}
+
+	// 获取AppKey
+	public static String getMetaValue(Context context, String metaKey) {
+		Bundle metaData = null;
+		String apiKey = null;
+		if (context == null || metaKey == null) {
+			return null;
+		}
+		try {
+			ApplicationInfo ai = context.getPackageManager()
+					.getApplicationInfo(context.getPackageName(),
+							PackageManager.GET_META_DATA);
+			if (null != ai) {
+				metaData = ai.metaData;
+			}
+			if (null != metaData) {
+				apiKey = metaData.getString(metaKey);
+			}
+		} catch (NameNotFoundException e) {
+
+		}
+		return apiKey;
+	}
+
+	/**
+	 * 设备型号
+	 */
+	public static String getModelAndRelease() {
+		String model = "Model:" + android.os.Build.MODEL; // 手机型号
+		return model;
+	}
+
+	/**
+	 * 获取系统版本号
+	 * 
+	 * @return
+	 */
+	public static String getOS() {
+		String release = "Release:" + android.os.Build.VERSION.RELEASE; // android系统版本号
+		return "android:" + release;
+
+	}
+
+	/**
+	 * 解析聊天内容
+	 * 
+	 * @param content
+	 */
+	public static MessageModle getChatModle(String content) {
+		String contetn = "";
+		String time = "";
+		String uid = "";
+		String cid = "";
+		String name = "";
+		String avatarPath = "";
+		try {
+			JSONObject json = new JSONObject(content);
+			contetn = json.getString("c");
+			time = json.getString("m");
+			uid = json.getString("uid");
+			cid = json.getString("cid");
+			if (uid.equals(SharedUtils.getString("uid", ""))) {
+				return null;
+			}
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		MemberInfoModle info = DBUtils
+				.selectNameAndImgByID("circle" + cid, uid);
+		if (info == null) {
+			Utils.showToast("未知错误 tableName:" + "circle" + cid + "  uid:" + uid);
+		} else {
+			avatarPath = info.getAvator();
+			name = info.getName();
+		}
+		MessageModle modle = new MessageModle();
+		modle.setContent(contetn);
+		modle.setSelf(false);
+		modle.setTime(time);
+		modle.setAvatar(avatarPath);
+		modle.setName(name);
+		return modle;
 	}
 }

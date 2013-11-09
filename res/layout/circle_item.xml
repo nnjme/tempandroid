@@ -1,42 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
 
-    <LinearLayout
-        android:layout_width="fill_parent"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical" >
+        android:gravity="center" >
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center" >
-
-            <ImageView
-                android:layout_width="90.0dip"
-                android:layout_height="90.0dip"
-                android:layout_centerInParent="true"
-                android:contentDescription="@null"
-                android:src="@drawable/cover_avatar" />
-
-            <com.changlianxi.view.CircularImage
-                android:id="@+id/circleImg"
-                android:layout_width="74.0dip"
-                android:layout_height="74.0dip"
-                android:layout_centerInParent="true" />
-        </RelativeLayout>
-
-        <TextView
-            android:id="@+id/circleName"
+        <ImageView
+            android:id="@+id/circleBg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:contentDescription="@null"
+            android:src="@drawable/pic_bg" />
+
+        <com.changlianxi.view.CircularImage
+            android:id="@+id/circleImg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+        <TextView
+            android:id="@+id/isnew"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@+id/circleBg"
             android:layout_marginTop="10dip"
-            android:maxLines="2"
-            android:paddingBottom="20dip"
-            android:textColor="@color/default_font_color"
-            android:textSize="10dip" />
-    </LinearLayout>
+            android:background="@drawable/updates"
+            android:gravity="center"
+            android:text="new"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/circleName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:gravity="center"
+        android:maxLines="2"
+        android:paddingBottom="20dip"
+        android:textColor="@color/default_font_color"
+        android:textSize="@dimen/cicleNameSize" />
 
 </LinearLayout>

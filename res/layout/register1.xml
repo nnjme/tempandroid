@@ -21,17 +21,43 @@
         android:gravity="center"
         android:orientation="vertical" >
 
-        <Spinner
-            android:id="@+id/spinner1"
+        <!-- <Spinner -->
+        <!-- android:id="@+id/spinner1" -->
+        <!-- android:layout_width="match_parent" -->
+        <!-- android:layout_height="wrap_content" -->
+        <!-- android:layout_marginLeft="1dip" -->
+        <!-- android:layout_marginRight="1dip" -->
+        <!-- android:background="@drawable/input_top_radius" -->
+        <!-- android:padding="20dip" /> -->
+
+        <EditText
+            android:id="@+id/spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_top_corner_no_bottom_line"
-            android:padding="10dip" />
+            android:layout_marginLeft="1dip"
+            android:layout_marginRight="1dip"
+            android:background="@drawable/input_top_radius"
+            android:drawableRight="@drawable/angle_down"
+            android:focusable="false"
+            android:padding="17dip"
+            android:text="中国"
+            android:textColor="@color/gray_f4"
+            android:textSize="23sp" >
+        </EditText>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.2dp"
+            android:layout_marginLeft="6dip"
+            android:layout_marginRight="6dip"
+            android:background="#ffe0e0e0" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_no_corner_without_bottom" >
+            android:layout_marginLeft="1dip"
+            android:layout_marginRight="1dip"
+            android:background="@drawable/input" >
 
             <TextView
                 android:id="@+id/txtQH"
@@ -47,13 +73,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:ems="10"
                 android:hint="手机号码"
+                android:inputType="number"
                 android:maxLength="13"
-                android:padding="15dip"
-                android:textSize="20dip" >
-
-                <requestFocus />
+                android:padding="17dip"
+                android:textSize="20sp" >
             </EditText>
         </LinearLayout>
 
@@ -61,11 +85,11 @@
             android:id="@+id/next"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_bottom_corner_no_top_line"
+            android:background="@drawable/gray_bottom_radius"
             android:padding="15dip"
             android:text="下一步"
             android:textColor="@color/white"
-            android:textSize="25dip" />
+            android:textSize="25sp" />
     </LinearLayout>
 
 </LinearLayout>

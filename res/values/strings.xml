@@ -19,6 +19,9 @@
 
     <string-array name="countrys">
         <item>中国</item>
+        <item>中国香港</item>
+        <item>日本</item>
+        <item>韩国</item>
         <item>美国</item>
         <item>俄罗斯</item>
     </string-array>

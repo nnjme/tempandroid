@@ -25,25 +25,32 @@
             android:id="@+id/editPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_top_corner_no_bottom_line"
-            android:hint="输入  密码"
-            android:padding="15dip"
+            android:layout_marginLeft="1dip"
+            android:layout_marginRight="1dip"
+            android:background="@drawable/input_top_radius"
+            android:hint="输入密码"
+            android:padding="17dip"
             android:textSize="20dip" />
+
         <Button
             android:id="@+id/btfinish_register"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_bottom_corner_no_top_line"
+            android:background="@drawable/gray_bottom_radius"
             android:padding="15dip"
             android:text="完成注册"
             android:textColor="@color/white"
-            android:textSize="25dip" />
+            android:textSize="25sp" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/about"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dip" />
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_marginTop="40dip"
+        android:gravity="center"
+        android:textSize="23sp" />
 
 </LinearLayout>

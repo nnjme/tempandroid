@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
-import com.changlianxi.modle.ContactModle;
+import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.SmsSetNickNamePopWindow;
 
 /**
@@ -26,15 +26,12 @@ import com.changlianxi.popwindow.SmsSetNickNamePopWindow;
  */
 public class SmsAdaprter extends BaseAdapter {
 	private Context mContext;
-	private List<ContactModle> contactsList;
-	private String cirName;
+	private List<SmsPrevieModle> contactsList;
 	private SmsSetNickNamePopWindow pop;
 
-	public SmsAdaprter(Context context, List<ContactModle> listdata,
-			String cirName) {
+	public SmsAdaprter(Context context, List<SmsPrevieModle> listdata) {
 		this.mContext = context;
 		this.contactsList = listdata;
-		this.cirName = cirName;
 	}
 
 	@Override
@@ -73,9 +70,7 @@ public class SmsAdaprter extends BaseAdapter {
 		}
 		holder.setNickName.setOnClickListener(new OnClick(position));
 		holder.name.setText(contactsList.get(position).getName());
-		holder.content.setText("亲爱的" + contactsList.get(position).getName()
-				+ ",邀请您加入" + cirName + "圈子,"
-				+ mContext.getResources().getString(R.string.sms_content));
+		holder.content.setText(contactsList.get(position).getContent());
 		return convertView;
 	}
 

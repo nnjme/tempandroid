@@ -27,14 +27,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
-import com.changlianxi.db.DBUtils;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.inteface.ChangeView;
 import com.changlianxi.modle.Info;
+import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.UserInfoUtils;
+import com.changlianxi.util.Utils;
 
 /**
  * 用户资料显示View 主要对用户资料的分类显示
@@ -83,13 +85,13 @@ public class UserInfoShow {
 		infoShow = LayoutInflater.from(context).inflate(
 				R.layout.user_info_show, null);
 		listview = (ListView) infoShow.findViewById(R.id.listView_list);
-		if (DBUtils.isExistOfPersonId(tableName, pid)) {
-			getUserInfo(tableName, pid);
-			Logger.debug(this, "本地资料");
-		} else {
-			new GetDataTask().execute();
-			Logger.debug(this, "服务器资料");
-		}
+		// if (DBUtils.isExistOfPersonId(tableName, pid)) {
+		// getUserInfo(tableName, pid);
+		// Logger.debug(this, "本地资料");
+		// } else {
+		new GetDetailTask().execute();
+		Logger.debug(this, "服务器资料");
+		// }
 		initData();
 		adapter = new MyAdapter();
 		setMyAdapter();
@@ -155,7 +157,6 @@ public class UserInfoShow {
 				String start = cursor.getString(cursor
 						.getColumnIndex("startDate"));
 				String end = cursor.getString(cursor.getColumnIndex("endDate"));
-				Logger.debug(this, "key:" + key + "   value:" + value);
 				dataClassification(tid, key, value, start, end);
 				cursor.moveToNext();
 			}
@@ -186,8 +187,10 @@ public class UserInfoShow {
 	 * 才从服务器获取数据
 	 * 
 	 */
-	class GetDataTask extends AsyncTask<String, Integer, String> {
+	class GetDetailTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
+		String errorCoce = "";
+
 		@Override
 		protected String doInBackground(String... params) {
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -195,10 +198,14 @@ public class UserInfoShow {
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("pid", pid);
 			map.put("token", SharedUtils.getString("token", ""));
-			map.put("timestamp", 0);
+			Logger.debug(this, "detail:	" + "cid:" + cid + "   pid:" + pid);
 			String json = HttpUrlHelper.postData(map, "/people/idetail");
 			try {
 				JSONObject jsonobject = new JSONObject(json);
+				if (!jsonobject.getString("rt").equals("1")) {
+					errorCoce = jsonobject.getString("err");
+					return "error";
+				}
 				JSONArray jsonarray = jsonobject.getJSONArray("person");
 				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
@@ -211,13 +218,10 @@ public class UserInfoShow {
 						start = object.getString("start");//
 						end = object.getString("end");//
 					}
-					Logger.debug(this, "id:" + id + "  key:" + key + "  value:"
-							+ value + "  start:" + start + "  end" + end);
 					dataClassification(id, key, value, start, end);
-					insertData(id, pid, key, value, start, end);
+					// insertData(id, pid, key, value, start, end);
 				}
 			} catch (JSONException e) {
-				Logger.error(this, e);
 				e.printStackTrace();
 			}
 			return null;
@@ -225,9 +229,17 @@ public class UserInfoShow {
 
 		@Override
 		protected void onPostExecute(String result) {
-			list.clear();
-			initData();
-			adapter.notifyDataSetChanged();
+			if (result == null) {
+				list.clear();
+				initData();
+				adapter.notifyDataSetChanged();
+				return;
+			}
+			if (result.equals("error")) {
+				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
+				return;
+			}
+
 		}
 
 		@Override
@@ -405,10 +417,13 @@ public class UserInfoShow {
 							.findViewById(R.id.startTimeAndEndTime);
 					holder.eduAndWordContent = (TextView) view
 							.findViewById(R.id.eduAndWordContent);
-					holder.startTimeAndEndTime.setText(list.get(position)
-							.getStartDate()
+					holder.startTimeAndEndTime.setText(DateUtils
+							.interceptDateStr(
+									list.get(position).getStartDate(),
+									"yyyy-MM")
 							+ "-"
-							+ list.get(position).getEndDate());
+							+ DateUtils.interceptDateStr(list.get(position)
+									.getEndDate(), "yyyy-MM"));
 					holder.eduAndWordContent.setText(list.get(position)
 							.getValue());
 					return view;

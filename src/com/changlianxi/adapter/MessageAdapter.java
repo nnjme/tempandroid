@@ -16,6 +16,7 @@ import com.changlianxi.activity.R;
 import com.changlianxi.modle.MessageModle;
 import com.changlianxi.util.ExpressionUtil;
 import com.changlianxi.util.ImageManager;
+import com.changlianxi.util.Logger;
 
 public class MessageAdapter extends BaseAdapter {
 	private Context mContext;
@@ -29,6 +30,11 @@ public class MessageAdapter extends BaseAdapter {
 	@Override
 	public int getCount() {
 		return listModle.size();
+	}
+
+	public void setData(List<MessageModle> listModle) {
+		this.listModle = listModle;
+		notifyDataSetChanged();
 	}
 
 	@Override
@@ -56,6 +62,8 @@ public class MessageAdapter extends BaseAdapter {
 					.findViewById(R.id.otherTime);
 			holder.otherAvatar = (ImageView) convertView
 					.findViewById(R.id.otherAvatar);
+			holder.otherName = (TextView) convertView
+					.findViewById(R.id.otherName);
 			holder.selfLayout = (LinearLayout) convertView
 					.findViewById(R.id.selfLayout);
 			holder.selfContent = (TextView) convertView
@@ -70,23 +78,38 @@ public class MessageAdapter extends BaseAdapter {
 		}
 		if (listModle.get(position).isSelf()) {
 			holder.otherLayout.setVisibility(View.GONE);
+			holder.selfLayout.setVisibility(View.VISIBLE);
 			// holder.selfContent.setText(listModle.get(position).getContent());
 			replaceExpression(holder.selfContent, listModle.get(position)
 					.getContent());
 
 			holder.selfTime.setText(listModle.get(position).getTime());
-			ImageManager.from(mContext).displayImage(holder.selfAvatar,
-					listModle.get(position).getAvatar(), R.drawable.hand_pic,
-					50, 50);
+			String path = listModle.get(position).getAvatar();
+			if (path.equals("") || path == null) {
+				holder.selfAvatar.setImageResource(R.drawable.hand_pic);
+			} else {
+				ImageManager.from(mContext).displayImage(holder.selfAvatar,
+						path, R.drawable.hand_pic, 50, 50);
+			}
 		} else {
 			holder.selfLayout.setVisibility(View.GONE);
-			holder.otterContent.setText(listModle.get(position).getContent());
-			// holder.otherTime.setText(listModle.get(position).getTime());
+			holder.otherLayout.setVisibility(View.VISIBLE);
+			// holder.otterContent.setText(listModle.get(position).getContent());
+			holder.otherTime.setText(listModle.get(position).getTime());
 			replaceExpression(holder.otterContent, listModle.get(position)
 					.getContent());
-			ImageManager.from(mContext).displayImage(holder.otherAvatar,
-					listModle.get(position).getAvatar(), R.drawable.hand_pic,
-					50, 50);
+			holder.otherName.setText(listModle.get(position).getName());
+			Logger.debug(this, "avatar:::"
+					+ listModle.get(position).getAvatar());
+			String path = listModle.get(position).getAvatar();
+			if (path.equals("") || path == null) {
+				holder.otherAvatar.setImageResource(R.drawable.hand_pic);
+			} else {
+				ImageManager.from(mContext).displayImage(holder.otherAvatar,
+						listModle.get(position).getAvatar(),
+						R.drawable.hand_pic, 50, 50);
+			}
+
 		}
 		return convertView;
 	}
@@ -106,6 +129,7 @@ public class MessageAdapter extends BaseAdapter {
 		LinearLayout otherLayout;
 		TextView otherTime;
 		TextView otterContent;
+		TextView otherName;
 		ImageView otherAvatar;
 		LinearLayout selfLayout;
 		TextView selfContent;

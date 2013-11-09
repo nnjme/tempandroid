@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/login_bg"
+    android:background="@drawable/login_wrap_bg"
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
@@ -10,15 +10,17 @@
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dip"
-        android:src="@drawable/title" />
+        android:layout_marginTop="15dip"
+        android:src="@drawable/logo" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
         android:layout_marginLeft="10dip"
         android:layout_marginRight="10dip"
-        android:layout_marginTop="40dip"
+        android:layout_marginTop="15dip"
+        android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical" >
 
@@ -26,95 +28,75 @@
             android:id="@+id/edtNum"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_top_corner_no_bottom_line"
+            android:background="@drawable/input_top_radius"
+            android:gravity="center_vertical"
             android:hint="手机号码"
             android:maxLength="13"
-            android:padding="10dip"
-            android:textSize="20dip" >
+            android:padding="17dip"
+            android:textSize="20sp" >
         </EditText>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.2dp"
+            android:layout_marginLeft="6dip"
+            android:layout_marginRight="6dip"
+            android:background="#ffe0e0e0" />
 
         <EditText
             android:id="@+id/edtPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_no_corner_without_bottom"
+            android:background="@drawable/input"
+            android:ems="10"
+            android:gravity="center_vertical"
             android:hint="密码"
-            android:padding="10dip"
+            android:padding="17dip"
             android:password="true"
-            android:textSize="20dip" />
+            android:textSize="20sp" >
+
+            <requestFocus />
+        </EditText>
 
         <Button
             android:id="@+id/btlogin"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:background="@drawable/shape_bottom_corner_no_top_line"
+            android:layout_height="wrap_content"
+            android:background="@drawable/gray_bottom_radius"
             android:padding="15dip"
             android:text="登录"
             android:textColor="@color/white"
             android:textSize="25dip" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
-        android:layout_marginTop="20dip"
-        android:gravity="center" >
 
         <TextView
             android:id="@+id/findpd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="忘记密码？"
-            android:textColor="#6e6e6e"
-            android:textSize="20dip" />
-
-        <ImageView
-            android:id="@+id/imageView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dip"
-            android:layout_marginRight="15dip"
-            android:src="@drawable/line1" />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="其他方式登录"
-            android:textColor="#6e6e6e"
-            android:textSize="20dip" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="30dip" >
-
-        <LinearLayout
-            android:id="@+id/btregister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
+            android:layout_marginTop="5dip"
             android:gravity="center"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dip"
-                android:text="创建账号"
-                android:textColor="@color/white"
-                android:textSize="25dip" />
-
-            <ImageView
-                android:id="@+id/imageView3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/icon_collapse" />
-        </LinearLayout>
+            android:text="忘记密码"
+            android:textColor="@color/gray_b8"
+            android:textSize="25sp" />
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/btregister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/back2" >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.2dp"
+            android:background="#f3ffffff" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="20dip"
+            android:src="@drawable/create_account" />
+    </RelativeLayout>
 
 </LinearLayout>

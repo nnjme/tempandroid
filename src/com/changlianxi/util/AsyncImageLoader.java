@@ -23,16 +23,13 @@ public class AsyncImageLoader {
 	private MemoryCache cache;
 	private static final String SUFFIX = ".cach";// 后缀名
 	private Bitmap bmp;
-	private Activity activity;
 
 	public AsyncImageLoader(Activity activity) {
 		cache = new MemoryCache();
-		this.activity = activity;
 	}
 
 	public Bitmap loaDrawable(final String imgUrl,
 			final ImageCallback imageCallback) {
-		Logger.debug(this, imgUrl);
 		if (imgUrl == null) {
 			return null;
 		}
@@ -45,7 +42,6 @@ public class AsyncImageLoader {
 		 */
 		bmp = cache.get(imgUrl);
 		if (bmp != null) {
-			Logger.debug(this, "缓存");
 			return bmp;
 		}
 		/**
@@ -53,7 +49,6 @@ public class AsyncImageLoader {
 		 */
 		bmp = getImage(imgUrl);
 		if (bmp != null) {
-			Logger.debug(this, "本地");
 			return bmp;
 		}
 		final Handler handler = new Handler() {
@@ -116,15 +111,11 @@ public class AsyncImageLoader {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inSampleSize = 1;
 		if (url.contains(FileUtils.getRootDir())) {
-			// String imgName = FileUtils.getFileName(url);
 			Bitmap bitmap = BitmapFactory.decodeFile(url, options);
-			// Bitmap bitmap = BitmapUtils.loadImgThumbnail(imgName,
-			// MediaStore.Images.Thumbnails.MICRO_KIND, activity);
 			if (bitmap == null) {
 				return null;
 			}
 			return bitmap;
-			// return BitmapUtils.toRoundBitmap(bitmap);
 		}
 		final String path = Environment.getExternalStorageDirectory()
 				+ File.separator + "clxcache" + "/" + convertUrlToFileName(url);
@@ -148,19 +139,8 @@ public class AsyncImageLoader {
 	 * @return
 	 */
 	private Bitmap loadImageFromUrl(String url) {
-		Logger.debug(this, "网络");
 		Bitmap bmp = HttpUtil.GetBitmapFromUrl(url);
-		// Bitmap rbnmp = null;
-		// if (bmp != null) {
-		// rbnmp = BitmapUtils.toRoundBitmap(bmp);
-		// bmp.recycle();
-		// }
-		// smallBmp.recycle();
-		Bitmap bitmap = BitmapUtils.scaleBitmap(bmp);
-		if (bmp != null && !bmp.isRecycled()) {
-			bmp.recycle();
-		}
-		return bitmap;
+		return bmp;
 	}
 
 	public interface ImageCallback {

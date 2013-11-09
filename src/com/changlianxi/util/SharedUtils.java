@@ -1,6 +1,5 @@
 package com.changlianxi.util;
 
- 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -44,5 +43,25 @@ public class SharedUtils {
 	public static void setBoolean(String key, boolean value) {
 		editor.putBoolean(key, value);
 		editor.commit();
+	}
+
+	public static void setChannelID(String value) {
+		editor.putString("channel_id", value);
+		editor.commit();
+
+	}
+
+	public static void setUserID(String value) {
+		editor.putString("user_id", value);
+		editor.commit();
+
+	}
+
+	public static String getChannelID() {
+		return sharedPreferences.getString("channel_id", "");
+	}
+
+	public static String getUserID() {
+		return sharedPreferences.getString("user_id", "");
 	}
 }

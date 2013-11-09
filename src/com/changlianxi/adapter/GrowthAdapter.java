@@ -87,9 +87,11 @@ public class GrowthAdapter extends BaseAdapter {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				ShowBigImgPopwindow open = new ShowBigImgPopwindow(mContext,
-						arg0, listData.get(position).getImgModle());
-				open.show();
+				// ShowBigImgPopwindow open = new ShowBigImgPopwindow(mContext,
+				// arg0, listData.get(position).getImgModle());
+				// open.show();
+				new ShowBigImgPopwindow(mContext, arg0, listData.get(position)
+						.getImgModle());
 			}
 		});
 		holder.layParise.setOnClickListener(new BtnClick(holder, position));
@@ -193,9 +195,10 @@ public class GrowthAdapter extends BaseAdapter {
 		@Override
 		public void onClick(View v) {
 			// Utils.showToast(v.getTag() + "");
-			ShowBigImgPopwindow open = new ShowBigImgPopwindow(mContext, v,
-					modle);
-			open.show();
+			// ShowBigImgPopwindow open = new ShowBigImgPopwindow(mContext, v,
+			// modle);
+			// open.show();
+			new ShowBigImgPopwindow(mContext, v, modle);
 		}
 	}
 

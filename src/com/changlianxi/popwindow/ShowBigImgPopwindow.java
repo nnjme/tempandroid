@@ -34,11 +34,11 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.ProgressBar;
 
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.util.Logger;
+import com.changlianxi.view.RoundProgressBar;
 
 /**
  * 大图预览界面 用popwindow实现
@@ -81,8 +81,8 @@ public class ShowBigImgPopwindow {
 		vp.setOnPageChangeListener(new PageListener());
 		isSelected.put(0, true);
 		initPopwindow();
+		show();
 		new GetImage().execute(data.get(0).getImg(), 0 + "");
-
 	}
 
 	/**
@@ -109,7 +109,6 @@ public class ShowBigImgPopwindow {
 					LinearLayout.LayoutParams.WRAP_CONTENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
 			img.setLayoutParams(lp);
-			// img.setImageResource(R.drawable.wb_detail_pic_default_read_failure);
 			views.add(img);
 			// 设置 每张图片的句点
 			ImageView imageView = new ImageView(mContext);
@@ -300,7 +299,7 @@ public class ShowBigImgPopwindow {
 	 * 
 	 */
 	class probarpop {
-		private ProgressBar probar1;
+		private RoundProgressBar probar1;
 		private PopupWindow popupWindow;
 
 		public void show() {
@@ -310,16 +309,18 @@ public class ShowBigImgPopwindow {
 				popupWindow = new PopupWindow(view,
 						android.view.ViewGroup.LayoutParams.MATCH_PARENT,
 						android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
-				probar1 = (ProgressBar) view.findViewById(R.id.probar1);
+				probar1 = (RoundProgressBar) view.findViewById(R.id.probar1);
 			}
 			popupWindow.showAtLocation(parent, Gravity.CENTER_VERTICAL, 20, 20);
 			popupWindow.update();
-			probar1.incrementProgressBy(-100);
+			// probar1.incrementProgressBy(-100);
 		}
 
 		public void porgress(int i) {
-			int add = i - probar1.getProgress();
-			probar1.incrementProgressBy(add);
+			// int add = i - probar1.getProgress();
+			// probar1.incrementProgressBy(add);
+			probar1.setProgress(i);
+			Logger.debug(this, "progress::" + i);
 		}
 
 		public void close() {

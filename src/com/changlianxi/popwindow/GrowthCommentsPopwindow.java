@@ -135,7 +135,6 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	/**
 	 * 初始化popwindow
 	 */
-	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
 
 		popupWindow = new PopupWindow(view, LayoutParams.MATCH_PARENT,

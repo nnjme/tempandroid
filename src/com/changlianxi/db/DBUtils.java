@@ -1,6 +1,7 @@
 package com.changlianxi.db;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -11,7 +12,7 @@ import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.Info;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MemberModle;
-import com.changlianxi.util.Logger;
+import com.changlianxi.util.MyComparator;
 
 /**
  * 数据库操作类
@@ -52,7 +53,7 @@ public class DBUtils {
 			}
 		}
 		cursor.close();
-		db.close();
+		// db.close();
 		return data;
 	}
 
@@ -83,14 +84,16 @@ public class DBUtils {
 				modle.setId(id);
 				modle.setEmployer(employer);
 				modle.setName(name);
-				modle.setSort_key(sortkey);
+				modle.setSort_key(sortkey.toUpperCase());
 				modle.setImg(imgAdd);
 				data.add(modle);
 				cursor.moveToNext();
 			}
 		}
 		cursor.close();
-		db.close();
+		// db.close();
+		MyComparator compartor = new MyComparator();
+		Collections.sort(data, compartor);
 		return data;
 	}
 
@@ -121,7 +124,7 @@ public class DBUtils {
 			}
 		}
 		cursor.close();
-		db.close();
+		// db.close();
 		return listInfo;
 	}
 
@@ -140,11 +143,11 @@ public class DBUtils {
 				null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.close();
-			db.close();
+			// db.close();
 			return true;
 		}
 		cursor.close();
-		db.close();
+		// db.close();
 		return false;
 
 	}
@@ -172,11 +175,11 @@ public class DBUtils {
 
 		} else {
 			cursor.close();
-			db.close();
+			// db.close();
 			return null;
 		}
 		cursor.close();
-		db.close();
+		// db.close();
 		return modle;
 	}
 
@@ -192,7 +195,7 @@ public class DBUtils {
 			db = dbase.getWritableDatabase();
 		}
 		db.insert(tableName, null, values);
-		db.close();
+		// db.close();
 	}
 
 	public static void clearTableData(String tableName) {
@@ -200,7 +203,7 @@ public class DBUtils {
 			db = dbase.getWritableDatabase();
 		}
 		db.delete(tableName, null, null);
-		db.close();
+		// db.close();
 	}
 
 	/**
@@ -224,12 +227,62 @@ public class DBUtils {
 			System.out.println("cirName:" + name);
 		} else {
 			cursor.close();
-			db.close();
+			// db.close();
 			return null;
 		}
 		cursor.close();
-		db.close();
+		// db.close();
 		return modle;
+	}
+
+	/**
+	 * 根根据圈子ID查找圈子名称
+	 * 
+	 * @param cirID
+	 */
+	public static String getCircleNameById(String cirID) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		String cirName = "";
+		Cursor cursor = db.query("circlelist", null, "cirID='" + cirID + "'",
+				null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			cirName = cursor.getString(cursor.getColumnIndex("cirName"));
+		} else {
+			cursor.close();
+			return null;
+		}
+		cursor.close();
+		return cirName;
+	}
+
+	/**
+	 * 根据userid获取姓名
+	 * 
+	 * @param circleTable
+	 * @param uid
+	 * @return
+	 */
+	public static String getUserNameByUid(String circleTable, String uid) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		String name = "";
+		Cursor cursor = db.query(circleTable, null, "userID='" + uid + "'",
+				null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			name = cursor.getString(cursor.getColumnIndex("userName"));
+		} else {
+			cursor.close();
+			// db.close();
+			return null;
+		}
+		cursor.close();
+		// db.close();
+		return name;
 	}
 
 	/**
@@ -244,5 +297,11 @@ public class DBUtils {
 		}
 		db.update("circlelist", cv, "cirID=?", new String[] { cirID });
 
+	}
+
+	public static void close() {
+		if (db != null) {
+			db.close();
+		}
 	}
 }

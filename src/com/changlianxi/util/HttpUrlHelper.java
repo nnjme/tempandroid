@@ -44,7 +44,7 @@ import org.apache.http.util.EntityUtils;
  */
 public class HttpUrlHelper {
 	public static final String TAG = "HttpUrlHelper";
-	public static final String strUrl = "http://clx.jieme.com";// 服务器地址
+	public static final String strUrl = "http://clx.teeker.com";// 服务器地址
 
 	/**
 	 * 获取请求服务端的方法，进行流操作，并接收服务器端返回的相关数据
@@ -356,7 +356,6 @@ public class HttpUrlHelper {
 				try {
 					mpEntity.consumeContent();
 				} catch (UnsupportedOperationException e) {
-
 					e.printStackTrace();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block

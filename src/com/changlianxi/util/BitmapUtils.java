@@ -1,5 +1,6 @@
 package com.changlianxi.util;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,6 +42,9 @@ public class BitmapUtils {
 	 * @return
 	 */
 	public static Bitmap toRoundBitmap(Bitmap bitmap) {
+		if (bitmap == null) {
+			return null;
+		}
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 		float roundPx;
@@ -263,9 +267,7 @@ public class BitmapUtils {
 		// 最后根据索引值获取图片路径
 		String picPath = cursor.getString(column_index);
 		Logger.debug("getPickPic:", picPath);
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inSampleSize = 1;
-		Bitmap bitmap = BitmapFactory.decodeFile(picPath, options);
+		Bitmap bitmap = FitSizeImg(picPath);
 		// Bitmap bitmap = loadImgThumbnail(picPath,
 		// MediaStore.Images.Thumbnails.MICRO_KIND, context);
 		modle.setPicPath(picPath);
@@ -276,4 +278,45 @@ public class BitmapUtils {
 
 	}
 
+	/**
+	 * 根据图片地址获取图片
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static Bitmap getBimapByPath(String path) {
+		Bitmap bmp = FitSizeImg(path);
+		return bmp;
+
+	}
+
+	/**
+	 * / 按图片大小(字节大小)缩放图片
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static Bitmap FitSizeImg(String path) {
+		if (path == null || path.length() < 1)
+			return null;
+		File file = new File(path);
+		Bitmap resizeBmp = null;
+		BitmapFactory.Options opts = new BitmapFactory.Options();
+		// 数字越大读出的图片占用的heap越小 不然总是溢出
+		if (file.length() < 20480) { // 0-20k
+			opts.inSampleSize = 1;
+		} else if (file.length() < 51200) { // 20-50k
+			opts.inSampleSize = 2;
+		} else if (file.length() < 307200) { // 50-300k
+			opts.inSampleSize = 4;
+		} else if (file.length() < 819200) { // 300-800k
+			opts.inSampleSize = 6;
+		} else if (file.length() < 1048576) { // 800-1024k
+			opts.inSampleSize = 8;
+		} else {
+			opts.inSampleSize = 10;
+		}
+		resizeBmp = BitmapFactory.decodeFile(file.getPath(), opts);
+		return resizeBmp;
+	}
 }

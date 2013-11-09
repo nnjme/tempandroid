@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -17,12 +16,20 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.baidu.android.pushservice.PushConstants;
+import com.baidu.android.pushservice.PushManager;
+import com.changlianxi.inteface.PushOnBind;
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.task.SetClientInfo;
+import com.changlianxi.task.SetClientInfo.ClientCallBack;
 import com.changlianxi.util.EditWather;
-import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.PushMessageReceiver;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
@@ -32,8 +39,9 @@ import com.changlianxi.util.Utils;
  * @author teeker_bin
  * 
  */
-public class LoginActivity extends Activity implements OnClickListener {
-	private LinearLayout btReg;// 去往注册界面按钮
+public class LoginActivity extends Activity implements OnClickListener,
+		PushOnBind, PostCallBack {
+	private RelativeLayout btReg;// 去往注册界面按钮
 	private Button btLogin;// 登录按钮
 	private EditText ediNum;// 手机号码输入框
 	private EditText ediPassword;// 密码输入框
@@ -47,14 +55,16 @@ public class LoginActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
-		String uid = SharedUtils.getString("uid", "");
-		if (!uid.equals("")) {
+		uid = SharedUtils.getString("uid", "");
+		token = SharedUtils.getString("token", "");
+		if (!uid.equals("") && !token.equals("")) {
 			Intent intent = new Intent();
 			intent.setClass(this, MainActivity.class);
 			startActivity(intent);
 			finish();
 		}
 		initView();
+		PushMessageReceiver.setPushOnBind(this);
 	}
 
 	/**
@@ -63,7 +73,7 @@ public class LoginActivity extends Activity implements OnClickListener {
 	private void initView() {
 		btFindWd = (TextView) findViewById(R.id.findpd);
 		btFindWd.setOnClickListener(this);
-		btReg = (LinearLayout) findViewById(R.id.btregister);
+		btReg = (RelativeLayout) findViewById(R.id.btregister);
 		btReg.setOnClickListener(this);
 		btLogin = (Button) findViewById(R.id.btlogin);
 		btLogin.setOnClickListener(this);
@@ -86,11 +96,14 @@ public class LoginActivity extends Activity implements OnClickListener {
 			if (rt == 1) {
 				token = object.getString("token");
 				uid = object.getString("uid");
+				SharedUtils.setString("uid", uid);
+				SharedUtils.setString("token", token);
 				Logger.debug(this, "rt:" + rt + "  uid:" + uid + "  token:"
 						+ token);
 				return true;
 			} else {
-				Utils.showToast("用户名不存在");
+				String errorCoce = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
 				return false;
 			}
 		} catch (JSONException e) {
@@ -124,7 +137,11 @@ public class LoginActivity extends Activity implements OnClickListener {
 				Utils.showToast("请输入密码！");
 				return;
 			}
-			new LoginTask().execute(num);
+			// 以apikey的方式登录，一般放在主Activity的onCreate中
+			PushManager.startWork(this, PushConstants.LOGIN_TYPE_API_KEY,
+					Utils.getMetaValue(this, "api_key"));
+			progressDialog = new ProgressDialog(this);
+			progressDialog.show();
 			break;
 		case R.id.findpd:
 			Intent find = new Intent();
@@ -138,40 +155,91 @@ public class LoginActivity extends Activity implements OnClickListener {
 	}
 
 	/**
-	 * 异步提交修改数据到服务器
-	 * 
+	 * 百度推送绑定回调
 	 */
-	class LoginTask extends AsyncTask<String, Integer, String> {
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("cellphone", params[0]);
-			map.put("passwd", ediPassword.getText().toString());
-			String result = HttpUrlHelper.postData(map, "/users/ilogin");
-			Logger.debug(this, "LoginResult:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			if (!isUserExist(result)) {
-				return;
+	@Override
+	public void onBind(int errorCode, String content) {
+		System.out.println("errorCode:::" + errorCode);
+		if (errorCode == 0) {// 0 标示成功 非0失败
+			String channelid = "";
+			String userid = "";
+			try {
+				JSONObject jsonContent = new JSONObject(content);
+				JSONObject params = jsonContent
+						.getJSONObject("response_params");
+				channelid = params.getString("channel_id");
+				userid = params.getString("user_id");
+				SharedUtils.setChannelID(channelid);
+				SharedUtils.setUserID(userid);
+				login();
+			} catch (JSONException e) {
 			}
-			SharedUtils.setString("uid", uid);
-			SharedUtils.setString("token", token);
-			Intent it = new Intent();
-			it.setClass(LoginActivity.this, MainActivity.class);
-			startActivity(it);
-			finish();
+		} else {
+			progressDialog.dismiss();
+			Utils.showToast("推送服务绑定错误");
+		}
+	}
+
+	/**
+	 * 属性是否设置成功
+	 */
+	private void isSetSuccess(String result) {
+		try {
+			JSONObject json = new JSONObject(result);
+			int rt = json.getInt("rt");
+			if (rt == 1) {
+				Intent it = new Intent();
+				it.setClass(LoginActivity.this, MainActivity.class);
+				startActivity(it);
+				finish();
+			} else {
+				String err = json.getString("err");
+				String errorString = ErrorCodeUtil.convertToChines(err);
+				Utils.showToast(errorString);
+				progressDialog.dismiss();
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(LoginActivity.this);
-			progressDialog.show();
+	}
+
+	/**
+	 * 登录
+	 */
+	private void login() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+		map.put("passwd", ediPassword.getText().toString());
+		PostAsyncTask task = new PostAsyncTask(this, map, "/users/ilogin");
+		task.setTaskCallBack(this);
+		task.execute();
+	}
+
+	/**
+	 * 登录接口处理回调
+	 */
+	@Override
+	public void taskFinish(String result) {
+		System.out.println("result:::" + result);
+		if (!isUserExist(result)) {
+			progressDialog.dismiss();
+			return;
 		}
+		SetClientInfo task = new SetClientInfo(new ClientCallBack() {// 设置属性接口回调
+					public void afterLogin(String result) {
+						isSetSuccess(result);
+					}
+				});
+		task.execute();
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (progressDialog != null) {
+			progressDialog.dismiss();
+		}
+		super.onDestroy();
 	}
 }

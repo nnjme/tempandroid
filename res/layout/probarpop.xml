@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android_custom="http://schemas.android.com/apk/res/com.changlianxi.activity"
     android:id="@+id/LinearLayout_popupwindow"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:gravity="center"
     android:orientation="vertical" >
 
-    <!-- android:drawableTop="@drawable/controlbar_homepage" -->
-
-    <ProgressBar
+    <com.changlianxi.view.RoundProgressBar
         android:id="@+id/probar1"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp" />
+        android:layout_width="80dip"
+        android:layout_height="80dip"
+        android_custom:roundColor="#D1D1D1"
+        android_custom:roundProgressColor="@android:color/white"
+        android_custom:roundWidth="10dip"
+        android_custom:textColor="#ff00ff"
+        android_custom:textSize="18sp" />
 
 </LinearLayout>

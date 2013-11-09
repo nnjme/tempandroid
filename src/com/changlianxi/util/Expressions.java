@@ -55,31 +55,4 @@ public class Expressions {
 			"[f061]", "[f062]", "[f063]", "[f064]", "[f065]", "[f066]",
 			"[f067]", "[f068]", "[f069]", "[f070]", "[f071]" };
 
-	/**
-	 * 
-	 * 
-	 * 
-	 */
-	/*
-	 * 服务器存储的表情名字
-	 */
-	public static String[] expressionRegImgNames = new String[] {
-			"\\U0001F601", "f0asd01", "f00asd2", "fasd003", "f0gf04", "f00fg5",
-			"f0gfdh06", "fhjgh007", "f0gh08", "ffgh009", "f010", "f011",
-			"f012", "f013", "f014", "f015", "f016", "f017", "f05err18",
-			"f045fd19", "f0234sdf20", "fsdfg021", "f0jjjh22", "f0hjh23" };
-
-	/**
-	 * 
-	 * 在存入数据库时，将表情名字进行替换即�?
-	 * 
-	 */
-	public static String[] replaceStrings(String[] str, String[] str2) {
-		String newStr[] = new String[str.length - 1];
-		for (int i = 0; i < str.length; i++) {
-			newStr[i] = str[i].replace(str[i], str2[i]);
-		}
-		return newStr;
-	}
-
 }

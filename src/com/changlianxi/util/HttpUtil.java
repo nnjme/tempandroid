@@ -61,14 +61,10 @@ public class HttpUtil {
 				return result;
 			}
 		} catch (ClientProtocolException e) {
-			Logger.error("HttpUtil.queryStringForPost", e);
-
 			e.printStackTrace();
 			result = "ÍøÂçÒì³££¡111";
 			return result;
 		} catch (IOException e) {
-			Logger.error("HttpUtil.queryStringForPost", e);
-
 			e.printStackTrace();
 			result = "ÍøÂçÒì³££¡";
 			return result;
@@ -86,14 +82,10 @@ public class HttpUtil {
 			}
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
-			Logger.error("HttpUtil.queryStringForPost", e);
-
 			result = "ÍøÂçÒì³££¡";
 			return result;
 		} catch (IOException e) {
 			e.printStackTrace();
-			Logger.error("HttpUtil.queryStringForPost", e);
-
 			result = "ÍøÂçÒì³££¡";
 			return result;
 		}
@@ -113,14 +105,10 @@ public class HttpUtil {
 			}
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
-			Logger.error("HttpUtil.queryStringForGet", e);
-
 			result = "ÍøÂçÒì³££¡123";
 			return result;
 		} catch (IOException e) {
 			e.printStackTrace();
-			Logger.error("HttpUtil.queryStringForGet", e);
-
 			result = "ÍøÂçÒì³££¡456";
 			return result;
 		}
@@ -143,12 +131,8 @@ public class HttpUtil {
 			return result;
 
 		} catch (ClientProtocolException e) {
-			Logger.debug(HttpUrlHelper.class, "ClientProtocolException");
-			Logger.error("HttpUtil.getResultForHttpGet", e);
 			e.printStackTrace();
 		} catch (IOException e) {
-			Logger.debug(HttpUrlHelper.class, "IOException");
-			Logger.error("HttpUtil.getResultForHttpGet", e);
 			e.printStackTrace();
 		}
 		return null;
@@ -167,7 +151,7 @@ public class HttpUtil {
 		BufferedOutputStream out = null;
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inJustDecodeBounds = true;
-		opts.inSampleSize = 4;
+		opts.inSampleSize = 1;
 		opts.inJustDecodeBounds = false;
 		try {
 			in = new BufferedInputStream(new URL(url).openStream(),
@@ -184,7 +168,6 @@ public class HttpUtil {
 			return bitmap;
 		} catch (IOException e) {
 			e.printStackTrace();
-			Logger.error("HttpUtil.GetBitmapFromUrl", e);
 			return null;
 		}
 	}

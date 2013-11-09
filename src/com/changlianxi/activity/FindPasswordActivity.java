@@ -8,11 +8,8 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,7 +19,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.EditWather;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -34,7 +33,8 @@ import com.changlianxi.view.MyViewGroup;
  * @author teeker_bin
  * 
  */
-public class FindPasswordActivity extends Activity implements OnClickListener {
+public class FindPasswordActivity extends Activity implements OnClickListener,
+		PostCallBack {
 	private MyViewGroup group;
 	private LayoutInflater flater;
 	private View find1, find2, find3;// 找回密码的三个界面
@@ -46,8 +46,9 @@ public class FindPasswordActivity extends Activity implements OnClickListener {
 	private EditText ediNum;// 手机号输入框
 	private EditText ediCode;// 验证码输入框
 	private EditText ediPasswd;// 密码输入框
-	private ProgressDialog progressDialog;
 	private String uid;
+	private String type = "";// 1 找回密码回调接口处理 2 验证码接口回调处理 3 设置密码接口回调处理
+	private ProgressDialog pd;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -76,7 +77,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener {
 		btnext = (Button) find1.findViewById(R.id.btnext);
 		btnext.setOnClickListener(this);
 		ediNum = (EditText) find1.findViewById(R.id.editnum);
-		ediNum.addTextChangedListener(new EditWather());
+		ediNum.addTextChangedListener(new EditWather(ediNum));
 		ediNum.setInputType(InputType.TYPE_CLASS_NUMBER);
 	}
 
@@ -98,208 +99,137 @@ public class FindPasswordActivity extends Activity implements OnClickListener {
 		ediPasswd = (EditText) find3.findViewById(R.id.editPassword);
 	}
 
-	class EditWather implements TextWatcher {
-
-		@Override
-		public void afterTextChanged(Editable s) {
-		}
-
-		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count,
-				int after) {
-
-		}
-
-		@Override
-		public void onTextChanged(CharSequence s, int start, int before,
-				int count) {
-			StringBuffer sb = new StringBuffer(s);
-			if (count == 1) {
-				if (s.length() == 4) {
-					sb.insert(3, "-");
-					ediNum.setText(sb.toString());
-					ediNum.setSelection(5);
-				}
-				if (s.length() == 9) {
-					sb.insert(8, "-");
-					ediNum.setText(sb.toString());
-					ediNum.setSelection(10);
-				}
-				// if (s.length() == 11) {
-				// ediNum.setText(s + " ");
-				// ediNum.setSelection(11);
-				// }
-
-			} else if (count == 0) {
-				if (s.length() == 4) {
-					ediNum.setText(s.subSequence(0, s.length() - 1));
-					ediNum.setSelection(3);
-				}
-				if (s.length() == 9) {
-					ediNum.setText(s.subSequence(0, s.length() - 1));
-					ediNum.setSelection(8);
-				}
-				// if (s.length() == 11) {
-				// ediNum.setText(s.subSequence(0, s.length() - 1));
-				// ediNum.setSelection(10);
-				// }
-			}
-		}
-	}
-
 	@Override
 	public void onClick(View v) {
+		PostAsyncTask task = null;
+		Map<String, Object> map = null;
 		switch (v.getId()) {
 		case R.id.btnext:
-			new FindPasswordTask().execute();
+			// 找回密码之验证手机号是否存在
+			map = new HashMap<String, Object>();
+			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+			task = new PostAsyncTask(this, map, "/users/iretrievePassword");
+			task.setTaskCallBack(this);
+			task.execute();
+			pd = new ProgressDialog(this);
+			pd.show();
+			type = "1";
 			break;
 		case R.id.btfinish_yz:
-			new CheckCodeTask().execute();
+			// 找回密码之获取验证码
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("auth_code", ediCode.getText().toString());
+			map.put("type", "retrievePasswd");
+			task = new PostAsyncTask(this, map, "/users/iverifyAuthCode");
+			task.setTaskCallBack(this);
+			task.execute();
+			pd = new ProgressDialog(this);
+			pd.show();
+			type = "2";
 			break;
 		case R.id.btback:
 			finish();
 			break;
 		case R.id.btfinish:
-			new SetPasswordTask().execute();
+			// 找回密码之设置密码
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("uid", uid);
+			map.put("type", "retrievePasswd");
+			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+			map.put("passwd", ediPasswd.getText().toString());
+			task = new PostAsyncTask(this, map, "/users/isetPasswd");
+			task.setTaskCallBack(this);
+			task.execute();
+			pd = new ProgressDialog(this);
+			pd.show();
+			type = "3";
 			break;
 		default:
 			break;
 		}
 	}
 
-	/**
-	 * 校验验证码是否正确
+	/***
+	 * 找回密码处理
 	 * 
+	 * @param result
 	 */
-	class CheckCodeTask extends AsyncTask<String, Integer, String> {
+	private void FindPassword(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt == 1) {
+				uid = object.getString("uid");
+				SharedUtils.setString("uid", uid);
+				group.setView(find2);
 
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> mapYz = new HashMap<String, Object>();
-			mapYz.put("uid", SharedUtils.getString("uid", ""));
-			mapYz.put("auth_code", ediCode.getText().toString());
-			mapYz.put("type", "retrievePasswd");
-			String result = HttpUrlHelper.postData(mapYz,
-					"/users/iverifyAuthCode");
-			Logger.debug(this, "result:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				int rt = object.getInt("rt");
-				if (rt == 1) {
-					group.setView(find3);
-				} else {
-					Utils.showToast("验证失败");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
+			} else {
+				Utils.showToast("手机号码不存在");
 			}
-		}
+		} catch (JSONException e) {
+			Logger.error(this, e);
 
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(FindPasswordActivity.this);
-			progressDialog.show();
+			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * 找回密码接口
+	 * 判断验证码是否正确
 	 * 
+	 * @param result
 	 */
-	class FindPasswordTask extends AsyncTask<String, Integer, String> {
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
-			Logger.debug(this, "cellphone:"
-					+ ediNum.getText().toString().replace("-", ""));
-			String result = HttpUrlHelper.postData(map,
-					"/users/iretrievePassword");
-			Logger.debug(this, "result:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				int rt = object.getInt("rt");
-				if (rt == 1) {
-					uid = object.getString("uid");
-					SharedUtils.setString("uid", uid);
-					group.setView(find2);
-
-				} else {
-					Utils.showToast("手机号码不存在");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
+	private void CheckCode(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt == 1) {
+				group.setView(find3);
+			} else {
+				Utils.showToast("验证失败");
 			}
-		}
+		} catch (JSONException e) {
+			Logger.error(this, e);
 
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(FindPasswordActivity.this);
-			progressDialog.show();
+			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * 设置密码接口
+	 * 判断密码是否设置成功
 	 * 
+	 * @param result
 	 */
-	class SetPasswordTask extends AsyncTask<String, Integer, String> {
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> mapPwd = new HashMap<String, Object>();
-			mapPwd.put("uid", SharedUtils.getString("uid", ""));
-			mapPwd.put("passwd", ediPasswd.getText().toString());
-			String result = HttpUrlHelper.postData(mapPwd, "/users/isetPasswd");
-			Logger.debug(this, "result:" + result);
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			try {
-				JSONObject object = new JSONObject(result);
-				int rt = object.getInt("rt");
-				if (rt == 1) {
-					finish();
-				} else {
-					Utils.showToast("密码设置失败");
-				}
-			} catch (JSONException e) {
-				Logger.error(this, e);
-
-				e.printStackTrace();
+	private void SetPassword(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt == 1) {
+				finish();
+			} else {
+				Utils.showToast("密码设置失败");
 			}
+		} catch (JSONException e) {
+			Logger.error(this, e);
+
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 接口回调函数
+	 */
+	@Override
+	public void taskFinish(String result) {
+		pd.dismiss();
+		if (type.equals("1")) {
+			FindPassword(result);
+		} else if (type.equals("2")) {
+			CheckCode(result);
+		} else if (type.equals("3")) {
+			SetPassword(result);
 		}
 
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(FindPasswordActivity.this);
-			progressDialog.show();
-		}
 	}
 }

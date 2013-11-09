@@ -12,7 +12,7 @@ public class CircleModle {
 	private String cirID = "";// 圈子id
 	private String cirName = ""; // 圈子名称
 	private String cirIcon = "";// 圈子图标
-	private String cirStatus = "";//圈子状态
+	private boolean isNew = false;// 是否是新邀请的圈子
 	private int type = 0;
 	private int cirImg;
 	private Bitmap bmp;
@@ -22,6 +22,14 @@ public class CircleModle {
 
 	public Bitmap getBmp() {
 		return bmp;
+	}
+
+	public boolean isNew() {
+		return isNew;
+	}
+
+	public void setNew(boolean isNew) {
+		this.isNew = isNew;
 	}
 
 	public void setBmp(Bitmap bmp) {
@@ -50,14 +58,6 @@ public class CircleModle {
 
 	public void setCirIcon(String cirIcon) {
 		this.cirIcon = cirIcon;
-	}
-
-	public String getCirStatus() {
-		return cirStatus;
-	}
-
-	public void setCirStatus(String cirStatus) {
-		this.cirStatus = cirStatus;
 	}
 
 	public int getType() {

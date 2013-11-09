@@ -15,6 +15,15 @@ public class MessageModle {
 	private String time;// 私信发送时间
 	private String avatar;
 	private boolean isSelf;// 是否是自己发送
+	private String name;//发送者姓名
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public String getAvatar() {
 		return avatar;

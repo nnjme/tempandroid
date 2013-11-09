@@ -27,8 +27,11 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private String id = "";
 	private Intent intent;
 	private Intent gintent;// 成长itent
+	private Intent chatIntent;
+	private Intent newsIntent;
 	private String ciecleName;// 圈子名称
 	private Button btnMore;
+	private boolean isNew;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -37,14 +40,24 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		setContentView(R.layout.activity_circle);
 		ciecleName = getIntent().getStringExtra("name");
 		id = getIntent().getStringExtra("cirID");
+		isNew = getIntent().getBooleanExtra("is_New", false);
 		intent = new Intent();
 		intent.setClass(this, AsyncLoadListImageActivity.class);
 		intent.putExtra("cirID", id);
+		intent.putExtra("is_New", isNew);
 		intent.putExtra("cirName", ciecleName);
 		gintent = new Intent();
 		gintent.setClass(this, GrowthActivity.class);
 		gintent.putExtra("cirID", id);
 		gintent.putExtra("cirName", ciecleName);
+		chatIntent = new Intent();
+		chatIntent.setClass(this, ChatActivity.class);
+		chatIntent.putExtra("cirID", id);
+		chatIntent.putExtra("cirName", ciecleName);
+		newsIntent = new Intent();
+		newsIntent.setClass(this, NewsActivity.class);
+		newsIntent.putExtra("cirID", id);
+		newsIntent.putExtra("cirName", ciecleName);
 		init();
 	}
 
@@ -65,11 +78,11 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		mTabHost.addTab(mTabHost.newTabSpec("chengyuan")
 				.setIndicator("chengyuan").setContent(intent));
 		mTabHost.addTab(mTabHost.newTabSpec("lt").setIndicator("lt")
-				.setContent(new Intent(this, ChatActivity.class)));
+				.setContent(chatIntent));
 		mTabHost.addTab(mTabHost.newTabSpec("cz").setIndicator("cz")
 				.setContent(gintent));
 		mTabHost.addTab(mTabHost.newTabSpec("dt").setIndicator("dt")
-				.setContent(new Intent(this, DTActivity.class)));
+				.setContent(newsIntent));
 		mTabHost.setCurrentTab(0);
 	}
 

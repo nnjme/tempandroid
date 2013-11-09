@@ -15,7 +15,7 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dip"
+            android:padding="20dip"
             android:src="@drawable/icon_return" />
 
         <TextView
@@ -25,7 +25,7 @@
             android:gravity="center"
             android:text="预览"
             android:textColor="#FFFFFF"
-            android:textSize="23sp" />
+            android:textSize="@dimen/titleSize" />
 
         <Button
             android:id="@+id/btnsend"

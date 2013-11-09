@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dip"
-        android:gravity="center"
+        android:layout_weight="1"
         android:orientation="vertical" >
 
         <TextView
@@ -34,20 +34,14 @@
             android:textSize="17sp" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="fill_parent"
+    <CheckBox
+        android:id="@+id/checkBox1"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="right"
-        android:orientation="vertical" >
-
-        <CheckBox
-            android:id="@+id/checkBox1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="20dip"
-            android:button="@drawable/checkbox"
-            android:checked="false"
-            android:focusable="false" />
-    </LinearLayout>
+        android:layout_marginRight="20dip"
+        android:button="@drawable/checkbox"
+        android:checked="false"
+        android:clickable="false"
+        android:focusable="false" />
 
 </LinearLayout>

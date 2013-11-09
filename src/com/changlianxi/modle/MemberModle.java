@@ -18,7 +18,16 @@ public class MemberModle implements Serializable {
 	private String employer = "";// 工作单位
 	private String job = "";// 工作
 	private String sort_key;// 用来排序的关键字
-	private String id = "";// id
+	private String id = "";// id personID
+	private String uid = "";//用户id
+
+	public String getUid() {
+		return uid;
+	}
+
+	public void setUid(String uid) {
+		this.uid = uid;
+	}
 
 	public String getId() {
 		return id;

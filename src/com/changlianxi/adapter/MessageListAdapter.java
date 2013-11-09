@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.MessagesListModle;
+import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.ImageManager;
 
 public class MessageListAdapter extends BaseAdapter {
 	private Context mContext;
@@ -54,6 +56,19 @@ public class MessageListAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
+		holder.content.setText(listModle.get(position).getMsg());
+		int count = Integer.valueOf(listModle.get(position).getNewCount());
+		if (count > 0) {
+			holder.count.setVisibility(View.VISIBLE);
+			holder.count.setText(count + "");
+		}
+		holder.cirName.setText(listModle.get(position).getCirName());
+		holder.name.setText(listModle.get(position).getUserName());
+		holder.time.setText(DateUtils.interceptDateStr(listModle.get(position)
+				.getTime(), "MM-dd"));
+		ImageManager.from(mContext).displayImage(holder.avatar,
+				listModle.get(position).getAvatar(), R.drawable.hand_pic, 50,
+				50);
 		return convertView;
 	}
 

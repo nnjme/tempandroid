@@ -1,6 +1,7 @@
 package com.changlianxi.util;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -63,6 +64,26 @@ public class DateUtils {
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(date);
 		return calendar;
+	}
+
+	/**
+	 * 按一定格式截取字符串日期
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static String interceptDateStr(String str, String format) {
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat df1 = new SimpleDateFormat(format);
+		String strdate = "";
+		try {
+			Date date = df.parse(str);
+			strdate = df1.format(date);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return strdate;
+
 	}
 
 	/**

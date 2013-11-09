@@ -140,4 +140,27 @@ public class WigdtContorl {
 		lp.setMargins(marginLeft, marginTop, marginRight, marginButtom);
 		img.setLayoutParams(lp);
 	}
+
+	/**
+	 * 设置首页圈子图标的大小
+	 * 
+	 * @param context
+	 * @param avatar
+	 * @param avatarBg
+	 */
+	public static void setAvatarWidth(Context context, ImageView avatar,
+			ImageView avatarBg) {
+		int width = Utils.getSecreenWidth(context) / 4;
+		int bgwidth = width + width / 5;
+		RelativeLayout.LayoutParams avataParams = new RelativeLayout.LayoutParams(
+				width, width);
+		avataParams.addRule(RelativeLayout.CENTER_IN_PARENT,
+				RelativeLayout.TRUE);
+		RelativeLayout.LayoutParams avatarBgParams = new RelativeLayout.LayoutParams(
+				bgwidth, bgwidth);
+		avatarBgParams.addRule(RelativeLayout.CENTER_IN_PARENT,
+				RelativeLayout.TRUE);
+		avatar.setLayoutParams(avataParams);
+		avatarBg.setLayoutParams(avatarBgParams);
+	}
 }
