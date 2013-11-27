@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Application;
+import android.app.NotificationManager;
+import android.media.MediaPlayer;
 
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.modle.MessageModle;
@@ -15,6 +17,8 @@ public class CLXApplication extends Application {
 	private static CLXApplication instance;
 	private static MemberModle modle;
 	private static List<MessageModle> listModle = new ArrayList<MessageModle>();
+	private NotificationManager mNotificationManager;
+	private MediaPlayer mMediaPlayer;
 
 	public static CLXApplication getInstance() {
 		return instance;
@@ -31,7 +35,25 @@ public class CLXApplication extends Application {
 		Logger.setLogLevel(Level.DEBUG); // 日志级别
 		// CrashHandler catchHandler = CrashHandler.getInstance();
 		// catchHandler.init(this);
+		initData();
 		super.onCreate();
+	}
+
+	private void initData() {
+		mNotificationManager = (NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+		mMediaPlayer = MediaPlayer.create(this, R.raw.office);
+	}
+
+	public synchronized MediaPlayer getMediaPlayer() {
+		if (mMediaPlayer == null)
+			mMediaPlayer = MediaPlayer.create(this, R.raw.office);
+		return mMediaPlayer;
+	}
+
+	public NotificationManager getNotificationManager() {
+		if (mNotificationManager == null)
+			mNotificationManager = (NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+		return mNotificationManager;
 	}
 
 	/**

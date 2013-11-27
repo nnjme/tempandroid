@@ -1,14 +1,9 @@
 package com.changlianxi.adapter;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,12 +20,11 @@ import com.changlianxi.activity.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.popwindow.GrowthCommentsPopwindow;
+import com.changlianxi.popwindow.GrowthCommentsPopwindow.RecordOperation;
 import com.changlianxi.popwindow.ShowBigImgPopwindow;
-import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.task.PraiseAndCanclePraiseTask;
+import com.changlianxi.task.PraiseAndCanclePraiseTask.PraiseAndCancle;
 import com.changlianxi.util.ImageManager;
-import com.changlianxi.util.Logger;
-import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.Utils;
 
 public class GrowthAdapter extends BaseAdapter {
 	private List<GrowthModle> listData;
@@ -39,6 +33,11 @@ public class GrowthAdapter extends BaseAdapter {
 	public GrowthAdapter(Context context, List<GrowthModle> modle) {
 		this.mContext = context;
 		this.listData = modle;
+	}
+
+	public void setData(List<GrowthModle> listData) {
+		this.listData = listData;
+		notifyDataSetChanged();
 	}
 
 	@Override
@@ -87,9 +86,6 @@ public class GrowthAdapter extends BaseAdapter {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// ShowBigImgPopwindow open = new ShowBigImgPopwindow(mContext,
-				// arg0, listData.get(position).getImgModle());
-				// open.show();
 				new ShowBigImgPopwindow(mContext, arg0, listData.get(position)
 						.getImgModle());
 			}
@@ -97,8 +93,12 @@ public class GrowthAdapter extends BaseAdapter {
 		holder.layParise.setOnClickListener(new BtnClick(holder, position));
 		holder.layComment.setOnClickListener(new BtnClick(position));
 		String path = listData.get(position).getPersonImg();
-		ImageManager.from(mContext).displayImage(holder.img, path,
-				R.drawable.root_default, 60, 60);
+		if (path == null || path.equals("")) {
+			holder.img.setImageResource(R.drawable.pic);
+		} else {
+			ImageManager.from(mContext).displayImage(holder.img, path,
+					R.drawable.root_default, 60, 60);
+		}
 		holder.name.setText(listData.get(position).getName());
 		holder.time.setText(listData.get(position).getPublish());
 		holder.location.setText(listData.get(position).getLocation());
@@ -140,20 +140,38 @@ public class GrowthAdapter extends BaseAdapter {
 		public void onClick(View v) {
 			switch (v.getId()) {
 			case R.id.layParise:
+				ProgressDialog pd = new ProgressDialog(mContext);
+				pd.show();
 				if (!listData.get(position).isIspraise()) {
-					url = "/growth/imyPraise";
-					new GetDataTask(holder, position).execute(
-							listData.get(position).getCid(),
-							listData.get(position).getId(), url);
+					PraiseAndCancle(listData.get(position).getCid(), listData
+							.get(position).getId(), "praise",
+							"/growth/imyPraise", position, pd);
+
 					return;
 				}
-				Utils.showToast("您已经赞过！");
+				PraiseAndCancle(listData.get(position).getCid(),
+						listData.get(position).getId(), "cancle",
+						"/growth/icancelPraise", position, pd);
 				break;
 			case R.id.layComment:
 				GrowthCommentsPopwindow pop = new GrowthCommentsPopwindow(
-						mContext, v, listData.get(position));
+						mContext, v, listData.get(position), position);
+				pop.setRecordOperation(new RecordOperation() {
+					@Override
+					public void delRecord(int pisition) {
+						listData.remove(pisition);
+						notifyDataSetChanged();
+					}
+
+					@Override
+					public void setComment(int position, String count) {
+						listData.get(position).setComment(
+								Integer.valueOf(count));
+						notifyDataSetChanged();
+
+					}
+				});
 				pop.show();
-				Logger.debug(this, "name:" + listData.get(position).getName());
 				break;
 			default:
 				break;
@@ -161,29 +179,6 @@ public class GrowthAdapter extends BaseAdapter {
 
 		}
 	}
-
-	// private void addImgView(ViewHolder holder, List<GrowthImgModle> modle) {
-	// LinearLayout lay = new LinearLayout(mContext);
-	// for (int i = 0; i < modle.size(); i++) {
-	// // if (i % 3 == 0) {
-	// // lay = new LinearLayout(mContext);
-	// // holder.layImg.addView(lay);
-	// // }
-	// ImageView img = new ImageView(mContext);
-	// LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-	// LinearLayout.LayoutParams.WRAP_CONTENT,
-	// LinearLayout.LayoutParams.WRAP_CONTENT);
-	// lp.setMargins(6, 6, 6, 6);
-	// img.setLayoutParams(lp);
-	// img.setTag(i);
-	// img.setOnClickListener(new ImgClick(modle));
-	// String path;
-	// path = modle.get(i).getSamllImg();
-	// ImageManager.from(mContext).displayImage(img, path, 0);
-	// lay.addView(img);
-	// }
-	// holder.layImg.addView(lay);
-	// }
 
 	class ImgClick implements OnClickListener {
 		List<GrowthImgModle> modle;
@@ -194,66 +189,34 @@ public class GrowthAdapter extends BaseAdapter {
 
 		@Override
 		public void onClick(View v) {
-			// Utils.showToast(v.getTag() + "");
-			// ShowBigImgPopwindow open = new ShowBigImgPopwindow(mContext, v,
-			// modle);
-			// open.show();
 			new ShowBigImgPopwindow(mContext, v, modle);
 		}
 	}
 
 	/**
-	 * 才从服务器获取数据
-	 * 
+	 * 点赞
 	 */
-	class GetDataTask extends AsyncTask<String, Integer, String> {
-		TextView txt;
-		int position;
-		String count;
+	private void PraiseAndCancle(String cid, String gid, String type,
+			String url, final int postition, final ProgressDialog pd) {
+		PraiseAndCanclePraiseTask task = new PraiseAndCanclePraiseTask(cid,
+				gid, type, url);
+		task.setPraiseCallBack(new PraiseAndCancle() {
+			@Override
+			public void praiseAndCancle(String type, int count) {
+				pd.dismiss();
+				listData.get(postition).setPraise(count);
+				if (type.equals("praise")) {
+					listData.get(postition).setIspraise(true);
+				} else {
+					listData.get(postition).setIspraise(false);
 
-		public GetDataTask(ViewHolder holder, int position) {
-			txt = (TextView) holder.praise;
-		}
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			String rt = "";
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("cid", params[0]);
-			map.put("uid", SharedUtils.getString("uid", ""));
-			map.put("gid", params[1]);
-			map.put("token", SharedUtils.getString("token", ""));
-			map.put("timestamp", 0);
-			String result = HttpUrlHelper.postData(map, params[2]);
-			Logger.debug(this, "result:" + result);
-			try {
-				JSONObject jsonobject = new JSONObject(result);
-				rt = jsonobject.getString("rt");
-				if (rt.equals("1")) {
-					count = jsonobject.getString("count");
 				}
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				Logger.error(this, e);
-				e.printStackTrace();
+				notifyDataSetChanged();
 			}
-			return rt;
-		}
 
-		@Override
-		protected void onPostExecute(String result) {
-			if (result.equals("1")) {
-				txt.setText(count);
-				listData.get(position).setIspraise(true);
-			} else {
-				Utils.showToast("点赞失败!");
-			}
-		}
+		});
+		task.execute();
 
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-		}
 	}
+
 }

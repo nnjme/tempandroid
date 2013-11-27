@@ -27,14 +27,14 @@
             android:textSize="20dip" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:layout_marginTop="30dip"
-        android:text="主人，您希望我怎么称呼您？"
-        android:textSize="20dip" />
+    <!-- <TextView -->
+    <!-- android:id="@+id/textView1" -->
+    <!-- android:layout_width="wrap_content" -->
+    <!-- android:layout_height="wrap_content" -->
+    <!-- android:layout_marginLeft="10dip" -->
+    <!-- android:layout_marginTop="30dip" -->
+    <!-- android:text="主人，您希望我怎么称呼您？" -->
+    <!-- android:textSize="20dip" /> -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,26 +45,27 @@
         android:gravity="center"
         android:orientation="vertical" >
 
-        <Spinner
-            android:id="@+id/spinner1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/input_top_radius"
-            android:padding="17dip" />
+        <!-- <Spinner -->
+        <!-- android:id="@+id/spinner1" -->
+        <!-- android:layout_width="match_parent" -->
+        <!-- android:layout_height="wrap_content" -->
+        <!-- android:background="@drawable/input_top_radius" -->
+        <!-- android:padding="17dip" /> -->
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0.2dp"
-            android:layout_marginLeft="6dip"
-            android:layout_marginRight="6dip"
-            android:background="#ffe0e0e0" />
+
+        <!-- <View -->
+        <!-- android:layout_width="match_parent" -->
+        <!-- android:layout_height="0.2dp" -->
+        <!-- android:layout_marginLeft="6dip" -->
+        <!-- android:layout_marginRight="6dip" -->
+        <!-- android:background="#ffe0e0e0" /> -->
 
         <EditText
             android:id="@+id/editNC"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/input"
-            android:hint="自定义"
+            android:background="@drawable/input_top_radius"
+            android:hint="输入您的姓名"
             android:padding="15dip"
             android:textSize="20sp" />
 

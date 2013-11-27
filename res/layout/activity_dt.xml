@@ -5,10 +5,11 @@
     android:background="#f6f6f6"
     android:orientation="vertical" >
 
-    <FrameLayout
+    <LinearLayout
+        android:id="@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/home_menu_bg"
+        android:background="@drawable/top_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 
@@ -16,27 +17,23 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:padding="20dip"
+            android:padding="10dip"
             android:src="@drawable/icon_return" />
 
         <TextView
             android:id="@+id/circleName"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:gravity="center"
+            android:singleLine="true"
             android:textColor="#FFFFFF"
             android:textSize="@dimen/titleSize" />
-    </FrameLayout>
+    </LinearLayout>
 
-    <ListView
-        android:id="@+id/listView1"
+    <com.changlianxi.view.PullDownView
+        android:id="@+id/PullDownlistView"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:cacheColorHint="#00000000"
-        android:divider="@null" >
-    </ListView>
+        android:layout_height="0dip"
+        android:layout_weight="1" />
 
 </LinearLayout>

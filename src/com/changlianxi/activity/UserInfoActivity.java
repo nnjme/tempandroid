@@ -228,9 +228,9 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 
 			if (bitmap != null) {
 				String dir = "/clx/camera/";
-				Utils.createDir(dir);
+				FileUtils.createDir(dir);
 				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = Utils.getgetAbsoluteDir(dir) + name;
+				String fileName = FileUtils.getgetAbsoluteDir(dir) + name;
 				BitmapUtils.createImgToFile(bitmap, fileName);
 				avatarPath = fileName;
 			}
@@ -249,7 +249,7 @@ public class UserInfoActivity extends Activity implements Visible, ChangeView,
 		map.put("pid", pid);
 		map.put("cid", cid);
 		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-				"/people/iuploadAvatar", avatarPath);
+				"/people/iuploadAvatar", avatarPath, "avatar");
 		picTask.setCallBack(this);
 		picTask.execute();
 		pd = new ProgressDialog(this);

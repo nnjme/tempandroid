@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +41,6 @@ import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.EditWather;
 import com.changlianxi.util.ErrorCodeUtil;
-import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.PinyinUtils;
 import com.changlianxi.util.SharedUtils;
@@ -70,6 +71,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	private String code = "";// 成员圈子组合ID，在发送邀请短信接口中有用
 	private String cirName = "";
 	private String rep = "0"; // 该成员是否已经存在
+	private SelectPicPopwindow pop;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -216,12 +218,15 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 		SelectPicModle modle = new SelectPicModle();
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			modle = BitmapUtils.getPickPic(this, data);
 			imgPath = modle.getPicPath();
-			img.setImageBitmap(modle.getBmp());
+			BitmapUtils.startPhotoZoom(this, data.getData());
+
+			// img.setImageBitmap(modle.getBmp());
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
@@ -230,18 +235,17 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			super.onActivityResult(requestCode, resultCode, data);
-			Bundle bundle = data.getExtras();
-			Bitmap bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
 
-			if (bitmap != null) {
-				String dir = "/clx/camera/";
-				Utils.createDir(dir);
-				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = Utils.getgetAbsoluteDir(dir) + name;
-				BitmapUtils.createImgToFile(bitmap, fileName);
-				imgPath = fileName;
-				img.setImageBitmap(bitmap);
+			String fileName = pop.getTakePhotoPath();
+			// Bitmap bitmap = BitmapUtils.FitSizeImg(fileName);
+			imgPath = fileName;
+			// img.setImageBitmap(bitmap);
+			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
+		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
+			Bundle extras = data.getExtras();
+			if (extras != null) {
+				Bitmap photo = extras.getParcelable("data");
+				img.setImageBitmap(photo);
 			}
 		}
 	}
@@ -306,7 +310,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 			finish();
 			break;
 		case R.id.avatarImg:
-			SelectPicPopwindow pop = new SelectPicPopwindow(this, v);
+			pop = new SelectPicPopwindow(this, v);
 			pop.show();
 			break;
 		default:
@@ -340,7 +344,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 					map.put("token", SharedUtils.getString("token", ""));
 					map.put("pid", pid);
 					UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-							"/people/iuploadAvatar", imgPath);
+							"/people/iuploadAvatar", imgPath, "avatar");
 					picTask.setCallBack(this);
 					picTask.execute();
 					return;
@@ -416,5 +420,13 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		} else {
 			Utils.showToast("图标上传失败");
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (pd != null) {
+			pd.dismiss();
+		}
+		super.onDestroy();
 	}
 }

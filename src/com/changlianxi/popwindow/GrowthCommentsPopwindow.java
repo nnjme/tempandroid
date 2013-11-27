@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
@@ -36,6 +37,8 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CommentsModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
+import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.ImageManager;
 import com.changlianxi.util.Logger;
@@ -72,6 +75,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	private Button del;// 删除按钮
 	private ArrayList<String> urlPath = new ArrayList<String>();// 存放图片的地址的本地图片路径编辑时使用
 	private ArrayList<String> imgID = new ArrayList<String>();// 存放图片的地址的ID编辑时使用
+	private int pisition;
+	private RecordOperation callBack;
 
 	/**
 	 * 构造函数
@@ -81,10 +86,11 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	 * @param modle
 	 */
 	public GrowthCommentsPopwindow(Context contxt, View parent,
-			GrowthModle modle) {
+			GrowthModle modle, int pisition) {
 		this.mContext = contxt;
 		this.parent = parent;
 		this.modle = modle;
+		this.pisition = pisition;
 		flater = LayoutInflater.from(contxt);
 		view = flater.inflate(R.layout.growth_comments, null);
 		initView();
@@ -101,7 +107,11 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		}
 		adapter = new MyAdapter();
 		listview.setAdapter(adapter);
-		new GetDataTask().execute();
+		new GetCommentsTask().execute();
+	}
+
+	public void setRecordOperation(RecordOperation callBack) {
+		this.callBack = callBack;
 	}
 
 	/**
@@ -182,7 +192,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	 * 从服务器获取评论内容
 	 * 
 	 */
-	class GetDataTask extends AsyncTask<String, Integer, String> {
+	class GetCommentsTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
 		protected String doInBackground(String... params) {
@@ -199,7 +209,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 				String gid = jsonobject.getString("gid");
 				String num = jsonobject.getString("num");
 				JSONArray jsonarray = jsonobject.getJSONArray("comments");
-				for (int i = 0; i < jsonarray.length(); i++) {
+				for (int i = jsonarray.length() - 1; i >= 0; i--) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					CommentsModle modle = new CommentsModle();
 					String id = object.getString("id");
@@ -244,6 +254,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	class PublishCommentsTask extends AsyncTask<String, Integer, String> {
 		String count;
 		String rt = "";
+		ProgressDialog pd;
 
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
@@ -272,9 +283,19 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 
 		@Override
 		protected void onPostExecute(String result) {
+			pd.dismiss();
 			if (result.equals("1")) {
 				comment.setText("评论(" + count + ")");
 				Utils.showToast("评论成功!");
+				callBack.setComment(pisition, count);
+				CommentsModle modle = new CommentsModle();
+				modle.setCid(cid);
+				modle.setUid(SharedUtils.getString("uid", ""));
+				modle.setContent(edtContent.getText().toString());
+				modle.setTime(DateUtils.getCurrDateStr());
+				cModle.add(modle);
+				adapter.notifyDataSetChanged();
+				listview.setSelection(adapter.getCount());
 
 			} else {
 				Utils.showToast("评论失败!");
@@ -284,6 +305,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
+			pd = new ProgressDialog(mContext);
+			pd.show();
 		}
 	}
 
@@ -293,6 +316,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	 */
 	class DelCommentsTask extends AsyncTask<String, Integer, String> {
 		String rt = "";
+		ProgressDialog pd;
+		String errCode;
 
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
@@ -308,6 +333,9 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 			try {
 				JSONObject jsonobject = new JSONObject(result);
 				rt = jsonobject.getString("rt");
+				if (!rt.equals("1")) {
+					errCode = jsonobject.getString("err");
+				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				Logger.error(this, e);
@@ -318,17 +346,21 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 
 		@Override
 		protected void onPostExecute(String result) {
+			pd.dismiss();
 			if (result.equals("1")) {
 				Utils.showToast("删除成功！");
 				dismiss();
+				callBack.delRecord(pisition);
 			} else {
-				Utils.showToast("删除失败！");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
 			}
 		}
 
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
+			pd = new ProgressDialog(mContext);
+			pd.show();
 		}
 	}
 
@@ -420,6 +452,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 				Utils.showToast("请输入内容！");
 				return;
 			}
+			Utils.hideSoftInput(mContext);
 			new PublishCommentsTask().execute(str);
 			break;
 		case R.id.edit:
@@ -454,5 +487,28 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		default:
 			break;
 		}
+	}
+
+	/**
+	 * 对成长记录的操作接口
+	 * 
+	 * @author teeker_bin
+	 * 
+	 */
+	public interface RecordOperation {
+		/**
+		 * 删除记录
+		 * 
+		 * @param pisition
+		 */
+		public void delRecord(int pisition);
+
+		/**
+		 * 评论
+		 * 
+		 * @param position
+		 * @return
+		 */
+		public void setComment(int position, String count);
 	}
 }

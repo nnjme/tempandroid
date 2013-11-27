@@ -115,6 +115,9 @@ public class CircleAdapter extends BaseAdapter {
 		}
 		if (listmodle.get(position).isNew()) {
 			holder.isnew.setVisibility(View.VISIBLE);
+		} else {
+			holder.isnew.setVisibility(View.GONE);
+
 		}
 		holder.circleName.setText(listmodle.get(position).getCirName());
 		return convertView;

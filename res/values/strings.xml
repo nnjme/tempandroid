@@ -19,11 +19,18 @@
 
     <string-array name="countrys">
         <item>中国</item>
-        <item>中国香港</item>
-        <item>日本</item>
+        <item>中国</item>
+        <item>香港</item>
+        <item>澳门</item>
+        <item>台湾</item>
         <item>韩国</item>
         <item>美国</item>
+        <item>英国</item>
+        <item>法国</item>
+        <item>德国</item>
         <item>俄罗斯</item>
+        <item>澳大利亚</item>
+        <item>其他</item>
     </string-array>
 
     <string name="title_activity_register_finish">RegisterFinishActivity</string>
@@ -39,5 +46,7 @@
     <string name="title_activity_add_one_member">AddOneMemberActivity</string>
     <string name="title_activity_messages_list">MessagesListActivity</string>
     <string name="title_activity_message">MessageActivity</string>
+    <string name="title_activity_circle_info">CircleInfoActivity</string>
+    <string name="title_activity_edit_circle">EditCircleActivity</string>
 
 </resources>

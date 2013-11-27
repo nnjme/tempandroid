@@ -50,7 +50,7 @@ public class RegisterFinishActivity extends Activity implements
 			map.put("v", editNC.getText().toString());
 			PostAsyncTask task = new PostAsyncTask(this, map,
 					"/users/isetUserInfo");
-			task.setTaskCallBack(this);    
+			task.setTaskCallBack(this);
 			task.execute();
 			progressDialog = new ProgressDialog(this);
 			progressDialog.show();

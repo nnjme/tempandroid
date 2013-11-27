@@ -18,11 +18,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts.Photo;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,8 +37,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.changlianxi.modle.ContactModle;
 import com.changlianxi.modle.SmsPrevieModle;
+import com.changlianxi.task.IinviteUserTask;
+import com.changlianxi.task.IinviteUserTask.IinviteUser;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Utils;
 
@@ -52,15 +52,19 @@ import com.changlianxi.util.Utils;
 public class SelectContactsActivity extends Activity implements
 		OnClickListener, OnItemClickListener {
 	private ListView listview;// 显示联系人的列表
-	private List<ContactModle> data = new ArrayList<ContactModle>();// 用来存放联系人
 	private LinearLayout layBot;// 用来显示或隐藏选择数量
 	private Button btfinish;
 	private ImageView back;
 	private LinearLayout addicon;
 	private Cursor cursor;
 	private ContactsAdapter adapter;
-	// private CheckboxAdapter adapter;
 	private ContentResolver resolver;
+	private String type;
+	private String cid;
+	private String cirName;
+	private String cmids = "";// 邀请成员时返回的邀请成员的id
+	private String code = "";// 邀请链接值 需要邀请时有值
+	private List<SmsPrevieModle> smsList = new ArrayList<SmsPrevieModle>();// 展示使用
 
 	/** 获取库Phon表字段 **/
 	private static final String[] PHONES_PROJECTION = new String[] {
@@ -76,28 +80,19 @@ public class SelectContactsActivity extends Activity implements
 
 	/** 联系人的ID **/
 	private static final int PHONES_CONTACT_ID_INDEX = 3;
-	private Handler mHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case 0:
-				data.add((ContactModle) msg.obj);
-				// adapter.notifyDataSetChanged();
-				break;
-			default:
-				break;
-			}
-
-		}
-	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_select_contacts);
+		type = getIntent().getStringExtra("type");
+		if (type.equals("add")) {
+			cid = getIntent().getStringExtra("cid");
+			cirName = getIntent().getStringExtra("cirName");
+		}
 		resolver = this.getContentResolver();
 		initView();
-		// new SelectContacts().execute();
 		refreshData();
 	}
 
@@ -114,90 +109,7 @@ public class SelectContactsActivity extends Activity implements
 		listview = (ListView) findViewById(R.id.contactList);
 		listview.setOnItemClickListener(this);
 		listview.setCacheColorHint(0);
-		// adapter = new CheckboxAdapter();
-		// listview.setAdapter(adapter);
 	}
-
-	// class SelectContacts extends AsyncTask<String, Integer, String> {
-	//
-	// // 可变长的输入参数，与AsyncTask.exucute()对应
-	// @Override
-	// protected String doInBackground(String... params) {
-	// getPhoneContacts();
-	// return null;
-	// }
-	//
-	// @Override
-	// protected void onPostExecute(String result) {
-	//
-	// }
-	//
-	// @Override
-	// protected void onPreExecute() {
-	// // 任务启动，可以在这里显示一个对话框，这里简单处理
-	// }
-	// }
-
-	// private void getPhoneContacts() {
-	// ContentResolver resolver = this.getContentResolver();
-	//
-	// // 获取手机联系人
-	// Cursor phoneCursor = resolver
-	// .query(Phone.CONTENT_URI, PHONES_PROJECTION, null, null,
-	// "sort_key COLLATE LOCALIZED asc");
-	//
-	// if (phoneCursor != null) {
-	// while (phoneCursor.moveToNext()) {
-	//
-	// // 得到手机号码
-	// String phoneNumber = phoneCursor.getString(PHONES_NUMBER_INDEX);
-	// // 当手机号码为空的或者为空字段 跳过当前循环
-	// if (TextUtils.isEmpty(phoneNumber))
-	// continue;
-	//
-	// // 得到联系人名称
-	// String contactName = phoneCursor
-	// .getString(PHONES_DISPLAY_NAME_INDEX);
-	//
-	// // 得到联系人ID
-	// Long contactid = phoneCursor.getLong(PHONES_CONTACT_ID_INDEX);
-	//
-	// // 得到联系人头像ID
-	// Long photoid = phoneCursor.getLong(PHONES_PHOTO_ID_INDEX);
-	//
-	// // 得到联系人头像Bitamp
-	// Bitmap contactPhoto = null;
-	//
-	// // photoid 大于0 表示联系人有头像 如果没有给此人设置头像则给他一个默认的
-	// if (photoid > 0) {
-	// Uri uri = ContentUris.withAppendedId(
-	// ContactsContract.Contacts.CONTENT_URI, contactid);
-	// InputStream input = ContactsContract.Contacts
-	// .openContactPhotoInputStream(resolver, uri);
-	// contactPhoto = BitmapFactory.decodeStream(input);
-	// } else {
-	// contactPhoto = BitmapFactory.decodeResource(getResources(),
-	// R.drawable.hand_pic);
-	// }
-	//
-	// ContactModle modle = new ContactModle();
-	// modle.setName(contactName);
-	// modle.setNum(phoneNumber.replace(" ", ""));
-	// modle.setBmp(contactPhoto);
-	// modle.setSelected(false);
-	// // data.add(modle);
-	// setAdapter(modle);
-	// }
-	//
-	// phoneCursor.close();
-	// }
-	// }
-
-	// private void setAdapter(ContactModle modle) {
-	// Message msg = mHandler.obtainMessage(0, modle);
-	// mHandler.sendMessage(msg);
-	//
-	// }
 
 	private void delicon(String position) {
 		if (position != null) {
@@ -242,6 +154,8 @@ public class SelectContactsActivity extends Activity implements
 		} else {
 			delicon(position + "");
 		}
+		btfinish.setText("完成(" + addicon.getChildCount() + ")");
+
 	}
 
 	@Override
@@ -261,11 +175,15 @@ public class SelectContactsActivity extends Activity implements
 				String num = cur.getString(PHONES_NUMBER_INDEX);
 				SmsPrevieModle smsModle = new SmsPrevieModle();
 				smsModle.setName(name);
-				smsModle.setNum(num);
+				smsModle.setNum(num.replace(" ", ""));
 				listModle.add(smsModle);
 			}
 			if (listModle.size() == 0) {
 				Utils.showToast("至少选择一位联系人");
+				return;
+			}
+			if (type.equals("add")) {
+				addContacts(listModle);
 				return;
 			}
 			Intent intent = new Intent();
@@ -279,6 +197,84 @@ public class SelectContactsActivity extends Activity implements
 			break;
 		default:
 			break;
+		}
+
+	}
+
+	/**
+	 * 添加圈子成员
+	 * 
+	 * @param contactsList
+	 */
+	private void addContacts(final List<SmsPrevieModle> contactsList) {
+		// 添加从通讯录选择的联系人
+		IinviteUserTask task = new IinviteUserTask(cid, contactsList);
+		task.setTaskCallBack(new IinviteUser() {
+
+			@Override
+			public void inviteUser(String rt, String details) {
+				if (rt.equals("1")) {
+					getDetails(details, contactsList);
+					Utils.showToast("添加成功！");
+					if (code.contains("null")) {
+						finish();
+						return;
+					}
+					intentSmsPreviewActivity();
+				} else {
+					Utils.showToast("邀请失败！");
+				}
+			}
+		});
+		task.execute();
+	}
+
+	/**
+	 * 跳转到短信预览界面
+	 */
+	private void intentSmsPreviewActivity() {
+		Intent intent = new Intent();
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("contactsList", (Serializable) smsList);
+		intent.putExtras(bundle);
+		intent.putExtra("cmids", cmids);
+		intent.putExtra("cid", cid);
+		intent.setClass(this, SmsPreviewActivity.class);
+		startActivity(intent);
+		finish();
+	}
+
+	/**
+	 * 解析返回过来的字符串
+	 * 
+	 * @param details
+	 *            实例 　　"details":" 1,4,EO2VqrHI,6;1,5,E6zBbKeg,7"字符串，首先以分号分割，
+	 *            对应每个person的邀请结果
+	 *            ，然后以逗号分割的四部分（第一部分表示结果是否成功，1成功，非1不成功；第二部分是pid，第三部分是邀请code
+	 *            ，第四部分是cmid）
+	 */
+	private void getDetails(String details, List<SmsPrevieModle> contactsList) {
+		String detail[] = details.split(";");
+		for (int i = 0; i < detail.length; i++) {
+			String str[] = detail[i].split(",");
+			if (str[0].equals("1")) {
+				System.out.println("name:" + contactsList.get(i).getName()
+						+ "  code:" + str[2]);
+				if (str[2].equals("") || str[2] == null) {
+					str[2] = "null";
+				}
+				code += str[2];
+				cmids += str[3] + ",";
+				SmsPrevieModle modle = new SmsPrevieModle();
+				modle.setContent("亲爱的" + contactsList.get(i).getName()
+						+ ",邀请您加入" + cirName
+						+ "圈子.您可以访问http://clx.teeker.com/a/b/" + str[2]
+						+ "查看详情");
+				modle.setName(contactsList.get(i).getName());
+				modle.setNum(contactsList.get(i).getNum());
+				smsList.add(modle);
+			}
+
 		}
 
 	}
@@ -338,7 +334,7 @@ public class SelectContactsActivity extends Activity implements
 			String name = cur.getString(PHONES_DISPLAY_NAME_INDEX);
 			holder.name.setText(name);
 			String num = cur.getString(PHONES_NUMBER_INDEX);
-			if (num.length() > 10) {
+			if (!TextUtils.isEmpty(num) && num.length() > 10) {
 				holder.num.setText(num);
 			}
 			Long photoid = cur.getLong(PHONES_PHOTO_ID_INDEX);
@@ -347,14 +343,6 @@ public class SelectContactsActivity extends Activity implements
 			Bitmap bitmap = setImage(photoid, contactid);
 			holder.img.setImageBitmap(bitmap);
 			holder.check.setChecked(selectedMap.get(position));
-			// // 保存记录Id
-			// if (selectedMap.get(position)) {
-			// delContactsIdSet.add(String.valueOf(cur
-			// .getInt(PHONES_CONTACT_ID_INDEX)));
-			// } else {
-			// delContactsIdSet.remove(String.valueOf(cur
-			// .getInt(PHONES_CONTACT_ID_INDEX)));
-			// }
 			return convertView;
 		}
 
@@ -400,89 +388,6 @@ public class SelectContactsActivity extends Activity implements
 		}
 		return BitmapUtils.toRoundBitmap(contactPhoto);
 	}
-
-	// class CheckboxAdapter extends BaseAdapter {
-	// // 记录checkbox的状态
-	// public HashMap<Integer, Boolean> state = new HashMap<Integer, Boolean>();
-	//
-	// @Override
-	// public int getCount() {
-	// // TODO Auto-generated method stub
-	// return data.size();
-	// }
-	//
-	// @Override
-	// public Object getItem(int position) {
-	// // TODO Auto-generated method stub
-	// return data.get(position);
-	// }
-	//
-	// @Override
-	// public long getItemId(int position) {
-	// // TODO Auto-generated method stub
-	// return position;
-	// }
-	//
-	// // 重写View
-	// @Override
-	// public View getView(final int position, View convertView,
-	// ViewGroup parent) {
-	// final ViewHolder holder;
-	// if (convertView == null) {
-	// holder = new ViewHolder();
-	// LayoutInflater mInflater = LayoutInflater
-	// .from(SelectContactsActivity.this);
-	// convertView = mInflater.inflate(R.layout.contact_list_item,
-	// null);
-	// holder.laybg = (LinearLayout) convertView
-	// .findViewById(R.id.laybg);
-	// holder.name = (TextView) convertView.findViewById(R.id.name);
-	// holder.img = (ImageView) convertView.findViewById(R.id.img);
-	// holder.check = (CheckBox) convertView
-	// .findViewById(R.id.checkBox1);
-	// holder.num = (TextView) convertView.findViewById(R.id.num);
-	// convertView.setTag(holder);
-	//
-	// } else {
-	// holder = (ViewHolder) convertView.getTag();
-	// }
-	// setViewWidth(holder.img);
-	// if (data.get(position).getBmp() == null) {
-	// holder.img.setImageResource(R.drawable.root_default);
-	// } else {
-	// holder.img.setImageBitmap(BitmapUtils.toRoundBitmap(data.get(
-	// position).getBmp()));
-	// }
-	// holder.name.setText(data.get(position).getName());
-	// holder.num.setText(data.get(position).getNum());
-	// holder.check.setOnClickListener(new OnClickListener() {
-	// @Override
-	// public void onClick(View v) {
-	// if (holder.check.isChecked()) {
-	// state.put(position, true);
-	// layBot.setVisibility(View.VISIBLE);
-	// addImg(data.get(position).getBmp(), state.size() - 1
-	// + "");
-	// data.get(position).setPosition(state.size() - 1 + "");
-	// // System.out.println("size:"
-	// // + listData.get(position).getPosition());
-	// btfinish.setText("完成(" + state.size() + ")");
-	// } else {
-	// System.out.println("aa:"
-	// + data.get(position).getPosition());
-	// state.remove(position);
-	// btfinish.setText("完成(" + state.size() + ")");
-	// delicon(data.get(position).getPosition());
-	//
-	// }
-	// }
-	// });
-	// holder.check
-	// .setChecked((state.get(position) == null ? false : true));
-	// return convertView;
-	// }
-	//
-	// }
 
 	class ViewHolder {
 		LinearLayout laybg;

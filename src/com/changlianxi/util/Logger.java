@@ -73,7 +73,7 @@ public class Logger {
 	private static Level logLevel = Level.DEBUG;
 
 	// 日志存放目录，默认为SD卡下/asr/crash下
-	private static String logPath = Utils.getgetAbsoluteDir("/clx/crash");
+	private static String logPath = FileUtils.getgetAbsoluteDir("/clx/crash");
 
 	// 日志文件名前辍
 	private static String m_logNamePrex = "crash_";
@@ -150,10 +150,10 @@ public class Logger {
 	 */
 	private static String getLogFileName() {
 		if (TextUtils.isEmpty(logPath)) {
-			if (TextUtils.isEmpty(Utils.getgetAbsoluteDir("/clx/crash"))) {
+			if (TextUtils.isEmpty(FileUtils.getgetAbsoluteDir("/clx/crash"))) {
 				return "";
 			}
-			logPath = Utils.getgetAbsoluteDir("/clx/crash");
+			logPath = FileUtils.getgetAbsoluteDir("/clx/crash");
 		}
 		String fileName = logPath + "/" + m_logNamePrex
 				+ DateUtils.getCurrDateStr("yyyyMMdd") + ".log";

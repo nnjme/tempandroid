@@ -13,14 +13,11 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -39,7 +36,7 @@ import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.UpLoadGrowthPicTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
-import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -67,6 +64,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 	private ArrayList<String> urlPath = new ArrayList<String>();// 存放图片的地址的本地图片路径
 	private String editcontent;
 	private List<String> imgID = new ArrayList<String>();
+	private SelectPicPopwindow pop;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -120,7 +118,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.addPicture:
-			SelectPicPopwindow pop = new SelectPicPopwindow(this, v);
+			pop = new SelectPicPopwindow(this, v);
 			pop.show();
 			break;
 		case R.id.btn_cancel:
@@ -192,19 +190,22 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 					finish();
 					return;
 				}
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("cid", cid);
+				map.put("uid", SharedUtils.getString("uid", ""));
+				map.put("token", SharedUtils.getString("token", ""));
+				map.put("gid", gid);
 				if (type.equals("add")) {
-					// new UpLoadPicTask().execute();
 					List<String> picPath = new ArrayList<String>();
 					for (PicModle modle : listBmp) {
 						picPath.add(modle.getPath());
 					}
-					picTask = new UpLoadGrowthPicTask(picPath, cid, gid);
+					picTask = new UpLoadGrowthPicTask(picPath, map);
 				} else {
-					picTask = new UpLoadGrowthPicTask(newAdd, cid, gid);
+					picTask = new UpLoadGrowthPicTask(newAdd, map);
 				}
 				picTask.setGrowthCallBack(ReleaseGrowthActivity.this);
 				picTask.execute();
-				// new UpLoadNewAddPicTask().execute();
 			} else {
 				Utils.showToast("发布失败!");
 				progressDialog.dismiss();
@@ -227,10 +228,13 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 	 */
 	class DelTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
+		String rt = "1";
+		JSONObject jsonobject;
+		String errCode;
+
 		@Override
 		protected String doInBackground(String... params) {
 
-			String rt = "1";
 			for (int i = 0; i < delID.size(); i++) {
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("cid", cid);
@@ -247,11 +251,13 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 						"/growth/iremoveImage");
 				Logger.debug(this, "resultdel:" + result);
 				try {
-					JSONObject jsonobject = new JSONObject(result);
+					jsonobject = new JSONObject(result);
 					rt = jsonobject.getString("rt");
+					if (!rt.equals("1")) {
+						errCode = jsonobject.getString("err");
+					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
-					Logger.error(this, e);
 					e.printStackTrace();
 				}
 			}
@@ -264,7 +270,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (result.equals("1")) {
 				Utils.showToast("成长记录已发布!");
 			} else {
-				Utils.showToast("发布失败!");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
 			}
 			if (progressDialog != null && progressDialog.isShowing()) {
 				progressDialog.dismiss();
@@ -280,6 +286,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 		Bitmap bitmap;
 		PicModle modle = new PicModle();
 
@@ -305,71 +312,13 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			super.onActivityResult(requestCode, resultCode, data);
-			Bundle bundle = data.getExtras();
-			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
-
-			if (bitmap != null) {
-				String dir = "/clx/camera/";
-				Utils.createDir(dir);
-				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = Utils.getgetAbsoluteDir(dir) + name;
-				BitmapUtils.createImgToFile(bitmap, fileName);
-				modle.setPath(fileName);
-				modle.setBmp(bitmap);
-			}
-
+			String fileName = pop.getTakePhotoPath();
+			bitmap = BitmapUtils.FitSizeImg(fileName);
+			modle.setPath(fileName);
+			modle.setBmp(bitmap);
 		}
 		listBmp.add(modle);
 		adapter.notifyDataSetChanged();
-	}
-
-	/**
-	 * 通过uri获取文件的绝对路�?
-	 * 
-	 * @param uri
-	 * @return
-	 */
-	protected String getAbsoluteImagePath(Uri uri) {
-		String imagePath = "";
-		String[] proj = { MediaStore.Images.Media.DATA };
-		Cursor cursor = managedQuery(uri, proj, null, null, null);
-
-		if (cursor != null) {
-			int column_index = cursor
-					.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			if (cursor.getCount() > 0 && cursor.moveToFirst()) {
-				imagePath = cursor.getString(column_index);
-			}
-		}
-
-		return imagePath;
-	}
-
-	/**
-	 * 获取SD卡中�?��图片路径
-	 * 
-	 * @return
-	 */
-	@SuppressWarnings("unused")
-	protected String getLatestImage() {
-		String latestImage = null;
-		String[] items = { MediaStore.Images.Media._ID,
-				MediaStore.Images.Media.DATA };
-		Cursor cursor = managedQuery(
-				MediaStore.Images.Media.EXTERNAL_CONTENT_URI, items, null,
-				null, MediaStore.Images.Media._ID + " desc");
-
-		if (cursor != null && cursor.getCount() > 0) {
-			cursor.moveToFirst();
-			for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor
-					.moveToNext()) {
-				latestImage = cursor.getString(1);
-				break;
-			}
-		}
-
-		return latestImage;
 	}
 
 	class MyAdapter extends BaseAdapter {
@@ -493,8 +442,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 		if (type.equals("add")) {
 			if (flag) {
 				Utils.showToast("成长记录已发布!");
-			} else {
-				Utils.showToast("发布失败!");
 			}
 			if (progressDialog != null && progressDialog.isShowing()) {
 				progressDialog.dismiss();

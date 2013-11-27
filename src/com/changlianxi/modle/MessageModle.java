@@ -8,14 +8,22 @@ package com.changlianxi.modle;
  */
 public class MessageModle {
 	// private String id;// 私信消息ID
-	// private String cid;// 私信消息所属圈子ID
+	private String cid;// 私信消息所属圈子ID
 	// private String uid;// 私信发送者用户ID
 	// private String type;// 私信类型
 	private String content;// 私信内容，依据不同类型，内容含义不一样
 	private String time;// 私信发送时间
 	private String avatar;
 	private boolean isSelf;// 是否是自己发送
-	private String name;//发送者姓名
+	private String name;// 发送者姓名
+
+	public String getCid() {
+		return cid;
+	}
+
+	public void setCid(String cid) {
+		this.cid = cid;
+	}
 
 	public String getName() {
 		return name;

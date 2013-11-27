@@ -14,6 +14,9 @@ public class AddCircleMemberActivity extends Activity implements
 	private Button add;
 	private Button input;
 	private ImageView back;
+	private String type;
+	private String cid;
+	private String cirName;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -26,6 +29,11 @@ public class AddCircleMemberActivity extends Activity implements
 		add.setOnClickListener(this);
 		input.setOnClickListener(this);
 		back.setOnClickListener(this);
+		type = getIntent().getStringExtra("type");
+		if (type.equals("add")) {
+			cid = getIntent().getStringExtra("cid");
+			cirName = getIntent().getStringExtra("cirName");
+		}
 	}
 
 	@Override
@@ -34,11 +42,16 @@ public class AddCircleMemberActivity extends Activity implements
 		switch (v.getId()) {
 		case R.id.addFromAddBook:
 			intent.setClass(this, SelectContactsActivity.class);
+			intent.putExtra("type", type);
+			intent.putExtra("cid", cid);
+			intent.putExtra("cirName", cirName);
 			startActivity(intent);
 			break;
 		case R.id.inputContact:
 			intent.setClass(this, AddOneMemberActivity.class);
-			intent.putExtra("type", "create");// ´´½¨È¦×Ó
+			intent.putExtra("cid", cid);
+			intent.putExtra("cirName", cirName);
+			intent.putExtra("type", type);
 			startActivity(intent);
 			break;
 		case R.id.back:

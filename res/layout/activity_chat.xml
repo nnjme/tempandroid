@@ -8,7 +8,7 @@
     <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/home_menu_bg"
+        android:background="@drawable/top_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 
@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:padding="20dip"
+            android:padding="10dip"
             android:src="@drawable/icon_return" />
 
         <TextView
@@ -26,6 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
+            android:singleLine="true"
             android:textColor="#FFFFFF"
             android:textSize="@dimen/titleSize" />
     </FrameLayout>

@@ -176,7 +176,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 			}
 		} else {
 			progressDialog.dismiss();
-			Utils.showToast("推送服务绑定错误");
+			Utils.showToast("推送服务绑定错误" + errorCode);
 		}
 	}
 

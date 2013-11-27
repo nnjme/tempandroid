@@ -2,7 +2,12 @@ package com.changlianxi.db;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -12,7 +17,9 @@ import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.Info;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MemberModle;
+import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.MyComparator;
+import com.changlianxi.util.SharedUtils;
 
 /**
  * 数据库操作类
@@ -23,6 +30,30 @@ import com.changlianxi.util.MyComparator;
 public class DBUtils {
 	public static DataBase dbase = DataBase.getInstance();
 	public static SQLiteDatabase db = dbase.getWritableDatabase();
+
+	/**
+	 * 将圈子成员插入本地数据库
+	 * 
+	 * @param circleName
+	 * @param pid
+	 * @param uid
+	 * @param name
+	 * @param img
+	 * @param employer
+	 * @param sortkey
+	 */
+	public static  void insertCircleUser(String circleName, String pid, String uid,
+			String name, String img, String employer, String sortkey) {
+		ContentValues values = new ContentValues();
+		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
+		values.put("personID", pid);
+		values.put("userID", uid);
+		values.put("userName", name);
+		values.put("userImg", img);
+		values.put("employer", employer);
+		values.put("sortkey", sortkey);
+		insertData(circleName, values);
+	}
 
 	/**
 	 * 从数据库获取存储的本地圈
@@ -53,7 +84,6 @@ public class DBUtils {
 			}
 		}
 		cursor.close();
-		// db.close();
 		return data;
 	}
 
@@ -91,7 +121,6 @@ public class DBUtils {
 			}
 		}
 		cursor.close();
-		// db.close();
 		MyComparator compartor = new MyComparator();
 		Collections.sort(data, compartor);
 		return data;
@@ -124,7 +153,6 @@ public class DBUtils {
 			}
 		}
 		cursor.close();
-		// db.close();
 		return listInfo;
 	}
 
@@ -143,11 +171,9 @@ public class DBUtils {
 				null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.close();
-			// db.close();
 			return true;
 		}
 		cursor.close();
-		// db.close();
 		return false;
 
 	}
@@ -172,15 +198,73 @@ public class DBUtils {
 			String img = cursor.getString(cursor.getColumnIndex("userImg"));
 			modle.setName(name);
 			modle.setAvator(img);
-
 		} else {
 			cursor.close();
-			// db.close();
 			return null;
 		}
 		cursor.close();
-		// db.close();
 		return modle;
+	}
+
+	/**
+	 * 查找成员信息
+	 * 
+	 * @param tabName
+	 * @param uid
+	 * @param pid
+	 * @return
+	 */
+	public static MemberInfoModle findMemberInfo(String tabName, String uid,
+			String pid2, String uid2, String cid) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		MemberInfoModle modle = new MemberInfoModle();
+		Cursor cursor = db.query(tabName, null, "userID='" + uid + "'", null,
+				null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			String name = cursor.getString(cursor.getColumnIndex("userName"));
+			String img = cursor.getString(cursor.getColumnIndex("userImg"));
+			modle.setName(name);
+			modle.setAvator(img);
+		} else {
+			modle = getUserInfoServer(cid, pid2, uid2);
+		}
+		cursor.close();
+		return modle;
+
+	}
+
+	/**
+	 * 从网络获取信息
+	 * 
+	 * @param cid
+	 * @param pid
+	 * @param content
+	 * @return
+	 */
+	private static MemberInfoModle getUserInfoServer(String cid, String uid2,
+			String pid2) {
+		MemberInfoModle modle = new MemberInfoModle();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("cid", cid);
+		map.put("uid", SharedUtils.getString("uid", ""));
+		map.put("pid2", 2);
+		map.put("uid2", 2);
+		map.put("token", SharedUtils.getString("token", ""));
+		String result = HttpUrlHelper.postData(map, "/people/ibasic");
+		try {
+			JSONObject jsonobject = new JSONObject(result);
+			JSONObject object = jsonobject.getJSONObject("person");
+			String name = object.getString("name");
+			modle.setName(name);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return modle;
+
 	}
 
 	/**
@@ -195,7 +279,6 @@ public class DBUtils {
 			db = dbase.getWritableDatabase();
 		}
 		db.insert(tableName, null, values);
-		// db.close();
 	}
 
 	public static void clearTableData(String tableName) {
@@ -203,7 +286,6 @@ public class DBUtils {
 			db = dbase.getWritableDatabase();
 		}
 		db.delete(tableName, null, null);
-		// db.close();
 	}
 
 	/**
@@ -227,11 +309,9 @@ public class DBUtils {
 			System.out.println("cirName:" + name);
 		} else {
 			cursor.close();
-			// db.close();
 			return null;
 		}
 		cursor.close();
-		// db.close();
 		return modle;
 	}
 
@@ -277,11 +357,9 @@ public class DBUtils {
 			name = cursor.getString(cursor.getColumnIndex("userName"));
 		} else {
 			cursor.close();
-			// db.close();
 			return null;
 		}
 		cursor.close();
-		// db.close();
 		return name;
 	}
 
@@ -297,6 +375,32 @@ public class DBUtils {
 		}
 		db.update("circlelist", cv, "cirID=?", new String[] { cirID });
 
+	}
+
+	/**
+	 * 根据圈子ID删除圈子
+	 * 
+	 * @param cirID
+	 */
+	public static void delCircle(String cirID) {
+		db.delete("circlelist", "cirID=?", new String[] { cirID });
+	}
+
+	/**
+	 * 创建表圈子所对应的表
+	 */
+	public static void creatTable(String circleName) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		// 创建圈子所对应的表
+		db.execSQL("CREATE TABLE IF NOT EXISTS "
+				+ circleName
+				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,sortkey varchar)");
+		db.execSQL("create table IF NOT EXISTS "
+				+ circleName
+				+ "userlist"
+				+ "( _id integer PRIMARY KEY AUTOINCREMENT ,tID varchar,personID varchar,key varchar, value varchar,startDate varchar,endDate)");
 	}
 
 	public static void close() {

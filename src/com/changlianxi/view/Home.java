@@ -1,21 +1,15 @@
 package com.changlianxi.view;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,11 +26,9 @@ import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.adapter.CircleAdapter;
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.CircleModle;
-import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.StringUtils;
+import com.changlianxi.task.GetCircleListTask;
+import com.changlianxi.task.GetCircleListTask.GetCircleList;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.BounceScrollView.OnRefreshComplete;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
@@ -47,24 +39,21 @@ import com.changlianxi.view.FlipperLayout.OnOpenListener;
  * @author teeker_bin
  * 
  */
-public class Home implements OnClickListener, OnRefreshComplete {
+public class Home implements OnClickListener, OnRefreshComplete, GetCircleList {
 	private Context mcontext;
 	private View mHome;
 	private LinearLayout mMenu;
 	private OnOpenListener mOnOpenListener;
 	private static List<CircleModle> listModle = new ArrayList<CircleModle>();
-	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
 	private GridView gView;
 	private static CircleAdapter adapter;
-	private ImageView createCircle;
 	private BounceScrollView scrollView;
 	private EditText search;
-	private static DataBase dbase = DataBase.getInstance();
-	private static SQLiteDatabase db;
+	private ProgressDialog progressDialog;
+	public static ImageView imgPromte;
 
 	public Home(Context context) {
 		mcontext = context;
-		db = dbase.getWritableDatabase();
 		mHome = LayoutInflater.from(context).inflate(R.layout.home, null);
 		findViewById();
 		setListener();
@@ -73,110 +62,22 @@ public class Home implements OnClickListener, OnRefreshComplete {
 	}
 
 	private void showAdapter() {
-		CircleModle modle = new CircleModle();
-		modle.setCirIcon("addroot");
-		modle.setCirName("新建圈子");
-		serverListModle.add(modle);
-		listModle.add(modle);
+		listModle.add(newCircle());
 		adapter = new CircleAdapter(mcontext, listModle, gView,
 				(Activity) mcontext);
 		gView.setAdapter(adapter);
 		if (Utils.isNetworkAvailable()) {
-			new GetCircleListTask().execute();
-		} else {
-			Utils.showToast("请检查网络");
-		}
-	}
-
-	/**
-	 * 获取成员列表
-	 * 
-	 */
-	class GetCircleListTask extends AsyncTask<String, Integer, String> {
-		ProgressDialog progressDialog;
-
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		@Override
-		protected String doInBackground(String... params) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("uid", SharedUtils.getString("uid", ""));
-			map.put("token", SharedUtils.getString("token", ""));
-			map.put("timestamp", 0);
-			String result = HttpUrlHelper.postData(map, "/circles/ilist/"
-					+ SharedUtils.getString("uid", ""));
-			// 你要执行的方法
-			try {
-				JSONObject jsonobject = new JSONObject(result);
-				JSONArray jsonarray = jsonobject.getJSONArray("circles");
-				if (jsonarray != null) {
-					DBUtils.clearTableData("circlelist");// 清空本地表 保存最新数据
-				}
-				for (int i = jsonarray.length() - 1; i >= 0; i--) {
-					JSONObject object = (JSONObject) jsonarray.opt(i);
-					CircleModle modle = new CircleModle();
-					String id = object.getString("id");
-					String logo = object.getString("logo");
-					String name = object.getString("name");
-					String isNew = object.getString("is_new");
-					if (isNew.equals("1")) {
-						modle.setNew(true);
-					} else {
-						modle.setNew(false);
-
-					}
-					modle.setCirImg(1);
-					modle.setCirID(id);
-					modle.setCirIcon(StringUtils.JoinString(logo, "_200x200"));
-					modle.setCirName(name);
-					serverListModle.add(serverListModle.size() - 1, modle);
-					insertData(id, name,
-							StringUtils.JoinString(logo, "_200x200"));
-					creatTable("circle" + id);
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-				return null;
-			}
-			return result;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			if (result == null) {// 异常时不执行一下操作
-				return;
-			}
-			listModle.clear();
-			listModle = serverListModle;
-			adapter.setData(listModle);
-			progressDialog.dismiss();
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
+			GetCircleListTask task = new GetCircleListTask();
+			task.setTaskCallBack(this);
+			task.execute();
 			progressDialog = new ProgressDialog(mcontext);
 			if (listModle.size() > 1) {
 				return;
 			}
 			progressDialog.show();
+		} else {
+			Utils.showToast("请检查网络");
 		}
-	}
-
-	/**
-	 * 创建表圈子所对应的表
-	 */
-	private static void creatTable(String circleName) {
-		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
-		}
-		// 创建圈子所对应的表
-		db.execSQL("CREATE TABLE IF NOT EXISTS "
-				+ circleName
-				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,sortkey varchar)");
-		db.execSQL("create table IF NOT EXISTS "
-				+ circleName
-				+ "userlist"
-				+ "( _id integer PRIMARY KEY AUTOINCREMENT ,tID varchar,personID varchar,key varchar, value varchar,startDate varchar,endDate)");
 	}
 
 	/**
@@ -185,24 +86,54 @@ public class Home implements OnClickListener, OnRefreshComplete {
 	 * @param modle
 	 */
 	public static void refreshCircleList(CircleModle modle) {
-		listModle.add(listModle.size() - 1, modle);
+		listModle.add(0, modle);
 		adapter.setData(listModle);
-		creatTable("circle" + modle.getCirID());
+		DBUtils.creatTable("circle" + modle.getCirID());
 	}
 
 	/**
-	 * 插入数据库
+	 * 修改圈子状态 接受还是拒绝
 	 * 
-	 * @param name
-	 * @param num
+	 * @param cirID
+	 * @param flag
 	 */
-	private void insertData(String id, String name, String img) {
+	public static void acceptOrRefuseInvite(String cirID, boolean flag) {
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
-		values.put("cirID", id);
-		values.put("cirName", name);
-		values.put("cirImg", img);
-		DBUtils.insertData("circlelist", values);
+		values.put("isNew", String.valueOf(flag));
+		DBUtils.editCircleInfo(values, cirID);
+		int position = findCirPosition(cirID);
+		listModle.get(position).setNew(false);
+		adapter.setData(listModle);
+
+	}
+
+	/***
+	 * 退出圈子
+	 * 
+	 * @param cirID
+	 */
+	public static void exitCircle(String cirID) {
+		int position = findCirPosition(cirID);
+		listModle.remove(position);
+		adapter.setData(listModle);
+		DBUtils.delCircle(cirID);
+	}
+
+	/**
+	 * 查找圈子索引值
+	 * 
+	 * @param cirID
+	 * @return
+	 */
+	private static int findCirPosition(String cirID) {
+		for (int i = 0; i < listModle.size(); i++) {
+			if (cirID.equals(listModle.get(i).getCirID())) {
+				return i;
+
+			}
+		}
+		return -1;
 	}
 
 	/**
@@ -211,14 +142,14 @@ public class Home implements OnClickListener, OnRefreshComplete {
 	private void findViewById() {
 		mMenu = (LinearLayout) mHome.findViewById(R.id.home_menu);
 		gView = (GridView) mHome.findViewById(R.id.gridView1);
-		createCircle = (ImageView) mHome.findViewById(R.id.createCircle);
+		gView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		scrollView = (BounceScrollView) mHome
 				.findViewById(R.id.bounceScrollView);
 		search = (EditText) mHome.findViewById(R.id.search);
+		imgPromte = (ImageView) mHome.findViewById(R.id.imgNews);
 	}
 
 	private void setListener() {
-		createCircle.setOnClickListener(this);
 		scrollView.setOnRefreshComplete(this);
 		mMenu.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -234,6 +165,7 @@ public class Home implements OnClickListener, OnRefreshComplete {
 				if (position == listModle.size() - 1) {
 					Intent intent = new Intent();
 					intent.setClass(mcontext, AddCircleMemberActivity.class);
+					intent.putExtra("type", "create");
 					mcontext.startActivity(intent);
 					return;
 				}
@@ -242,6 +174,7 @@ public class Home implements OnClickListener, OnRefreshComplete {
 				Intent it = new Intent();
 				it.setClass(mcontext, CircleActivity.class);
 				it.putExtra("name", name);
+				it.putExtra("type", "home");// 从圈子列表界面跳转
 				it.putExtra("is_New", listModle.get(position).isNew());
 				it.putExtra("cirID", listModle.get(position).getCirID());
 				mcontext.startActivity(it);
@@ -271,6 +204,33 @@ public class Home implements OnClickListener, OnRefreshComplete {
 	@Override
 	public void onComplete() {
 		search.setVisibility(View.VISIBLE);
+	}
+
+	/**
+	 * 新建圈子
+	 * 
+	 * @return
+	 */
+	private CircleModle newCircle() {
+		CircleModle modle = new CircleModle();
+		modle.setCirIcon("addroot");
+		modle.setNew(false);
+		modle.setCirName("新建圈子");
+		return modle;
+	}
+
+	@Override
+	public void getCircleList(List<CircleModle> modles) {
+		if (progressDialog != null) {
+			progressDialog.dismiss();
+		}
+		if (modles.size() == 0) {
+			return;
+		}
+		modles.add(newCircle());
+		listModle.clear();
+		listModle = modles;
+		adapter.setData(listModle);
 	}
 
 }

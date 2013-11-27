@@ -7,7 +7,8 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dip" >
+        android:layout_marginTop="20dip"
+        android:descendantFocusability="blocksDescendants" >
 
         <RelativeLayout
             android:layout_width="fill_parent"
@@ -71,7 +72,7 @@
 
                 <com.changlianxi.view.GrowthImgGridView
                     android:id="@+id/imgGridview"
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
                     android:numColumns="4"
                     android:scrollbars="none" >
@@ -129,7 +130,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="5dip"
                             android:background="#f2f2f2"
-                            android:text="80"
                             android:textSize="20dip" />
                     </LinearLayout>
 
@@ -159,7 +159,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="5dip"
                             android:background="#f2f2f2"
-                            android:text="9"
                             android:textSize="20dip" />
                     </LinearLayout>
                 </LinearLayout>

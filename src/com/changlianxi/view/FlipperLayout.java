@@ -10,6 +10,9 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
+import com.changlianxi.activity.R;
+import com.changlianxi.util.Utils;
+
 /**
  * 自己重写的ViewGroup,用与滑动切换界面使用,代码不详解,慢点看的话应该能看懂的...
  * 
@@ -39,8 +42,11 @@ public class FlipperLayout extends ViewGroup {
 	public FlipperLayout(Context context) {
 		super(context);
 		mScroller = new Scroller(context);
-		mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-				120, getResources().getDisplayMetrics());
+		mWidth = (int) TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_DIP,
+				Utils.getSecreenWidth(context)
+						- getResources().getDimension(R.dimen.width),
+				getResources().getDisplayMetrics());
 
 	}
 

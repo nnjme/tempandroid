@@ -1,6 +1,5 @@
 package com.changlianxi.util;
 
- 
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
@@ -35,8 +34,6 @@ public class PinyinUtils {
 						pinyinName += temp[0].charAt(0);
 					}
 				} catch (BadHanyuPinyinOutputFormatCombination e) {
-					Logger.error("PinyinUtils.getPinyinFrt", e);
-
 					e.printStackTrace();
 				}
 			} else {// 为英文字�?
@@ -64,7 +61,6 @@ public class PinyinUtils {
 			pinyinName = PinyinHelper.toHanyuPinyinString(chines,
 					defaultFormat, "");
 		} catch (BadHanyuPinyinOutputFormatCombination e) {
-			Logger.error("PinyinUtils.getPinyin", e);
 
 		}
 		return pinyinName;

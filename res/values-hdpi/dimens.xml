@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="margin30">19dip</dimen>
+    <dimen name="margin20">13dip</dimen>
+    <dimen name="margin39">24dip</dimen>
+    <dimen name="margin42">26dip</dimen>
+    <dimen name="margin71">44dip</dimen>
+    <dimen name="margin191">119dip</dimen>
+    <dimen name="textsize26">16sp</dimen>
+    <dimen name="picwidth">106dip</dimen>
+    <dimen name="picbgwidth">124dip</dimen>
+    <dimen name="width">238dip</dimen>
+
+</resources>

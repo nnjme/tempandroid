@@ -2,10 +2,10 @@ package com.changlianxi.view;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,8 +19,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.activity.LoginActivity;
 import com.changlianxi.activity.R;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
@@ -119,7 +119,10 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 				holder.txt = (TextView) convertView.findViewById(R.id.menutxt);
 				holder.angle = (ImageView) convertView.findViewById(R.id.angle);
 				int mWidth = (int) TypedValue.applyDimension(
-						TypedValue.COMPLEX_UNIT_DIP, 136, mcontext
+						TypedValue.COMPLEX_UNIT_DIP,
+						Utils.getSecreenWidth(mcontext)
+								- mcontext.getResources().getDimension(
+										R.dimen.width) + 12, mcontext
 								.getResources().getDisplayMetrics());
 				WigdtContorl.setLayoutX(holder.angle,
 						Utils.getSecreenWidth(mcontext) - mWidth);
@@ -192,7 +195,9 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 			mactivity.finish();
 			SharedUtils.setString("uid", "");
 			SharedUtils.setString("token", "");
-			Logger.debug(this, "退出");
+			Intent intent = new Intent();
+			intent.setClass(mcontext, LoginActivity.class);
+			mcontext.startActivity(intent);
 			break;
 		default:
 			break;

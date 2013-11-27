@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:layout_height="wrap_content"
+    android:background="@color/white" >
 
-    <LinearLayout
-        android:id="@+id/headerLayout"
+    <com.changlianxi.view.SearchEditText
+        android:id="@+id/search"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dip"
+        android:layout_marginLeft="7dip"
+        android:layout_marginRight="7dip"
+        android:layout_marginTop="10dip"
+        android:background="@drawable/search"
+        android:drawableRight="@drawable/del"
+        android:hint="搜索成员"
+        android:singleLine="true"
+        android:textColor="@color/a3" >
+    </com.changlianxi.view.SearchEditText>
 
-        <EditText
-            android:id="@+id/headerSearch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:focusable="false" >
-        </EditText>
-    </LinearLayout>
-</LinearLayout>
+</LinearLayout>

@@ -8,7 +8,10 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +25,7 @@ import android.widget.ImageView;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.util.EditWather;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -46,9 +50,34 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 	private EditText ediNum;// 手机号输入框
 	private EditText ediCode;// 验证码输入框
 	private EditText ediPasswd;// 密码输入框
+	private EditText editAgainPassword;// 再次输入密码
 	private String uid;
-	private String type = "";// 1 找回密码回调接口处理 2 验证码接口回调处理 3 设置密码接口回调处理
+	private String type = "";// 1 找回密码回调接口处理 2 验证码接口回调处理 3 设置密码接口回调处理4
+								// 重新发送验证码回调处理
 	private ProgressDialog pd;
+	private Button btGetCode;// 注册界面重新获取验证码按钮
+	private int second = 60;// 用于重新获取验证码时间倒计时
+	private Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				btGetCode.setText("重新获取验证码  " + "(" + second + "s)");
+				second--;
+				if (second < 0) {
+					btGetCode.setText("重新获取验证码  ");
+					btGetCode.setEnabled(true);
+					removeMessages(0);
+					btGetCode.setTextColor(Color.WHITE);
+					return;
+				}
+				this.sendEmptyMessageDelayed(0, 1000);
+				break;
+			default:
+				break;
+			}
+
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -88,6 +117,8 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 		btfinishYz = (Button) find2.findViewById(R.id.btfinish_yz);
 		btfinishYz.setOnClickListener(this);
 		ediCode = (EditText) find2.findViewById(R.id.editCode);
+		btGetCode = (Button) find2.findViewById(R.id.bt_get_code);
+		btGetCode.setOnClickListener(this);
 	}
 
 	/**
@@ -97,6 +128,8 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 		btfinish = (Button) find3.findViewById(R.id.btfinish);
 		btfinish.setOnClickListener(this);
 		ediPasswd = (EditText) find3.findViewById(R.id.editPassword);
+		editAgainPassword = (EditText) find3
+				.findViewById(R.id.editAgainPassword);
 	}
 
 	@Override
@@ -133,9 +166,13 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			break;
 		case R.id.btfinish:
 			// 找回密码之设置密码
+			if (!ediPasswd.getText().toString()
+					.equals(editAgainPassword.getText().toString())) {
+				Utils.showToast("两次密码输入不一致");
+				return;
+			}
 			map = new HashMap<String, Object>();
 			map.put("uid", SharedUtils.getString("uid", ""));
-			map.put("uid", uid);
 			map.put("type", "retrievePasswd");
 			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
 			map.put("passwd", ediPasswd.getText().toString());
@@ -145,6 +182,22 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			pd = new ProgressDialog(this);
 			pd.show();
 			type = "3";
+			break;
+		case R.id.bt_get_code:
+			second = 60;
+			btGetCode.setTextColor(Color.GRAY);
+			btGetCode.setEnabled(false);
+			mHandler.sendEmptyMessage(0);
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("type", "retrievePasswd");
+			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+			task = new PostAsyncTask(this, map, "/users/isendAuthCode");
+			task.setTaskCallBack(this);
+			task.execute();
+			pd = new ProgressDialog(this);
+			pd.show();
+			type = "4";
 			break;
 		default:
 			break;
@@ -164,13 +217,15 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 				uid = object.getString("uid");
 				SharedUtils.setString("uid", uid);
 				group.setView(find2);
+				btGetCode.setTextColor(Color.GRAY);
+				btGetCode.setEnabled(false);
+				mHandler.sendEmptyMessage(0);
+				Utils.hideSoftInput(this);
 
 			} else {
 				Utils.showToast("手机号码不存在");
 			}
 		} catch (JSONException e) {
-			Logger.error(this, e);
-
 			e.printStackTrace();
 		}
 	}
@@ -218,6 +273,24 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 	}
 
 	/**
+	 * 重新获取验证码
+	 * 
+	 * @param result
+	 */
+	private void getAgainCode(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt != 1) {
+				String errCode = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * 接口回调函数
 	 */
 	@Override
@@ -229,6 +302,8 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			CheckCode(result);
 		} else if (type.equals("3")) {
 			SetPassword(result);
+		} else if (type.equals("4")) {
+			getAgainCode(result);
 		}
 
 	}

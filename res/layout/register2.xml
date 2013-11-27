@@ -12,28 +12,12 @@
         android:text="我们已经向你的手机发送验证码"
         android:textSize="20dip" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/txt_show_num"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dip"
-        android:gravity="center" >
-
-        <TextView
-            android:id="@+id/txt_show_num"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="131****6101"
-            android:textSize="20dip" />
-
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:background="@null"
-            android:text="更改"
-            android:textSize="20dip" />
-    </LinearLayout>
+        android:textSize="20sp" />
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -7,7 +7,7 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/home_menu_bg"
+        android:background="@drawable/top_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 
@@ -15,13 +15,12 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="20dip"
+            android:padding="10dip"
             android:src="@drawable/icon_return" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:gravity="center"
             android:text="创建圈子"
             android:textColor="#FFFFFF"
@@ -142,34 +141,6 @@
 
                     <requestFocus />
                 </EditText>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/zhiwu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/layAdd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="30dip"
-                android:gravity="center" >
-
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/icon_add1" />
-
-                <TextView
-                    android:id="@+id/textView4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="添加圈子职务"
-                    android:textSize="18sp" />
             </LinearLayout>
 
             <Button

@@ -2,6 +2,7 @@ package com.changlianxi.task;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,9 +10,10 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 
 import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
-import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 
 /**
  * 成长记录图片上传AsyncTask
@@ -22,14 +24,13 @@ import com.changlianxi.util.SharedUtils;
 public class UpLoadGrowthPicTask extends AsyncTask<String, Integer, String> {
 	private List<String> picPath;// 存放要上传的图片地址列表
 	private String rt = "1";
-	private String cid = "";// 圈子id
-	private String gid = "";// 成长记录id
 	private UpLoadPic growCallBack;
+	private Map<String, Object> map;
+	private String errCode;
 
-	public UpLoadGrowthPicTask(List<String> picPath, String cid, String gid) {
+	public UpLoadGrowthPicTask(List<String> picPath, Map<String, Object> map) {
 		this.picPath = picPath;
-		this.cid = cid;
-		this.gid = gid;
+		this.map = map;
 	}
 
 	public void setGrowthCallBack(UpLoadPic callback) {
@@ -42,15 +43,15 @@ public class UpLoadGrowthPicTask extends AsyncTask<String, Integer, String> {
 		for (int i = 0; i < picPath.size(); i++) {
 			File file = new File(picPath.get(i));
 			if (file != null) {
-				result = HttpUrlHelper.postDataFile(HttpUrlHelper.strUrl
-						+ "/growth/iuploadImage", file, cid,
-						SharedUtils.getString("uid", ""), gid,
-						SharedUtils.getString("token", ""));
-				Logger.debug(this, "Picresult:" + result);
+				result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl
+						+ "/growth/iuploadImage", map, file, "img");
 			}
 			try {
 				JSONObject jsonobject = new JSONObject(result);
 				rt = jsonobject.getString("rt");
+				if (!rt.equals("1")) {
+					errCode = jsonobject.getString("err");
+				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				Logger.error(this, e);
@@ -68,6 +69,7 @@ public class UpLoadGrowthPicTask extends AsyncTask<String, Integer, String> {
 		if (result.equals("1")) {
 			growCallBack.upLoadFinish(true);
 		} else {
+			Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
 			growCallBack.upLoadFinish(false);
 		}
 	}

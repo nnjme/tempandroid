@@ -1,9 +1,13 @@
 package com.changlianxi.popwindow;
 
+import java.io.File;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +18,7 @@ import android.widget.PopupWindow;
 
 import com.changlianxi.activity.R;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.FileUtils;
 
 /**
  * 选择图片 拍照 选择框
@@ -29,6 +34,7 @@ public class SelectPicPopwindow implements OnClickListener {
 	private Button btnPickPhoto;
 	private Button btnCancle;
 	private View view;
+	private String fileName;
 
 	public SelectPicPopwindow(Context context, View v) {
 		this.mContext = context;
@@ -78,6 +84,13 @@ public class SelectPicPopwindow implements OnClickListener {
 		popupWindow.dismiss();
 	}
 
+	/**
+	 * 返回拍照之后保存路径
+	 */
+	public String getTakePhotoPath() {
+		return fileName;
+	}
+
 	@Override
 	public void onClick(View v) {
 		dismiss();
@@ -91,7 +104,14 @@ public class SelectPicPopwindow implements OnClickListener {
 					Constants.REQUEST_CODE_GETIMAGE_BYSDCARD);
 			break;
 		case R.id.btn_take_photo:
-			Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+			String dir = "/clx/camera/";
+			FileUtils.createDir(dir);
+			String name = FileUtils.getFileName() + ".jpg";
+			fileName = FileUtils.getgetAbsoluteDir(dir) + name;
+			Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+			// 下面这句指定调用相机拍照后的照片存储的路径
+			intent.putExtra(MediaStore.EXTRA_OUTPUT,
+					Uri.fromFile(new File(fileName)));
 			((Activity) mContext).startActivityForResult(intent,
 					Constants.REQUEST_CODE_GETIMAGE_BYCAMERA);
 			break;
@@ -99,5 +119,4 @@ public class SelectPicPopwindow implements OnClickListener {
 			break;
 		}
 	}
-
 }

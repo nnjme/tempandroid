@@ -5,13 +5,13 @@
     android:orientation="vertical"
     android:paddingLeft="10dp" >
 
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="0.2dp"
         android:layout_marginBottom="10dip"
         android:layout_marginTop="10dip"
-        android:src="@drawable/unipay_tenpay_loading0015" />
+        android:background="#ffe0e0e0" />
 
     <LinearLayout
         android:layout_width="match_parent"

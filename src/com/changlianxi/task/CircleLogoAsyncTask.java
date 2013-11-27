@@ -1,6 +1,8 @@
 package com.changlianxi.task;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,7 +11,6 @@ import android.os.AsyncTask;
 
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 
 /**
@@ -42,11 +43,12 @@ public class CircleLogoAsyncTask extends AsyncTask<String, Integer, String> {
 	protected String doInBackground(String... params) {
 		String result = "";
 		File file = new File(cirIconPath);
-		result = HttpUrlHelper.postCircleLogo(HttpUrlHelper.strUrl
-				+ "/circles/iuploadLogo", file, cid,
-				SharedUtils.getString("uid", ""),
-				SharedUtils.getString("token", ""));
-		Logger.debug(this, result);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("cid", cid);
+		map.put("uid", SharedUtils.getString("uid", ""));
+		map.put("token", SharedUtils.getString("token", ""));
+		result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl
+				+ "/circles/iuploadLogo", map, file, "logo");
 		try {
 			JSONObject jsonobject = new JSONObject(result);
 			rt = jsonobject.getString("rt");

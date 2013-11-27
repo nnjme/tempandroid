@@ -17,6 +17,7 @@ import android.text.TextUtils;
 public class DateUtils {
 
 	private static final Map<String, DateFormat> DFS = new HashMap<String, DateFormat>();
+	private static DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private DateUtils() {
 	}
@@ -73,7 +74,6 @@ public class DateUtils {
 	 * @return
 	 */
 	public static String interceptDateStr(String str, String format) {
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		DateFormat df1 = new SimpleDateFormat(format);
 		String strdate = "";
 		try {
@@ -103,4 +103,58 @@ public class DateUtils {
 		return calendar.getTime();
 	}
 
+	/**
+	 * 转换为php时间戳 减去后三位
+	 * 
+	 * @param str
+	 */
+	public static String phpTime(Long str) {
+		String strTime = String.valueOf(str);
+		return strTime.substring(0, strTime.length() - 3);
+
+	}
+
+	/**
+	 * 将string类型转换为date
+	 * 
+	 * @param str
+	 */
+	public static long convertToDate(String str) {
+		Date date = null;
+		try {
+			date = df.parse(str);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return date.getTime();
+	}
+
+	/**
+	 * 当前时间加一秒
+	 * 
+	 * @param strTime
+	 */
+	public static String addOneSecond(String strTime) {
+		int num = Integer.valueOf(strTime.substring(strTime.length() - 1)) + 1;
+		return strTime.substring(0, strTime.length() - 1) + num + "";
+
+	}
+
+	public static String publishedTime(String strTime) {
+		try {
+			Date now = df.parse("2004-03-26 13:31:40");
+			Date date = df.parse("2004-03-26 13:30:24");
+			long l = now.getTime() - date.getTime();
+			long day = l / (24 * 60 * 60 * 1000);
+			long hour = (l / (60 * 60 * 1000) - day * 24);
+			long min = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
+			System.out.println("" + day + "天" + hour + "小时" + min + "分");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return strTime;
+
+	}
 }

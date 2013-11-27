@@ -113,7 +113,7 @@ public class ListViewPopwindow implements OnItemClickListener {
 				holder.laybg.setBackgroundColor(Color.WHITE);
 			} else {
 				holder.laybg.setBackgroundColor(mContext.getResources()
-						.getColor(R.color.user_item));
+						.getColor(R.color.f6));
 			}
 			holder.text.setText(array[position]);
 			return convertView;

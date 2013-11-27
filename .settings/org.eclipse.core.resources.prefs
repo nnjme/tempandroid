@@ -1,9 +1,9 @@
-#Tue Nov 05 14:39:28 CST 2013
+#Wed Nov 27 16:05:51 CST 2013
 eclipse.preferences.version=1
 encoding//src/com/changlianxi/activity=Gbk
-encoding//src/com/changlianxi/activity/AsyncLoadListImageActivity.java=UTF-8
 encoding//src/com/changlianxi/activity/CLXApplication.java=UTF-8
 encoding//src/com/changlianxi/activity/CircleActivity.java=UTF-8
+encoding//src/com/changlianxi/activity/CircleUserActivity.java=UTF-8
 encoding//src/com/changlianxi/activity/FindPasswordActivity.java=Gbk
 encoding//src/com/changlianxi/activity/GrowthActivity.java=Gbk
 encoding//src/com/changlianxi/activity/LoginActivity.java=Gbk
@@ -21,7 +21,6 @@ encoding//src/com/changlianxi/util/AsyncImageLoader.java=Gbk
 encoding//src/com/changlianxi/util/CrashHandler.java=Gbk
 encoding//src/com/changlianxi/util/ExpressionUtil.java=UTF-8
 encoding//src/com/changlianxi/util/Expressions.java=UTF-8
-encoding//src/com/changlianxi/util/FileCache.java=Gbk
 encoding//src/com/changlianxi/util/HttpUtil.java=Gbk
 encoding//src/com/changlianxi/util/MD5.java=Gbk
 encoding//src/com/changlianxi/util/MemoryCache.java=Gbk

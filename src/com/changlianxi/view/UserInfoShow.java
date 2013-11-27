@@ -403,8 +403,7 @@ public class UserInfoShow {
 				holder.edit.setOnClickListener(new BtnClick(holder.titleKey
 						.getText().toString()));
 				if (position == 0) {
-					holder.line = (ImageView) view
-							.findViewById(R.id.imageView1);
+					holder.line = (View) view.findViewById(R.id.line);
 					holder.line.setVisibility(View.GONE);
 				}
 				return view;
@@ -547,7 +546,7 @@ public class UserInfoShow {
 	}
 
 	class ViewHolder {
-		ImageView line;
+		View line;
 		TextView key;
 		TextView value;
 		ImageView sms;

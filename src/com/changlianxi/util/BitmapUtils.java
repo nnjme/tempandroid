@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -266,10 +267,7 @@ public class BitmapUtils {
 		cursor.moveToFirst();
 		// 最后根据索引值获取图片路径
 		String picPath = cursor.getString(column_index);
-		Logger.debug("getPickPic:", picPath);
 		Bitmap bitmap = FitSizeImg(picPath);
-		// Bitmap bitmap = loadImgThumbnail(picPath,
-		// MediaStore.Images.Thumbnails.MICRO_KIND, context);
 		modle.setPicPath(picPath);
 		if (bitmap != null) {
 			modle.setBmp(bitmap);
@@ -318,5 +316,27 @@ public class BitmapUtils {
 		}
 		resizeBmp = BitmapFactory.decodeFile(file.getPath(), opts);
 		return resizeBmp;
+	}
+
+	/**
+	 * 裁剪图片方法实现 &nbsp;
+	 * 
+	 * @param uri
+	 */
+
+	public static void startPhotoZoom(Context context, Uri uri) {
+		Intent intent = new Intent("com.android.camera.action.CROP");
+		intent.setDataAndType(uri, "image/*");
+		// 下面这个crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
+		intent.putExtra("crop", "true");
+		// aspectX aspectY 是宽高的比例
+		intent.putExtra("aspectX", 1);
+		intent.putExtra("aspectY", 1);
+		// outputX outputY 是裁剪图片宽高
+		intent.putExtra("outputX", 300);
+		intent.putExtra("outputY", 300);
+		intent.putExtra("return-data", true);
+		((Activity) context).startActivityForResult(intent,
+				Constants.REQUEST_CODE_GETIMAGE_DROP);
 	}
 }

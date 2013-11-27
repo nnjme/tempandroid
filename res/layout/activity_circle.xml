@@ -28,7 +28,8 @@
         android:id="@+id/btParent"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#e9e9e9"
+        android:background="@color/f6"
+        android:gravity="center"
         android:orientation="horizontal" >
 
         <Button
@@ -74,15 +75,20 @@
             android:textColor="@color/default_font_color"
             android:textSize="20dip" />
 
-        <Button
+        <LinearLayout
             android:id="@+id/more"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dip"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/icon_more"
-            android:textColor="@color/default_font_color"
-            android:textSize="20dip" />
+            android:gravity="center" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dip"
+                android:layout_marginRight="5dip"
+                android:background="@drawable/footer_nav_more" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

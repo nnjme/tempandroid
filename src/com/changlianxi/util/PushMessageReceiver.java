@@ -3,15 +3,23 @@ package com.changlianxi.util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.view.View;
 
 import com.baidu.android.pushservice.PushConstants;
 import com.changlianxi.activity.CLXApplication;
+import com.changlianxi.activity.CircleActivity;
+import com.changlianxi.activity.R;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.PushChat;
 import com.changlianxi.inteface.PushMessages;
 import com.changlianxi.inteface.PushOnBind;
+import com.changlianxi.modle.MessageModle;
+import com.changlianxi.view.Home;
 
 /**
  * Push消息处理receiver
@@ -20,6 +28,8 @@ public class PushMessageReceiver extends BroadcastReceiver {
 	public static PushMessages pushMessage;
 	public static PushChat pushChat;
 	private static PushOnBind pushBind;
+	public static int mNewNum = 0;// 通知栏新消息条目，我只是用了一个全局变量，
+	public static final int NOTIFY_ID = 0x000;
 
 	/**
 	 * @param context
@@ -77,6 +87,9 @@ public class PushMessageReceiver extends BroadcastReceiver {
 			JSONObject json = new JSONObject(strJson);
 			String type = json.getString("t");
 			if (type.equals("CHAT")) {
+				if (SharedUtils.getBoolean("isBackHome", false)) {
+					showNotify(strJson);// 后台运行时提醒
+				}
 				if (pushChat == null) {
 					CLXApplication.saveChatModle(strJson);
 					return;
@@ -85,12 +98,45 @@ public class PushMessageReceiver extends BroadcastReceiver {
 			} else if (type.equals("MESSAGE")) {
 				if (pushMessage != null) {
 					pushMessage.getPushMessages(strJson);
+					Home.imgPromte.setVisibility(View.VISIBLE);
 				}
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private void showNotify(String message) {
+		MessageModle modle = Utils.getChatModle(message);
+		if (modle == null) {// 自己发送的消息不谈
+			return;
+		}
+		CLXApplication.getInstance().getMediaPlayer().start();
+		mNewNum++;
+		// 更新通知栏
+		CLXApplication application = CLXApplication.getInstance();
+		int icon = R.drawable.app_icon_1;
+		long when = System.currentTimeMillis();
+		String circleName = DBUtils.getCircleNameById(modle.getCid());
+		Notification notification = new Notification(icon, circleName, when);
+		notification.flags = Notification.FLAG_AUTO_CANCEL;
+		// 设置默认声音
+		// notification.defaults |= Notification.DEFAULT_SOUND;
+		// 设定震动(需加VIBRATE权限)
+		// notification.defaults |= Notification.DEFAULT_VIBRATE;
+		notification.contentView = null;
+		Intent intent = new Intent(application, CircleActivity.class);
+		intent.putExtra("cirID", modle.getCid());
+		intent.putExtra("name", circleName);
+		intent.putExtra("type", "push");// 从推送跳转
+		PendingIntent contentIntent = PendingIntent.getActivity(application, 0,
+				intent, 0);
+		notification.setLatestEventInfo(CLXApplication.getInstance(),
+				(CharSequence) modle.getName() + " (" + mNewNum + "条新消息)",
+				(CharSequence) modle.getContent(), contentIntent);
+
+		application.getNotificationManager().notify(NOTIFY_ID, notification);// 通知一下才会生效哦
 	}
 
 	public static void setPushMessageCallBack(PushMessages push) {
@@ -104,4 +150,5 @@ public class PushMessageReceiver extends BroadcastReceiver {
 	public static void setPushOnBind(PushOnBind bind) {
 		pushBind = bind;
 	}
+
 }

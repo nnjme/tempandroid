@@ -29,7 +29,6 @@ import com.changlianxi.modle.MessagesListModle;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
 import com.changlianxi.view.MyListView.OnRefreshListener;
 

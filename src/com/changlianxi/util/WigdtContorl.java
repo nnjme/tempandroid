@@ -163,4 +163,18 @@ public class WigdtContorl {
 		avatar.setLayoutParams(avataParams);
 		avatarBg.setLayoutParams(avatarBgParams);
 	}
+
+	/**
+	 * …Ë÷√øÌ∏ﬂ÷µ
+	 * 
+	 * @param context
+	 * @param avatar
+	 */
+	public static void setImageWidth(Context context, ImageView img) {
+		int width = Utils.getSecreenWidth(context) / 4;
+		LinearLayout.LayoutParams avataParams = new LinearLayout.LayoutParams(
+				width, width);
+		img.setLayoutParams(avataParams);
+
+	}
 }

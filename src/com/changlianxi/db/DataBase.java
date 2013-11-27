@@ -36,9 +36,7 @@ public class DataBase extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("create table IF NOT EXISTS circlelist( _id integer PRIMARY KEY AUTOINCREMENT ,cirID varchar,cirName varchar, cirImg varchar,cirStatus varchar)");
-		// db.execSQL("create table IF NOT EXISTS userlist( _id integer PRIMARY KEY AUTOINCREMENT ,userID varchar,userName varchar, userImg varchar,employer varchar,sortkey varchar)");
-		// db.execSQL("create table IF NOT EXISTS userInfolist( _id integer PRIMARY KEY AUTOINCREMENT ,userID varchar,userName varchar, userPhone varchar,userEmail varchar,userGendar varchar,userBirthday varchar,userEmployer varchar,userJobTitle varchar)");
+		db.execSQL("create table IF NOT EXISTS circlelist( _id integer PRIMARY KEY AUTOINCREMENT ,cirID varchar,cirName varchar, cirImg varchar,isNew varchar)");
 
 	}
 

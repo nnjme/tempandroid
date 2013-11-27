@@ -13,9 +13,9 @@ import android.os.AsyncTask;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.Utils;
 
 /**
  * 获取某个圈子的聊天内容列表 *
@@ -26,10 +26,10 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 	private GetChatsList callBack;
 	private List<MessageModle> listModle = new ArrayList<MessageModle>();
 	private String cid;
-	private int start;
-	private int end;
+	private String start;
+	private String end;
 
-	public GetChatListTask(String cid, int start, int end) {
+	public GetChatListTask(String cid, String start, String end) {
 		this.cid = cid;
 		this.start = start;
 		this.end = end;
@@ -45,7 +45,7 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("cid", cid);
-		map.put("start", start);
+		map.put("start", DateUtils.phpTime(DateUtils.convertToDate(start)));
 		map.put("end", end);
 		String result = HttpUrlHelper.postData(map, "/chats/ilist");
 		try {
@@ -54,7 +54,7 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 				return null;
 			}
 			JSONArray jsonarray = jsonobject.getJSONArray("chats");
-			for (int i = 0; i < jsonarray.length(); i++) {
+			for (int i = jsonarray.length() - 1; i > 0; i--) {
 				JSONObject object = (JSONObject) jsonarray.opt(i);
 				MessageModle modle = new MessageModle();
 				String name = "";

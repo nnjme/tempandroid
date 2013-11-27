@@ -1,7 +1,5 @@
 package com.changlianxi.view;
 
-import com.changlianxi.util.Logger;
-
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;

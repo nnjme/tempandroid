@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -34,7 +36,6 @@ import com.changlianxi.util.AsyncImageLoader;
 import com.changlianxi.util.AsyncImageLoader.ImageCallback;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
-import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -114,32 +115,32 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Bitmap bitmap = null;
+		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
 			cirIconPath = modle.getPicPath();
-			cirImg.setImageBitmap(modle.getBmp());
+			// cirImg.setImageBitmap(modle.getBmp());
+			BitmapUtils.startPhotoZoom(this, data.getData());
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			super.onActivityResult(requestCode, resultCode, data);
-			Bundle bundle = data.getExtras();
-			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
+			String fileName = popWindow.getTakePhotoPath();
+			// bitmap = BitmapUtils.FitSizeImg(fileName);
+			cirIconPath = fileName;
+			// cirImg.setImageBitmap(bitmap);
+			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
 
-			if (bitmap != null) {
-				String dir = "/clx/camera/";
-				Utils.createDir(dir);
-				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = Utils.getgetAbsoluteDir(dir) + name;
-				BitmapUtils.createImgToFile(bitmap, fileName);
-				cirIconPath = fileName;
-				cirImg.setImageBitmap(bitmap);
+		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
+			Bundle extras = data.getExtras();
+			if (extras != null) {
+				Bitmap photo = extras.getParcelable("data");
+				cirImg.setImageBitmap(photo);
 			}
-
 		}
+
 	}
 
 	/**

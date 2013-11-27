@@ -31,7 +31,8 @@
             android:hint="输入验证码"
             android:inputType="number"
             android:padding="17dip"
-            android:textSize="20dip" />
+            android:textSize="20dip" >
+        </EditText>
 
         <Button
             android:id="@+id/btfinish_yz"
@@ -44,6 +45,7 @@
             android:textSize="25sp" />
 
         <Button
+            android:id="@+id/bt_get_code"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"

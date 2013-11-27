@@ -19,6 +19,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -26,9 +28,13 @@ import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.FloatMath;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
@@ -38,6 +44,7 @@ import android.widget.PopupWindow;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.Utils;
 import com.changlianxi.view.RoundProgressBar;
 
 /**
@@ -46,7 +53,7 @@ import com.changlianxi.view.RoundProgressBar;
  * @author teeker_bin
  * 
  */
-public class ShowBigImgPopwindow {
+public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 	private View parent = null;
 	private ViewPager vp;
 	private List<ImageView> views = new ArrayList<ImageView>();// 定义每页要显示imagveiw
@@ -58,6 +65,25 @@ public class ShowBigImgPopwindow {
 	private HashMap<Integer, Boolean> isSelected = new HashMap<Integer, Boolean>();// 表示是否划过
 	private PopupWindow popupWindow;
 	private ImageView[] imageViews;// 圆点
+	public static int showing;
+
+	private float minscale;
+	private float maxscale = 3;
+	private int oimgw;
+	private int oimgh;
+	private int imgw;
+	private int imgh;
+	private int scw;
+	private int sch;
+	private HashMap<Integer, Matrix> matrixmap = new HashMap();
+	private Matrix savedMatrix = new Matrix();
+	private PointF start = new PointF();
+	private PointF mid = new PointF();
+	private float oldDist;
+	private static final int NONE = 0;
+	private static final int DRAG = 1;
+	private static final int ZOOM = 2;
+	private int mode = NONE;
 
 	/**
 	 * 构造函数 做一些初始化操作
@@ -94,7 +120,6 @@ public class ShowBigImgPopwindow {
 				LayoutParams.MATCH_PARENT);
 		// 这个是为了点击“返回Back”也能使其消失，并且并不会影响你的背景（很神奇的）
 		popupWindow.setBackgroundDrawable(new BitmapDrawable());
-		popupWindow.setAnimationStyle(R.style.AnimBottom);
 	}
 
 	/**
@@ -106,9 +131,12 @@ public class ShowBigImgPopwindow {
 		for (int i = 0; i < data.size(); i++) {
 			ImageView img = new ImageView(mContext);
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.WRAP_CONTENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
+					LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.MATCH_PARENT);
 			img.setLayoutParams(lp);
+			img.setOnClickListener(this);
+			img.setScaleType(ImageView.ScaleType.MATRIX);
+			img.setOnTouchListener(this);
 			views.add(img);
 			// 设置 每张图片的句点
 			ImageView imageView = new ImageView(mContext);
@@ -201,6 +229,9 @@ public class ShowBigImgPopwindow {
 			int position = Integer.valueOf(result);
 			img = views.get(position);
 			img.setImageBitmap(bm);
+			oimgw = bm.getWidth();
+			oimgh = bm.getHeight();
+			initmatrix(img);
 			Logger.debug(this, "大图加载完成！");
 			probar.close();
 			super.onPostExecute(result);
@@ -313,12 +344,9 @@ public class ShowBigImgPopwindow {
 			}
 			popupWindow.showAtLocation(parent, Gravity.CENTER_VERTICAL, 20, 20);
 			popupWindow.update();
-			// probar1.incrementProgressBy(-100);
 		}
 
 		public void porgress(int i) {
-			// int add = i - probar1.getProgress();
-			// probar1.incrementProgressBy(add);
 			probar1.setProgress(i);
 			Logger.debug(this, "progress::" + i);
 		}
@@ -424,5 +452,145 @@ public class ShowBigImgPopwindow {
 		public void startUpdate(View arg0) {
 			// TODO Auto-generated method stub
 		}
+	}
+
+	@Override
+	public void onClick(View v) {
+		dismiss();
+
+	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+
+		ImageView myImageView = (ImageView) v;
+		float[] mv = new float[9];
+		Matrix matrix = new Matrix();
+		if (matrixmap.containsKey(showing)) {
+			matrix = matrixmap.get(showing);
+		}
+
+		switch (event.getAction() & MotionEvent.ACTION_MASK) {
+		case MotionEvent.ACTION_DOWN:// 设置拖拉模式
+			matrix.set(myImageView.getImageMatrix());
+			savedMatrix.set(matrix);
+			start.set(event.getX(), event.getY());
+			mode = DRAG;
+			break;
+		case MotionEvent.ACTION_UP:
+			break;
+		case MotionEvent.ACTION_POINTER_UP:
+			mode = NONE;
+			break;
+		case MotionEvent.ACTION_POINTER_DOWN:// 设置多点触摸模式
+			oldDist = spacing(event);
+			if (oldDist > 10f) {
+				savedMatrix.set(matrix);
+				midPoint(mid, event);
+				mode = ZOOM;
+			}
+			break;
+
+		case MotionEvent.ACTION_MOVE:
+			if (mode == DRAG) {// 若为DRAG模式，则点击移动图片
+				float tx = (event.getX() - start.x);
+				float ty = (event.getY() - start.y);
+				matrix.set(savedMatrix);
+				matrix.getValues(mv);
+				if (sch >= imgh) {
+					if (mv[5] + ty >= (sch - imgh) / 2) {
+						ty = (sch - imgh) / 2 - mv[5];
+					} else if (mv[5] + ty <= (sch - imgh) / 2) {
+						ty = (sch - imgh) / 2 - mv[5];
+					}
+				} else {
+					if (mv[5] + ty >= 0) {
+						ty = -mv[5];
+					} else if (mv[5] + ty <= sch - imgh) {
+						ty = sch - imgh - mv[5];
+					}
+				}
+				matrix.postTranslate(tx, ty);
+			} else if (mode == ZOOM) {// 若为ZOOM模式，则点击触摸缩放
+				float newDist = spacing(event);
+				if (newDist > 10f) {
+					matrix.set(savedMatrix);
+					float scale = (newDist / oldDist);
+					matrix.getValues(mv);
+					if (mv[0] * scale < minscale) {
+						scale = minscale / mv[0];
+					} else if (mv[0] * scale > maxscale) {
+						scale = maxscale / mv[0];
+					}
+					matrix.postScale(scale, scale, mid.x, mid.y);
+					matrix.getValues(mv);
+					imgw = (int) (oimgw * mv[0]);
+					imgh = (int) (oimgh * mv[0]);
+					float tx = 0;
+					float ty = 0;
+					if (sch >= imgh) {
+						if (mv[5] > (sch - imgh) / 2) {
+							ty = (sch - imgh) / 2 - mv[5];
+						} else if (mv[5] < (sch - imgh) / 2) {
+							ty = (sch - imgh) / 2 - mv[5];
+						}
+					} else {
+						if (mv[5] > 0) {
+							ty = -mv[5];
+						} else if (mv[5] < sch - imgh) {
+							ty = sch - imgh - mv[5];
+						}
+					}
+					matrix.postTranslate(tx, ty);
+				}
+			}
+			break;
+		}
+		myImageView.setImageMatrix(matrix);
+		matrixmap.put(showing, matrix);
+		return true;
+	}
+
+	// 计算移动距离
+	private float spacing(MotionEvent event) {
+		float x = event.getX(0) - event.getX(1);
+		float y = event.getY(0) - event.getY(1);
+		return FloatMath.sqrt(x * x + y * y);
+	}
+
+	// 计算中点位置
+	private void midPoint(PointF point, MotionEvent event) {
+		float x = event.getX(0) + event.getX(1);
+		float y = event.getY(0) + event.getY(1);
+		point.set(x / 2, y / 2);
+	}
+
+	private void initmatrix(ImageView img) {
+		Matrix matrix = new Matrix();
+		if (matrixmap.containsKey(showing)) {
+			matrix = matrixmap.get(showing);
+		}
+		ImageView imgi = img;
+		matrix.set(imgi.getImageMatrix());
+
+		scw = Utils.getSecreenWidth(mContext); // 当前分辨率 宽度
+		sch = Utils.getSecreenHeight(mContext); // 当前分辨率高度
+		float wscale = scw / (float) oimgw;
+		float hscale = sch / (float) oimgh;
+		float scale;
+		if (wscale < hscale) {
+			scale = wscale;
+		} else {
+			scale = hscale;
+		}
+		matrix.setScale(scale, scale);
+		minscale = scale;
+		imgw = (int) ((int) oimgw * scale);
+		imgh = (int) ((int) oimgh * scale);
+		int dx = (scw - imgw) / 2;
+		int dy = (sch - imgh) / 2;
+		matrix.postTranslate(dx, dy);
+		imgi.setImageMatrix(matrix);
+		matrixmap.put(showing, matrix);
 	}
 }

@@ -54,4 +54,40 @@ public class FileUtils {
 		return fileName.substring(point + 1);
 	}
 
+	/**
+	 * 判断sd卡是否存在
+	 * 
+	 * @return
+	 */
+	public static boolean ExistSDCard() {
+		if (android.os.Environment.getExternalStorageState().equals(
+				android.os.Environment.MEDIA_MOUNTED)) {
+			return true;
+		} else
+			return false;
+	}
+
+	/**
+	 * 创建文件夹
+	 * 
+	 * @param dir
+	 */
+	public static void createDir(String dir) {
+		String sdpath = getRootDir();
+		File destDir = new File(sdpath + dir);
+		if (!destDir.exists()) {// 创建文件夹
+			destDir.mkdirs();
+		}
+	}
+
+	/**
+	 * 得到绝对路径
+	 * 
+	 * @param dir
+	 * @return
+	 */
+	public static String getgetAbsoluteDir(String dir) {
+		return getRootDir() + dir;
+
+	}
 }

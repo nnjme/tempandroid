@@ -10,8 +10,10 @@ import android.provider.ContactsContract.Contacts.Photo;
  * 
  */
 public class Constants {
+	public static final String STARTTIME = "2008-08-08 12:10:12";// 第一次访问的时间戳
 	public static final int REQUEST_CODE_GETIMAGE_BYSDCARD = 0;// 选择图片
 	public static final int REQUEST_CODE_GETIMAGE_BYCAMERA = 1;// 拍照
+	public static final int REQUEST_CODE_GETIMAGE_DROP = 2;// 拍照
 	public static final String[] PHONES_PROJECTION = new String[] {
 			Phone.DISPLAY_NAME, Phone.NUMBER, Photo._ID, Phone.CONTACT_ID };
 	/** 电话号码 **/

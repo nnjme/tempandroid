@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -89,6 +90,8 @@ public class ChatActivity extends Activity implements OnClickListener,
 	private String name;
 	private String avatarPath;
 	private ProgressDialog pd;
+	private String startTime = "2008-08-08 12:10:12";
+	private boolean isRefresh = false;// 是否是下拉刷新
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -139,6 +142,8 @@ public class ChatActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
+		CircleActivity
+				.setInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 		PushMessageReceiver.setPushChatCallBack(this);
 		// 获取聊天信息
 		List<MessageModle> modles = CLXApplication.getChatModle();
@@ -176,6 +181,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 		listview.setCacheColorHint(0);
 		listview.setonRefreshListener(new OnRefreshListener() {
 			public void onRefresh() {
+				isRefresh = true;
 				getChats();
 			}
 		});
@@ -303,16 +309,26 @@ public class ChatActivity extends Activity implements OnClickListener,
 	}
 
 	private void getChats() {
-		GetChatListTask task = new GetChatListTask(cid, 0, 0);
+		GetChatListTask task = new GetChatListTask(cid, startTime,
+				DateUtils.phpTime(System.currentTimeMillis()));
 		task.setTaskCallBack(new GetChatsList() {
 			@Override
 			public void getChatsList(List<MessageModle> modles) {
-				listModle.addAll(modles);
-				adapter.setData(listModle);
-				listview.onRefreshComplete();
 				if (pd != null) {
 					pd.dismiss();
 				}
+				listview.onRefreshComplete();
+				if (modles.size() == 0) {
+					return;
+				}
+				startTime = modles.get(modles.size() - 1).getTime();
+				if (isRefresh) {
+					modles.remove(0);
+				}
+				listModle.addAll(modles);
+				adapter.setData(listModle);
+				listview.setSelection(listModle.size());// 将listview滑动到最低端
+
 			}
 		});
 		task.execute();
@@ -448,4 +464,11 @@ public class ChatActivity extends Activity implements OnClickListener,
 		listview.setSelection(listModle.size());// 将listview滑动到最低端
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (pd != null) {
+			pd.dismiss();
+		}
+	}
 }

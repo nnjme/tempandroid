@@ -31,7 +31,10 @@
             android:hint="输入手机号码"
             android:maxLength="13"
             android:padding="17dip"
-            android:textSize="20dip" />
+            android:textSize="20dip" >
+
+            <requestFocus />
+        </EditText>
 
         <Button
             android:id="@+id/btnext"

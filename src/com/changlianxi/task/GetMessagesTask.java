@@ -16,7 +16,7 @@ import com.changlianxi.inteface.GetMessagesCallBack;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Utils;
+import com.changlianxi.util.SharedUtils;
 
 /**
  * 获取私信内容 线程
@@ -49,7 +49,7 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 				return null;
 			}
 			JSONArray jsonarray = jsonobject.getJSONArray("messages");
-			for (int i = 0; i < jsonarray.length(); i++) {
+			for (int i = jsonarray.length() - 1; i >= 0; i--) {
 				JSONObject object = (JSONObject) jsonarray.opt(i);
 				MessageModle modle = new MessageModle();
 				String name = "";
@@ -64,11 +64,15 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 					avatarPath = info.getAvator();
 					name = info.getName();
 				}
+				if (uid.equals(SharedUtils.getString("uid", ""))) {
+					modle.setSelf(true);
+				} else {
+					modle.setSelf(false);
+				}
 				modle.setAvatar(avatarPath);
 				modle.setName(name);
 				modle.setContent(content);
 				modle.setTime(time);
-				modle.setSelf(false);
 				listModle.add(modle);
 			}
 		} catch (JSONException e) {

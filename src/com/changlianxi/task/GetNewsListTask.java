@@ -11,7 +11,9 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.GetNewsList;
+import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.NewsModle;
 import com.changlianxi.util.HttpUrlHelper;
 
@@ -41,19 +43,28 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 		String result = HttpUrlHelper.postData(map, url);
 		try {
 			JSONObject jsonobject = new JSONObject(result);
+			String cid = jsonobject.getString("cid");
 			JSONArray jsonarray = jsonobject.getJSONArray("news");
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject object = (JSONObject) jsonarray.opt(i);
 				NewsModle modle = new NewsModle();
 				String id = object.getString("id");
 				String type = object.getString("type");
-				System.out.println(type);
 				String user1 = object.getString("user1");
 				String user2 = object.getString("user2");
 				String person2 = object.getString("person2");
 				String createdTime = object.getString("created");
 				String content = object.getString("content");
 				String detail = object.getString("detail");
+				MemberInfoModle infomodle = DBUtils.findMemberInfo("circle"
+						+ cid, user1, person2, user2, cid);
+				modle.setUser1Name(infomodle.getName());
+				if (!user2.equals("0")) {
+					MemberInfoModle user2modle = DBUtils.findMemberInfo(
+							"circle" + cid, user2, person2, user2, cid);
+					modle.setUser2Name(user2modle.getName());
+				}
+				modle.setCid(cid);
 				modle.setContent(content);
 				modle.setCreatedTime(createdTime);
 				modle.setDetail(detail);
@@ -82,4 +93,5 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 		// 任务启动，可以在这里显示一个对话框，这里简单处理
 
 	}
+
 }

@@ -37,6 +37,7 @@ public class MyCard implements OnClickListener, ChangeView, UpLoadPic {
 	private ImageView avatarBg;
 	private RelativeLayout layAvatar;
 	private ProgressDialog pd;
+	public SelectPicPopwindow pop;
 
 	/**
 	 * 构造
@@ -90,7 +91,7 @@ public class MyCard implements OnClickListener, ChangeView, UpLoadPic {
 
 			break;
 		case R.id.LayAvatar:
-			SelectPicPopwindow pop = new SelectPicPopwindow(mContext, v);
+			pop = new SelectPicPopwindow(mContext, v);
 			pop.show();
 			break;
 		default:
@@ -111,7 +112,7 @@ public class MyCard implements OnClickListener, ChangeView, UpLoadPic {
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("pid", show.pid);
 		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-				"/people/iuploadMyAvatar", avatarPath);
+				"/people/iuploadMyAvatar", avatarPath, "avatar");
 		picTask.setCallBack(this);
 		picTask.execute();
 		pd = new ProgressDialog(mContext);
@@ -149,7 +150,5 @@ public class MyCard implements OnClickListener, ChangeView, UpLoadPic {
 			Utils.showToast("上传成功");
 			return;
 		}
-		Utils.showToast("上传失败");
-
 	}
 }

@@ -28,12 +28,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignRight="@+id/circleBg"
-            android:layout_marginTop="10dip"
+            android:layout_marginTop="@dimen/margin20"
             android:background="@drawable/updates"
             android:gravity="center"
             android:text="new"
             android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textSize="@dimen/textsize26"
             android:visibility="gone" />
     </RelativeLayout>
 
@@ -41,11 +41,11 @@
         android:id="@+id/circleName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
+        android:layout_marginTop="@dimen/margin20"
         android:gravity="center"
         android:maxLines="2"
-        android:paddingBottom="20dip"
-        android:textColor="@color/default_font_color"
-        android:textSize="@dimen/cicleNameSize" />
+        android:paddingBottom="@dimen/margin39"
+        android:textColor="#cc000000"
+        android:textSize="@dimen/textsize26" />
 
 </LinearLayout>

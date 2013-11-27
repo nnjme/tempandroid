@@ -10,7 +10,7 @@
         android:id="@+id/menutxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30dip"
+        android:layout_marginLeft="40dip"
         android:text="55"
         android:textColor="@color/default_font_color"
         android:textSize="25sp" />

@@ -14,9 +14,8 @@ import android.view.View;
 import com.changlianxi.activity.R;
 
 /**
- * 仿iphone带进度的进度条，线程安全的View，可直接在线程中更新进度
+ * 自定义进度条
  * 
- * @author xiaanming
  * 
  */
 public class RoundProgressBar extends View {

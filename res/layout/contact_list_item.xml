@@ -23,15 +23,13 @@
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="name"
-            android:textSize="17sp" />
+             android:textSize="17sp" />
 
         <TextView
             android:id="@+id/num"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="num"
-            android:textSize="17sp" />
+             android:textSize="17sp" />
     </LinearLayout>
 
     <CheckBox

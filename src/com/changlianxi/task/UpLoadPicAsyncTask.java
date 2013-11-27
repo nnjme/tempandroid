@@ -9,7 +9,9 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 
 import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
+import com.changlianxi.util.Utils;
 
 public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 	private UpLoadPic upload;// 上传图片完成接口
@@ -17,12 +19,15 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 	private String url;
 	private String picPath = "";
 	private String rt = "";
+	private String avatar;
+	private String errCode;
 
 	public UpLoadPicAsyncTask(Map<String, Object> map, String url,
-			String picPath) {
+			String picPath, String avatar) {
 		this.map = map;
 		this.url = url;
 		this.picPath = picPath;
+		this.avatar = avatar;
 	}
 
 	public void setCallBack(UpLoadPic upload) {
@@ -40,10 +45,14 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 	protected String doInBackground(String... params) {
 		File file = new File(picPath);
 		String result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl + url,
-				map, file);
+				map, file, avatar);
+
 		try {
 			JSONObject jsonobject = new JSONObject(result);
 			rt = jsonobject.getString("rt");
+			if (!rt.equals("1")) {
+				errCode = jsonobject.getString("err");
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -55,6 +64,7 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 		if (result.equals("1")) {
 			upload.upLoadFinish(true);
 		} else {
+			Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
 			upload.upLoadFinish(false);
 		}
 	}

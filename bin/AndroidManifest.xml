@@ -67,10 +67,10 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".AsyncLoadListImageActivity"
+            android:name=".CircleUserActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
             android:name=".MainActivity"
@@ -97,7 +97,8 @@
             android:name=".FindPasswordActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_find_password"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" >
         </activity>
         <activity android:name=".SelectContactsActivity" >
         </activity>
@@ -176,7 +177,19 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize" >
         </activity>
-
+        <activity
+            android:name=".CircleInfoActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:label="@string/title_activity_circle_info"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".EditCircleActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:label="@string/title_activity_edit_circle"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize" >
+        </activity>
         <!-- push service client -->
         <receiver android:name="com.changlianxi.util.PushMessageReceiver" >
             <intent-filter>
@@ -223,6 +236,7 @@
             android:name="api_key"
             android:value="QdCuL0S0CEP8TgTPrHb3FYmt" />
         <!-- push service end -->
+
     </application>
 
 </manifest>

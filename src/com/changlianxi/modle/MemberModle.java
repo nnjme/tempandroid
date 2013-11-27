@@ -9,17 +9,27 @@ import java.io.Serializable;
  * 
  */
 public class MemberModle implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private String name = "";// 姓名
 	private String img = "";// 头像地址
 	private String employer = "";// 工作单位
 	private String job = "";// 工作
-	private String sort_key;// 用来排序的关键字
+	private String sort_key = "";// 用来排序的关键字
+	private String key_pinyin_fir = "";// 名字首字母//搜索时使用
 	private String id = "";// id personID
-	private String uid = "";//用户id
+	private String uid = "";// 用户id
+
+	public String getKey_pinyin_fir() {
+		return key_pinyin_fir;
+	}
+
+	public void setKey_pinyin_fir(String key_pinyin_fir) {
+		this.key_pinyin_fir = key_pinyin_fir;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
 
 	public String getUid() {
 		return uid;

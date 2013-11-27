@@ -33,6 +33,25 @@
             android:password="true"
             android:textSize="20dip" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.2dp"
+            android:layout_marginLeft="6dip"
+            android:layout_marginRight="6dip"
+            android:background="#ffe0e0e0" />
+
+        <EditText
+            android:id="@+id/editAgainPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dip"
+            android:layout_marginRight="1dip"
+            android:background="@drawable/input"
+            android:hint="再次输入密码"
+            android:padding="17dip"
+            android:password="true"
+            android:textSize="20dip" />
+
         <Button
             android:id="@+id/btfinish"
             android:layout_width="fill_parent"

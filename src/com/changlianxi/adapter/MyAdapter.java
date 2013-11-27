@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
@@ -34,7 +33,7 @@ public class MyAdapter extends BaseAdapter {
 	private HashMap<String, Integer> alphaIndexer;// 保存每个索引在list中的位置�?-0，A-4，B-10�?
 	private String[] sections;// 每个分组的索引表【A,B,C,F...�?
 
-	public MyAdapter(Context context, List<MemberModle> list, ListView listView) {
+	public MyAdapter(Context context, List<MemberModle> list) {
 		this.context = context;
 		this.list = list;
 		this.alphaIndexer = new HashMap<String, Integer>();
@@ -99,7 +98,7 @@ public class MyAdapter extends BaseAdapter {
 			holder.changeBg.setBackgroundColor(Color.WHITE);
 		} else {
 			holder.changeBg.setBackgroundColor(context.getResources().getColor(
-					R.color.user_item));
+					R.color.f6));
 		}
 		String path = list.get(position).getImg();
 		if (path.equals("") || path == null) {

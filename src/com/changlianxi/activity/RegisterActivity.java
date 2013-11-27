@@ -73,7 +73,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 	private int second = 60;// 用于重新获取验证码时间倒计时
 	private TextView txtShowNum;// 注册界面显示用来注册的手机号
 	private ProgressDialog progressDialog;
-	private String type = "";// 1 验证码处理 2 设置密码处理
+	private String type = "";// 1 验证码处理 2 设置密码处理3 重新获取验证码处理
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -128,16 +128,14 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		initReg2View();
 		initReg3View();
 		emailTxt = (TextView) emilReg2.findViewById(R.id.emailTxt);
-		// emailCode = (EditText) emilReg2.findViewById(R.id.emailEdiCode);
-		emBtFinish = (Button) emilReg2.findViewById(R.id.email_btfinish);
+ 		emBtFinish = (Button) emilReg2.findViewById(R.id.email_btfinish);
 		emBtFinish.setOnClickListener(this);
 		emailBtNext = (Button) emailReg1.findViewById(R.id.emailbtnext);
 		emailBtNext.setOnClickListener(this);
 		emailNum = (EditText) emailReg1.findViewById(R.id.emailnum);
 		emailEdit = (EditText) emailReg1.findViewById(R.id.emailEdit);
 		emailNum.setInputType(InputType.TYPE_CLASS_NUMBER);
-		// emailNum.addTextChangedListener(new EditWather(2));
-	}
+ 	}
 
 	/**
 	 * 初始化注册界面1的控件
@@ -244,9 +242,17 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			second = 60;
 			btGetCode.setTextColor(Color.GRAY);
 			btGetCode.setEnabled(false);
-			Message msg = new Message();
-			msg.what = 0;
 			mHandler.sendEmptyMessage(0);
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("type", "register");
+			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+			task = new PostAsyncTask(this, map, "/users/isendAuthCode");
+			task.setTaskCallBack(this);
+			task.execute();
+			progressDialog = new ProgressDialog(this);
+			progressDialog.show();
+			type = "3";
 			break;
 		case R.id.spinner:
 			ListViewPopwindow pop = new ListViewPopwindow(this, spinner,
@@ -301,7 +307,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 					SharedUtils.setString("uid", uid);
 					if (type.equals("1")) {
 						rGroup.setView(reg2);
-						txtShowNum.setText(replaceStr(txtnum));
+						txtShowNum.setText(txtnum);
 						return;
 					}
 					rGroup.setView(emilReg2);
@@ -325,21 +331,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			progressDialog = new ProgressDialog(RegisterActivity.this);
 			progressDialog.show();
 		}
-	}
-
-	/**
-	 * 将手机号码的中间四位替换为****
-	 * 
-	 * @param str
-	 * @return
-	 */
-	private String replaceStr(String str) {
-		StringBuffer sb = new StringBuffer(str);
-		for (int i = 3; i < 7; i++) {
-			sb.deleteCharAt(i);
-			sb.insert(i, "*");
-		}
-		return sb.toString();
 	}
 
 	/**
@@ -393,6 +384,24 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		}
 	}
 
+	/**
+	 * 重新获取验证码
+	 * 
+	 * @param result
+	 */
+	private void getAgainCode(String result) {
+		try {
+			JSONObject object = new JSONObject(result);
+			int rt = object.getInt("rt");
+			if (rt != 1) {
+				String errCode = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void taskFinish(String result) {
 		progressDialog.dismiss();
@@ -400,6 +409,8 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			CheckCode(result);
 		} else if (type.equals("2")) {
 			SetPassword(result);
+		} else if (type.equals("3")) {
+			getAgainCode(result);
 		}
 	}
 }

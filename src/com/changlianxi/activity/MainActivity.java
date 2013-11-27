@@ -1,8 +1,11 @@
 package com.changlianxi.activity;
 
+import java.io.File;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
@@ -11,7 +14,6 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
-import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
@@ -80,27 +82,27 @@ public class MainActivity extends Activity implements OnOpenListener {
 				&& resultCode == RESULT_OK && data != null) {
 			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
 			avatarPath = modle.getPicPath();
-			bitmap = modle.getBmp();
+			BitmapUtils.startPhotoZoom(this, data.getData());
+
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			super.onActivityResult(requestCode, resultCode, data);
-			Bundle bundle = data.getExtras();
-			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
-
-			if (bitmap != null) {
-				String dir = "/clx/camera/";
-				Utils.createDir(dir);
-				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = Utils.getgetAbsoluteDir(dir) + name;
-				BitmapUtils.createImgToFile(bitmap, fileName);
-				avatarPath = fileName;
+			String fileName = mCard.pop.getTakePhotoPath();
+			avatarPath = fileName;
+			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
+			// cirImg.setImageBitmap(bitmap);
+		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
+			Bundle extras = data.getExtras();
+			if (extras != null) {
+				Bitmap photo = extras.getParcelable("data");
+				// cirImg.setImageBitmap(photo);
+				bitmap = photo;
 			}
-
+			mCard.setAvatarPath(avatarPath, bitmap);
 		}
-		mCard.setAvatarPath(avatarPath, bitmap);
+
 	}
 
 	/**
@@ -127,10 +129,8 @@ public class MainActivity extends Activity implements OnOpenListener {
 					mRoot.close(mCard.getView());
 					break;
 				case 2:
-					if (mMessage == null) {
-						mMessage = new MessagesList(MainActivity.this);
-						mMessage.setOnOpenListener(MainActivity.this);
-					}
+					mMessage = new MessagesList(MainActivity.this);
+					mMessage.setOnOpenListener(MainActivity.this);
 					mRoot.close(mMessage.getView());
 					break;
 

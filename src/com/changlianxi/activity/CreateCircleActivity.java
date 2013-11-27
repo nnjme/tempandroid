@@ -1,12 +1,12 @@
 package com.changlianxi.activity;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,17 +15,15 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
@@ -35,12 +33,13 @@ import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.CircleLogoAsyncTask;
+import com.changlianxi.task.IinviteUserTask;
+import com.changlianxi.task.IinviteUserTask.IinviteUser;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
-import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -58,13 +57,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	private CircularImage cirImg;
 	private SelectPicPopwindow popWindow;
 	private String cirIconPath = "";
-	private LinearLayout layadd;
-	private LinearLayout zhiwu;
-	private int count;// 添加职务数量
 	private Button createCir;
 	private EditText description;
-	private JSONArray jsonAry = new JSONArray();
-	private JSONObject jsonObj;
 	private ProgressDialog progressDialog;
 	private String cid = "";// 创建圈子返回的uid 邀请成员和上传 logo用
 	private String type;// more 标示 邀请多个成员；one标示 添加一个成员
@@ -88,9 +82,6 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		cirImg = (CircularImage) findViewById(R.id.circleIcon);
 		cirImg.setOnClickListener(this);
 		// WigdtContorl.setViewWidth(cirImg, this, 4, 5, 15, 0, 5);
-		layadd = (LinearLayout) findViewById(R.id.layAdd);
-		zhiwu = (LinearLayout) findViewById(R.id.zhiwu);
-		layadd.setOnClickListener(this);
 		createCir = (Button) findViewById(R.id.createCircle);
 		createCir.setOnClickListener(this);
 	}
@@ -116,84 +107,32 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Bitmap bitmap = null;
+		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
 			cirIconPath = modle.getPicPath();
-			cirImg.setImageBitmap(modle.getBmp());
+			// cirImg.setImageBitmap(modle.getBmp());
+			BitmapUtils.startPhotoZoom(this, data.getData());
+
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			super.onActivityResult(requestCode, resultCode, data);
-			Bundle bundle = data.getExtras();
-			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
-
-			if (bitmap != null) {
-				String dir = "/clx/camera/";
-				Utils.createDir(dir);
-				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = Utils.getgetAbsoluteDir(dir) + name;
-				BitmapUtils.createImgToFile(bitmap, fileName);
-				cirIconPath = fileName;
-				cirImg.setImageBitmap(bitmap);
+			String fileName = popWindow.getTakePhotoPath();
+			// bitmap = BitmapUtils.FitSizeImg(fileName);
+			cirIconPath = fileName;
+			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
+			// cirImg.setImageBitmap(bitmap);
+		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
+			Bundle extras = data.getExtras();
+			if (extras != null) {
+				Bitmap photo = extras.getParcelable("data");
+				cirImg.setImageBitmap(photo);
 			}
-
 		}
-	}
 
-	/**
-	 * 构建json串
-	 * 
-	 */
-	private void BuildJson(String name, String num) {
-		try {
-			jsonObj = new JSONObject();
-			jsonObj.put("name", name);
-			jsonObj.put("cellphone", num);
-			jsonAry.put(jsonObj);
-
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * 添加职务
-	 */
-	private void addView() {
-		count++;
-		final View view = LayoutInflater.from(this).inflate(
-				R.layout.layout_zhiwu, null);
-		zhiwu.addView(view);
-		TextView txt = (TextView) view.findViewById(R.id.text);
-		if (count == 1) {
-			txt.setVisibility(View.VISIBLE);
-		}
-		ImageView imbDel = (ImageView) view.findViewById(R.id.delView);
-		imbDel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				zhiwu.removeView(view);
-				count--;
-			}
-		});
-	}
-
-	/**
-	 * 获取职务名称
-	 */
-	private String getValue() {
-		String value = "";
-		for (int i = 0; i < zhiwu.getChildCount(); i++) {
-			EditText t = (EditText) zhiwu.getChildAt(i)
-					.findViewById(R.id.zhiwu);
-			value += t.getText().toString() + ",";
-
-		}
-		return value;
 	}
 
 	/**
@@ -214,61 +153,6 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		PostAsyncTask task = new PostAsyncTask(this, map, "/people/iinviteOne");
 		task.setTaskCallBack(this);
 		task.execute();
-	}
-
-	/**
-	 * 邀请多个成员
-	 * 
-	 */
-	class IinviteMoreitTask extends AsyncTask<String, Integer, String> {
-		// 可变长的输入参数，与AsyncTask.exucute()对应
-		String rt = "";
-
-		@Override
-		protected String doInBackground(String... params) {
-			for (int i = 0; i < contactsList.size(); i++) {
-				BuildJson(contactsList.get(i).getName(), contactsList.get(i)
-						.getNum());
-			}
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("cid", cid);
-			map.put("uid", SharedUtils.getString("uid", ""));
-			map.put("token", SharedUtils.getString("token", ""));
-			map.put("persons", jsonAry.toString());
-			String json = HttpUrlHelper.postData(map, "/people/iinviteMore");
-			Logger.debug(this, "more:" + json);
-			try {
-				JSONObject object = new JSONObject(json);
-				rt = object.getString("rt");
-				if (rt.equals("1")) {
-					String details = object.getString("details");
-					getDetails(details);
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			return rt;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-			progressDialog.dismiss();
-			if (result.equals("1")) {
-				Utils.showToast("邀请成功！");
-				if (code.contains("null")) {
-					finish();
-					return;
-				}
-				intentSmsPreviewActivity();
-			} else {
-				Utils.showToast("邀请失败！");
-			}
-		}
-
-		@Override
-		protected void onPreExecute() {
-			// 任务启动，可以在这里显示一个对话框，这里简单处理
-		}
 	}
 
 	/**
@@ -342,7 +226,7 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("name", editCirName.getText().toString());
 			map.put("description", description.getText().toString());
-			map.put("roles", getValue());
+			map.put("roles", "");
 			String result = HttpUrlHelper.postData(map, "/circles/iadd");
 			Logger.debug(this, "CreateCirTask:" + result);
 			return result;
@@ -425,9 +309,6 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			popWindow = new SelectPicPopwindow(this, v);
 			popWindow.show();
 			break;
-		case R.id.layAdd:
-			addView();
-			break;
 		case R.id.createCircle:
 			if (editCirName.getText().toString().length() == 0) {
 				Utils.showToast("请输入圈子名称");
@@ -450,7 +331,26 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 				IiviteOneMember();
 				return;
 			}
-			new IinviteMoreitTask().execute();
+			// 添加从通讯录选择的联系人
+			IinviteUserTask task = new IinviteUserTask(cid, contactsList);
+			task.setTaskCallBack(new IinviteUser() {
+
+				@Override
+				public void inviteUser(String rt, String details) {
+					if (rt.equals("1")) {
+						getDetails(details);
+						Utils.showToast("邀请成功！");
+						if (code.contains("null")) {
+							finish();
+							return;
+						}
+						intentSmsPreviewActivity();
+					} else {
+						Utils.showToast("邀请失败！");
+					}
+				}
+			});
+			task.execute();
 		} else {
 			Utils.showToast("圈子图标上传失败!");
 			progressDialog.dismiss();
@@ -462,19 +362,19 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void taskFinish(String result) {
-		String rep = ""; // 该成员是否已经存在1-YES,0-NO
+		// String rep = ""; // 该成员是否已经存在1-YES,0-NO
 		try {
 			JSONObject object = new JSONObject(result);
 			int rt = object.getInt("rt");
 			if (rt == 1) {
 				pid = object.getString("pid");
-				rep = object.getString("rep");
+				// rep = object.getString("rep");
 				cmids = object.getString("cmid");
-				if (rep.equals("1")) {
-					Utils.showToast("该用户已存在");
-					// finish();// 已经注册直接返回
-					return;
-				}
+				// if (rep.equals("1")) {
+				// Utils.showToast("该用户已存在");
+				// // finish();// 已经注册直接返回
+				// return;
+				// }
 				if (!infoModle.getAvator().equals("")) {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("cid", cid);
@@ -482,7 +382,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 					map.put("token", SharedUtils.getString("token", ""));
 					map.put("pid", pid);
 					UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-							"/people/iuploadAvatar", infoModle.getAvator());
+							"/people/iuploadAvatar", infoModle.getAvator(),
+							"avatar");
 					picTask.setCallBack(new UpLoadPic() {
 						@Override
 						public void upLoadFinish(boolean flag) {
@@ -511,12 +412,12 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 
 	@Override
 	protected void onDestroy() {
+		super.onDestroy();
 		if (progressDialog == null) {
 			return;
 		}
 		if (progressDialog.isShowing() && progressDialog != null) {
 			progressDialog.dismiss();
 		}
-		super.onDestroy();
 	}
 }

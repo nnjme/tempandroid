@@ -7,6 +7,7 @@ package com.changlianxi.modle;
  * 
  */
 public class NewsModle {
+	private String cid = "";
 	private String id;// 动态ID
 	private String type;// 动态类型
 	private String user1;// 第一关联用户ID
@@ -15,6 +16,32 @@ public class NewsModle {
 	private String createdTime;// 动态创建时间
 	private String content;// 动态内容
 	private String detail;// 动态详情
+	private String user1Name = "";
+	private String user2Name = "";
+
+	public String getUser1Name() {
+		return user1Name;
+	}
+
+	public void setUser1Name(String user1Name) {
+		this.user1Name = user1Name;
+	}
+
+	public String getUser2Name() {
+		return user2Name;
+	}
+
+	public void setUser2Name(String user2Name) {
+		this.user2Name = user2Name;
+	}
+
+	public String getCid() {
+		return cid;
+	}
+
+	public void setCid(String cid) {
+		this.cid = cid;
+	}
 
 	public String getId() {
 		return id;

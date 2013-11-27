@@ -3,9 +3,7 @@ package com.changlianxi.util;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +11,6 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -97,18 +94,12 @@ public class Utils {
 	}
 
 	/**
-	 * 隐藏软键盘
+	 * 隐藏软键盘如果输入法在窗口上已经显示，则隐藏，反之则显示)
 	 */
 	public static void hideSoftInput(Context context) {
-		if (context == null)
-			return;
-		InputMethodManager manager = ((InputMethodManager) context
-				.getSystemService(Activity.INPUT_METHOD_SERVICE));
-		View view = ((Activity) context).getCurrentFocus();
-		if (view == null)
-			return;
-		manager.hideSoftInputFromWindow(view.getWindowToken(),
-				InputMethodManager.HIDE_NOT_ALWAYS);
+		InputMethodManager imm = (InputMethodManager) context
+				.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 
 	}
 
@@ -372,45 +363,6 @@ public class Utils {
 	}
 
 	/**
-	 * 判断sd卡是否存在
-	 * 
-	 * @return
-	 */
-	public static boolean ExistSDCard() {
-		if (android.os.Environment.getExternalStorageState().equals(
-				android.os.Environment.MEDIA_MOUNTED)) {
-			return true;
-		} else
-			return false;
-	}
-
-	/**
-	 * 创建文件夹
-	 * 
-	 * @param dir
-	 */
-	public static void createDir(String dir) {
-		String sdpath = Environment.getExternalStorageDirectory()
-				.getAbsolutePath();
-		File destDir = new File(sdpath + dir);
-		if (!destDir.exists()) {// 创建文件夹
-			destDir.mkdirs();
-		}
-	}
-
-	/**
-	 * 得到绝对路径
-	 * 
-	 * @param dir
-	 * @return
-	 */
-	public static String getgetAbsoluteDir(String dir) {
-		return Environment.getExternalStorageDirectory().getAbsolutePath()
-				+ dir;
-
-	}
-
-	/**
 	 * 
 	 * @Description 检查网络状态
 	 * @param context
@@ -509,6 +461,7 @@ public class Utils {
 		modle.setTime(time);
 		modle.setAvatar(avatarPath);
 		modle.setName(name);
+		modle.setCid(cid);
 		return modle;
 	}
 }

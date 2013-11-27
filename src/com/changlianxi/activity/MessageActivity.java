@@ -36,7 +36,6 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -57,6 +56,8 @@ import com.changlianxi.util.Logger;
 import com.changlianxi.util.PushMessageReceiver;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.MyListView;
+import com.changlianxi.view.MyListView.OnRefreshListener;
 
 /**
  * 私信聊天界面
@@ -70,7 +71,7 @@ public class MessageActivity extends Activity implements OnClickListener,
 	private List<MessageModle> listModle = new ArrayList<MessageModle>();
 	private Button btnSend;// 发送按钮
 	private EditText editContent;// 内容输入框
-	private ListView listview;
+	private MyListView listview;
 	private ImageView back;
 	private TextView name;// 显示接受私信者的姓名
 	private String ruid;// 接受私信者id
@@ -96,6 +97,8 @@ public class MessageActivity extends Activity implements OnClickListener,
 	private ProgressDialog pd;
 	private SendMessageThread messageThread;
 	private String avatarPath;
+	private String startTime = "2008-08-08 12:10:12";
+	private boolean isRefresh = false;// 是否是下拉刷新
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -158,7 +161,9 @@ public class MessageActivity extends Activity implements OnClickListener,
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("ruid", ruid);
-		map.put("timestamp", System.currentTimeMillis());
+		Logger.debug(this, "startTIme:" + startTime);
+		map.put("start", DateUtils.phpTime(DateUtils.convertToDate(startTime)));
+		map.put("end", DateUtils.phpTime(System.currentTimeMillis()));
 		pd = new ProgressDialog(this);
 		pd.show();
 		GetMessagesTask task = new GetMessagesTask(this, map,
@@ -190,13 +195,19 @@ public class MessageActivity extends Activity implements OnClickListener,
 		imgAdd = (ImageView) findViewById(R.id.imgAdd);
 		btnSend = (Button) findViewById(R.id.btnSend);
 		editContent = (EditText) findViewById(R.id.editContent);
-		listview = (ListView) findViewById(R.id.listView);
+		listview = (MyListView) findViewById(R.id.listView);
 		back = (ImageView) findViewById(R.id.back);
 		name = (TextView) findViewById(R.id.name);
 		adapter = new MessageAdapter(this, listModle);
 		listview.setAdapter(adapter);
 		viewPager = (ViewPager) findViewById(R.id.viewpager);
-
+		listview.setCacheColorHint(0);
+		listview.setonRefreshListener(new OnRefreshListener() {
+			public void onRefresh() {
+				isRefresh = true;
+				getSeverMessage();
+			}
+		});
 	}
 
 	/**
@@ -463,14 +474,25 @@ public class MessageActivity extends Activity implements OnClickListener,
 
 	@Override
 	public void getMessages(List<MessageModle> list) {
-		pd.dismiss();
+		if (pd != null) {
+			pd.dismiss();
+		}
+		listview.onRefreshComplete();
 		if (list == null) {
 			Utils.showToast("获取失败");
 			return;
 		}
-		listModle = list;
-		System.out.println("list.size()" + listModle.size());
+		if (list.size() == 0) {
+			return;
+		}
+		startTime = list.get(list.size() - 1).getTime();
+		if (isRefresh) {
+			list.remove(0);
+		}
+		listModle.addAll(list);
 		adapter.setData(listModle);
+		listview.setSelection(listModle.size());// 每次发送之后将listview滑动到最低端
+
 	}
 
 	/**
