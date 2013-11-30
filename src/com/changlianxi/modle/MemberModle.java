@@ -18,6 +18,33 @@ public class MemberModle implements Serializable {
 	private String key_pinyin_fir = "";// 名字首字母//搜索时使用
 	private String id = "";// id personID
 	private String uid = "";// 用户id
+	private String circleName = "";
+	private String cid = "";// 所属圈子id
+	private String mobileNum = "";
+
+	public String getMobileNum() {
+		return mobileNum;
+	}
+
+	public void setMobileNum(String mobileNum) {
+		this.mobileNum = mobileNum;
+	}
+
+	public String getCid() {
+		return cid;
+	}
+
+	public void setCid(String cid) {
+		this.cid = cid;
+	}
+
+	public String getCircleName() {
+		return circleName;
+	}
+
+	public void setCircleName(String circleName) {
+		this.circleName = circleName;
+	}
 
 	public String getKey_pinyin_fir() {
 		return key_pinyin_fir;

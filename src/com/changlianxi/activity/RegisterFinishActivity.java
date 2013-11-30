@@ -18,7 +18,7 @@ import android.widget.EditText;
 
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
-import com.changlianxi.util.Logger;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
@@ -42,7 +42,6 @@ public class RegisterFinishActivity extends Activity implements
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.startUse:
-			// new SetNickNameTask().execute();
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("f", "name");
@@ -74,13 +73,11 @@ public class RegisterFinishActivity extends Activity implements
 				startActivity(intent);
 				finish();
 			} else {
-				Utils.showToast("Í«≥∆…Ë÷√ ß∞‹");
+				String err = object.getString("err");
+				Utils.showToast(ErrorCodeUtil.convertToChines(err));
 			}
 		} catch (JSONException e) {
-			Logger.error(this, e);
-
 			e.printStackTrace();
 		}
 	}
 }
-//

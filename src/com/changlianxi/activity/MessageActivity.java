@@ -197,7 +197,7 @@ public class MessageActivity extends Activity implements OnClickListener,
 		editContent = (EditText) findViewById(R.id.editContent);
 		listview = (MyListView) findViewById(R.id.listView);
 		back = (ImageView) findViewById(R.id.back);
-		name = (TextView) findViewById(R.id.name);
+		name = (TextView) findViewById(R.id.titleTxt);
 		adapter = new MessageAdapter(this, listModle);
 		listview.setAdapter(adapter);
 		viewPager = (ViewPager) findViewById(R.id.viewpager);

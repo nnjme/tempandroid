@@ -232,6 +232,7 @@ public class EditCircleActivity extends Activity implements OnClickListener,
 				pd.dismiss();
 				if (flag) {
 					Utils.showToast("修改成功");
+					finish();
 				} else {
 					Utils.showToast("修改失败");
 				}
@@ -283,6 +284,7 @@ public class EditCircleActivity extends Activity implements OnClickListener,
 			if (logoPath.equals("")) {
 				pd.dismiss();
 				Utils.showToast("修改成功");
+				finish();
 				return;
 			}
 			upLoadCircleLogo();

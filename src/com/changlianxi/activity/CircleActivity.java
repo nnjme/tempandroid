@@ -24,7 +24,7 @@ import com.changlianxi.util.SharedUtils;
 public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private Button cy, lt, dt, cz;
 	private TabHost mTabHost;// 用来承载activity的TabHost
-	private LinearLayout btParent;
+	public static LinearLayout btParent;
 	private String id = "";
 	private Intent intent;
 	private Intent gintent;// 成长itent

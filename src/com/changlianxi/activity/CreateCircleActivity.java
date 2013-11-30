@@ -24,6 +24,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
@@ -66,6 +67,7 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	private String pid = ""; // 上传单个用户时返回的pid 供上传用户头像时使用
 	private String cmids = "";// 邀请成员时返回的邀请成员的id
 	private String code = "";// 邀请链接值 需要邀请时有值
+	private TextView titleTxt;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -84,6 +86,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		// WigdtContorl.setViewWidth(cirImg, this, 4, 5, 15, 0, 5);
 		createCir = (Button) findViewById(R.id.createCircle);
 		createCir.setOnClickListener(this);
+		titleTxt = (TextView) findViewById(R.id.titleTxt);
+		titleTxt.setText("创建圈子");
 	}
 
 	/**

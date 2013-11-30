@@ -4,28 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <LinearLayout
+    <include
+        android:id="@+id/titlebar"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/top_bg"
-        android:gravity="center_vertical"
-        android:orientation="horizontal" >
-
-        <ImageView
-            android:id="@+id/back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dip"
-            android:src="@drawable/icon_return" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="创建圈子"
-            android:textColor="#FFFFFF"
-            android:textSize="@dimen/titleSize" />
-    </LinearLayout>
+        layout="@layout/title_bar" />
 
     <ScrollView
         android:layout_width="fill_parent"

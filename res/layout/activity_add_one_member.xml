@@ -1,217 +1,211 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/default_font_color"
+    android:background="@color/white"
     android:orientation="vertical" >
 
-    <ImageView
-        android:id="@+id/back"
-        android:layout_width="wrap_content"
+    <include
+        android:id="@+id/titlebar"
+        android:layout_width="fill_parent"
+        layout="@layout/title_bar" />
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dip"
-        android:src="@drawable/icon_return" />
-
-    <RelativeLayout
-        android:id="@+id/relativeLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dip"
-        android:gravity="center" >
-
-        <ImageView
-            android:layout_width="90.0dip"
-            android:layout_height="90.0dip"
-            android:layout_centerInParent="true"
-            android:contentDescription="@null"
-            android:src="@drawable/pic_bg" />
-
-        <com.changlianxi.view.CircularImage
-            android:id="@+id/avatarImg"
-            android:layout_width="74.0dip"
-            android:layout_height="74.0dip"
-            android:layout_centerInParent="true" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/a"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_below="@+id/relativeLayout1"
-        android:background="@color/white" >
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_below="@+id/relativeLayout1"
-        android:layout_marginTop="-20dip" >
+        android:scrollbars="none" >
 
         <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical" >
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <EditText
-                    android:id="@+id/editname"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dip"
-                    android:layout_marginRight="20dip"
-                    android:layout_weight="1"
-                    android:hint="输入姓名" />
-            </LinearLayout>
-
-            <ScrollView
-                android:id="@+id/scrollView1"
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dip"
-                android:layout_marginRight="20dip"
-                android:scrollbars="none" >
+                android:background="@color/f6" >
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="fill_parent"
-                    android:orientation="vertical" >
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dip" >
+
+                    <ImageView
+                        android:id="@+id/avatarImg"
+                        android:layout_width="100dip"
+                        android:layout_height="100dip"
+                        android:src="@drawable/head_bg" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center" >
+                        android:layout_marginLeft="10dip"
+                        android:orientation="vertical" >
 
-                        <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="昵称：" />
+                            android:background="@drawable/box_bg"
+                            android:paddingBottom="15dip"
+                            android:paddingLeft="20dip"
+                            android:paddingTop="15dip" >
 
-                        <EditText
-                            android:id="@+id/nickname"
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="姓名："
+                                android:textColor="@color/default_font_color"
+                                android:textSize="18sp" />
+
+                            <EditText
+                                android:id="@+id/editname"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null" >
+                            </EditText>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1" >
+                            android:background="@drawable/box_bg"
+                            android:paddingBottom="15dip"
+                            android:paddingLeft="20dip"
+                            android:paddingTop="15dip" >
 
-                            <requestFocus />
-                        </EditText>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="昵称："
+                                android:textColor="@color/default_font_color"
+                                android:textSize="18sp" />
 
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/del" />
+                            <EditText
+                                android:id="@+id/nickname"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null" >
+                            </EditText>
+                        </LinearLayout>
                     </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dip"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/box_bg"
+                    android:paddingBottom="15dip"
+                    android:paddingLeft="20dip"
+                    android:paddingTop="15dip" >
 
                     <TextView
-                        android:id="@+id/textView2"
-                        android:layout_width="fill_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingBottom="20dip"
-                        android:paddingTop="20dip"
-                        android:text="联系方式" />
+                        android:text="手机："
+                        android:textColor="@color/default_font_color"
+                        android:textSize="18sp" />
 
-                    <LinearLayout
+                    <EditText
+                        android:id="@+id/editmobile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center" >
-
-                        <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="手机：" />
-
-                        <EditText
-                            android:id="@+id/editmobile"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:hint="输入手机号码"
-                            android:inputType="number"
-                            android:maxLength="13"
-                            android:textSize="15sp" >
-
-                            <requestFocus />
-                        </EditText>
-
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/del" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center" >
-
-                        <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="邮 箱：" />
-
-                        <EditText
-                            android:id="@+id/editemail"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:hint="输入邮箱"
-                            android:textSize="15sp" >
-
-                            <requestFocus />
-                        </EditText>
-
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/del" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/addInfo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical" >
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/layAdd"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dip"
-                        android:gravity="center" >
-
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/icon_add1" />
-
-                        <TextView
-                            android:id="@+id/textView4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="添加更多信息"
-                            android:textSize="18sp" />
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/next"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:text="下一步" />
+                        android:background="@null"
+                        android:inputType="number" >
+                    </EditText>
                 </LinearLayout>
-            </ScrollView>
-        </LinearLayout>
-    </RelativeLayout>
 
-</RelativeLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/box_bg"
+                    android:paddingBottom="15dip"
+                    android:paddingLeft="20dip"
+                    android:paddingTop="15dip" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="邮箱："
+                        android:textColor="@color/default_font_color"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/editemail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null" >
+                    </EditText>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/addInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dip"
+                    android:orientation="vertical" >
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layAdd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dip"
+                    android:background="@drawable/btn_gray"
+                    android:gravity="center" >
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/add1" />
+
+                    <TextView
+                        android:id="@+id/button1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dip"
+                        android:text="添加更多信息"
+                        android:textSize="23sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dip" >
+
+                    <TextView
+                        android:id="@+id/textView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="同时保存至手机通讯录"
+                        android:textSize="20sp" />
+
+                    <ImageView
+                        android:id="@+id/imageView2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/switch_on" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/next"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dip"
+                    android:background="@drawable/btn_bg"
+                    android:text="邀请"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

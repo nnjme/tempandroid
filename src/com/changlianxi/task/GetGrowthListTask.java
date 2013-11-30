@@ -14,6 +14,7 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.StringUtils;
@@ -58,7 +59,6 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 				int comment = object.getInt("comment");
 				String publish = object.getString("publish");
 				String isPraise = object.getString("mypraise");
-				Logger.debug(this, "content:" + content);
 				JSONArray imgrray = object.getJSONArray("images");
 				List<GrowthImgModle> imgModle = new ArrayList<GrowthImgModle>();
 				for (int j = 0; j < imgrray.length(); j++) {
@@ -68,7 +68,7 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 					String img = imgObj.getString("img");
 					im.setId(imgId);
 					im.setImg(img);
-					im.setSamllImg(StringUtils.JoinString(img, "_100x100"));
+					im.setSamllImg(StringUtils.JoinString(img, "_200x200"));
 					imgModle.add(im);
 				}
 				MemberInfoModle md = DBUtils.selectNameAndImgByID("circle"

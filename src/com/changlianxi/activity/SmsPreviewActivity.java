@@ -12,6 +12,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.changlianxi.adapter.SmsAdaprter;
@@ -32,6 +33,7 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 	private SmsAdaprter adapter;
 	private Button btnsend;
 	private String cid;
+	private LinearLayout title;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -49,8 +51,9 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 		back.setOnClickListener(this);
 		btnsend = (Button) findViewById(R.id.btnsend);
 		btnsend.setOnClickListener(this);
+		title = (LinearLayout) findViewById(R.id.title);
 		listview = (ListView) findViewById(R.id.listView1);
-		adapter = new SmsAdaprter(this, contactsList);
+		adapter = new SmsAdaprter(this, contactsList, title);
 		listview.setAdapter(adapter);
 	}
 

@@ -4,7 +4,7 @@
     <item android:drawable="@drawable/sel" android:state_checked="true"/>
     <!-- checked -->
 
-    <item android:drawable="@drawable/nsel" android:state_checked="false"/>
+    <item android:drawable="@drawable/checkboxinput" android:state_checked="false"/>
     <!-- default -->
 
 </selector>

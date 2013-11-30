@@ -159,7 +159,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 	public void findViewById() {
 		initImageViews();
 		back = (ImageView) findViewById(R.id.back);
-		cirName = (TextView) findViewById(R.id.circleName);
+		cirName = (TextView) findViewById(R.id.titleTxt);
 		expression = (RelativeLayout) findViewById(R.id.expression);
 		layoutExpression = (LinearLayout) findViewById(R.id.layoutExpression);
 		layAdd = (LinearLayout) findViewById(R.id.layoutAdd);
@@ -389,6 +389,8 @@ public class ChatActivity extends Activity implements OnClickListener,
 			// 从而显示最新消息
 			sendToServer();
 			editContent.setText("");
+			break;
+		case R.id.editContent:
 			break;
 		default:
 			break;

@@ -58,11 +58,7 @@ public class CircleInfoActivity extends Activity implements OnClickListener,
 		ImageLoader = new AsyncImageLoader(this);
 		findViewById();
 		setListener();
-		pd = new ProgressDialog(this);
-		GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
-		task.setTaskCallBack(this);
-		task.execute();
-		pd.show();
+
 	}
 
 	private void findViewById() {
@@ -88,6 +84,16 @@ public class CircleInfoActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		pd = new ProgressDialog(this);
+		GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
+		task.setTaskCallBack(this);
+		task.execute();
+		pd.show();
+	}
+
+	@Override
 	public void onClick(View v) {
 
 		switch (v.getId()) {
@@ -109,6 +115,7 @@ public class CircleInfoActivity extends Activity implements OnClickListener,
 			intent.setClass(this, EditCircleActivity.class);
 			intent.putExtra("cid", cid);
 			startActivity(intent);
+			finish();
 			break;
 		default:
 			break;

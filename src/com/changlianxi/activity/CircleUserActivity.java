@@ -32,7 +32,6 @@ import android.widget.TextView;
 import com.changlianxi.adapter.MyAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberModle;
-import com.changlianxi.popwindow.UserSortPopwindow;
 import com.changlianxi.task.GetCircleUserTask;
 import com.changlianxi.task.GetCircleUserTask.GetCircleUserList;
 import com.changlianxi.task.PostAsyncTask;
@@ -77,7 +76,7 @@ public class CircleUserActivity extends Activity implements
 	private LinearLayout layInvitate;
 	private Button btnAccecpt;// 接受邀请按钮
 	private Button btnFefuse;// 拒绝邀请按钮
-	private ImageView px;// 排序
+	// private ImageView px;// 排序
 	private int status;// 0 拒绝 1 接受
 
 	@Override
@@ -136,9 +135,10 @@ public class CircleUserActivity extends Activity implements
 		MyComparator compartor = new MyComparator();
 		Collections.sort(listModles, compartor);
 		adapter.setData(listModles);
-		DBUtils.insertCircleUser(circleName, modle.getId(), modle.getUid(),
-				modle.getName(), modle.getImg(), modle.getEmployer(),
-				modle.getSort_key());
+		DBUtils.insertCircleUser(cid, circleName, modle.getId(),
+				modle.getUid(), modle.getName(), modle.getImg(),
+				modle.getEmployer(), modle.getMobileNum(), modle.getSort_key(),
+				modle.getKey_pinyin_fir());
 		CLXApplication.setModleNull();
 	}
 
@@ -185,21 +185,22 @@ public class CircleUserActivity extends Activity implements
 		indexBar.setOnTouchUp(this);
 		selectedChar = (TextView) findViewById(R.id.selected_tv);
 		selectedChar.setVisibility(View.INVISIBLE);
-		selectedChar.getBackground().setAlpha(80);
-		listView.setonRefreshListener(new OnRefreshListener() {
+//		selectedChar.getBackground().setAlpha(255);
+		listView.setonRefreshListener(new OnRefreshListener() {    
 			public void onRefresh() {
 				listView.onRefreshComplete();
 			}
 		});
-		px = (ImageView) findViewById(R.id.px);
-		px.setOnClickListener(this);
+		// px = (ImageView) findViewById(R.id.px);
+		// px.setOnClickListener(this);
 	}
 
 	class EditWather implements TextWatcher {
 		@Override
 		public void afterTextChanged(Editable s) {
 			String key = s.toString().toLowerCase();
-			if (s.length() == 0) {
+			if (key.length() == 0) {
+				Utils.hideSoftInput(CircleUserActivity.this);
 				adapter.setData(listModles);
 				indexBar.setVisibility(View.VISIBLE);
 				return;
@@ -210,8 +211,9 @@ public class CircleUserActivity extends Activity implements
 				String name = listModles.get(i).getName();
 				String pinyin = listModles.get(i).getSort_key().toLowerCase();
 				String pinyinFir = listModles.get(i).getKey_pinyin_fir();
+				String mobileNum = listModles.get(i).getMobileNum();
 				if (name.contains(key) || pinyin.contains(key)
-						|| pinyinFir.contains(key)) {
+						|| pinyinFir.contains(key) || mobileNum.contains(key)) {
 					MemberModle modle = listModles.get(i);
 					searchListModles.add(modle);
 
@@ -272,11 +274,11 @@ public class CircleUserActivity extends Activity implements
 		int position = arg2 - 2;
 		String pid = listModles.get(position).getId();
 		Intent it = new Intent();
+		it.setClass(this, UserInfoActivity.class);
 		it.putExtra("cid", cid);
 		it.putExtra("pid", pid);
 		it.putExtra("username", listModles.get(position).getName());
 		it.putExtra("userlistname", circleUser);
-		it.setClass(this, UserInfoActivity.class);
 		it.putExtra("iconImg", listModles.get(position).getImg());
 		startActivity(it);
 
@@ -304,10 +306,10 @@ public class CircleUserActivity extends Activity implements
 			acceptOrRefuse("/circles/irefuseInvitation");
 			status = 0;
 			break;
-		case R.id.px:
-			UserSortPopwindow pop = new UserSortPopwindow(this, v);
-			pop.show();
-			break;
+		// case R.id.px:
+		// UserSortPopwindow pop = new UserSortPopwindow(this, v);
+		// pop.show();
+		// break;
 		default:
 			break;
 		}

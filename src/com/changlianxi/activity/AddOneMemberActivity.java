@@ -45,7 +45,6 @@ import com.changlianxi.util.Logger;
 import com.changlianxi.util.PinyinUtils;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
-import com.changlianxi.view.CircularImage;
 
 public class AddOneMemberActivity extends Activity implements OnClickListener,
 		PostCallBack, UpLoadPic {
@@ -62,7 +61,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	private String cid = "";
 	private EditText editEmail;
 	private ImageView back;
-	private CircularImage img;
+	private ImageView img;
 	private String imgPath = "";
 	private ProgressDialog pd;
 	private String pid = "";// 邀请成功的成员ID
@@ -72,6 +71,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	private String cirName = "";
 	private String rep = "0"; // 该成员是否已经存在
 	private SelectPicPopwindow pop;
+	private TextView titleTxt;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -100,7 +100,9 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		editName = (EditText) findViewById(R.id.editname);
 		editEmail = (EditText) findViewById(R.id.editemail);
 		back = (ImageView) findViewById(R.id.back);
-		img = (CircularImage) findViewById(R.id.avatarImg);
+		img = (ImageView) findViewById(R.id.avatarImg);
+		titleTxt = (TextView) findViewById(R.id.titleTxt);
+		titleTxt.setText("输入联系人");
 	}
 
 	/**
@@ -129,21 +131,13 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 */
 	private void addView(String str) {
 		final View view = LayoutInflater.from(this).inflate(
-				R.layout.layout_zhiwu, null);
+				R.layout.input_contact, null);
 		addInfo.addView(view);
-		TextView txt = (TextView) view.findViewById(R.id.text);
-		txt.setText(str + ":");
-		setTag(str, txt);
-		txt.setVisibility(View.VISIBLE);
+		TextView txt = (TextView) view.findViewById(R.id.zhiwuName);
 		EditText edit = (EditText) view.findViewById(R.id.zhiwu);
-		edit.setHint("输入" + str);
-		ImageView imbDel = (ImageView) view.findViewById(R.id.delView);
-		imbDel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				addInfo.removeView(view);
-			}
-		});
+		txt.setText(str + ":");
+		setTag(str, edit);
+
 	}
 
 	/**
@@ -151,7 +145,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * 
 	 * @param str
 	 */
-	private void setTag(String str, TextView txt) {
+	private void setTag(String str, EditText txt) {
 		if (str.equals("性别")) {
 			txt.setTag("gendar");
 		} else if (str.equals("生日")) {
@@ -169,11 +163,9 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	private String getValue() {
 		String value = "";
 		for (int i = 0; i < addInfo.getChildCount(); i++) {
-			TextView txt = (TextView) addInfo.getChildAt(i).findViewById(
-					R.id.text);
 			EditText edit = (EditText) addInfo.getChildAt(i).findViewById(
 					R.id.zhiwu);
-			getValueByTag(txt, edit);
+			getValueByTag(edit);
 		}
 		return value;
 	}
@@ -184,14 +176,14 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * @param txt
 	 * @param edit
 	 */
-	private void getValueByTag(TextView txt, EditText edit) {
-		if (txt.getTag().equals("gendar")) {
+	private void getValueByTag(EditText edit) {
+		if (edit.getTag().equals("gendar")) {
 			gendar = edit.getText().toString();
-		} else if (txt.getTag().equals("birthday")) {
+		} else if (edit.getTag().equals("birthday")) {
 			birthday = edit.getText().toString();
-		} else if (txt.getTag().equals("employer")) {
+		} else if (edit.getTag().equals("employer")) {
 			employer = edit.getText().toString();
-		} else if (txt.getTag().equals("jobtitle")) {
+		} else if (edit.getTag().equals("jobtitle")) {
 			jobtitle = edit.getText().toString();
 		}
 
@@ -225,8 +217,6 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 			modle = BitmapUtils.getPickPic(this, data);
 			imgPath = modle.getPicPath();
 			BitmapUtils.startPhotoZoom(this, data.getData());
-
-			// img.setImageBitmap(modle.getBmp());
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
@@ -237,15 +227,13 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 			}
 
 			String fileName = pop.getTakePhotoPath();
-			// Bitmap bitmap = BitmapUtils.FitSizeImg(fileName);
 			imgPath = fileName;
-			// img.setImageBitmap(bitmap);
 			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
 		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
 			Bundle extras = data.getExtras();
 			if (extras != null) {
 				Bitmap photo = extras.getParcelable("data");
-				img.setImageBitmap(photo);
+				img.setImageBitmap(BitmapUtils.toRoundBitmap(photo));
 			}
 		}
 	}

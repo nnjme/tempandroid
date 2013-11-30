@@ -90,7 +90,6 @@ public class UserInfoShow {
 		// Logger.debug(this, "本地资料");
 		// } else {
 		new GetDetailTask().execute();
-		Logger.debug(this, "服务器资料");
 		// }
 		initData();
 		adapter = new MyAdapter();

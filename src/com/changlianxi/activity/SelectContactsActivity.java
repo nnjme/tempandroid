@@ -3,12 +3,11 @@ package com.changlianxi.activity;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
+import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -16,12 +15,12 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.Contacts.Photo;
-import android.text.TextUtils;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,49 +36,39 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.modle.ContactModle;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.task.IinviteUserTask;
 import com.changlianxi.task.IinviteUserTask.IinviteUser;
-import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.PinyinUtils;
+import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.SearchEditText;
 
 /**
- * ´ÓÍ¨Ñ¶Â¼µ¼ÈëÈ¦×Ó³ÌĞò½çÃæ
+ * ä»é€šè®¯å½•å¯¼å…¥åœˆå­ç¨‹åºç•Œé¢
  * 
  * @author teeker_bin
  * 
  */
 public class SelectContactsActivity extends Activity implements
 		OnClickListener, OnItemClickListener {
-	private ListView listview;// ÏÔÊ¾ÁªÏµÈËµÄÁĞ±í
-	private LinearLayout layBot;// ÓÃÀ´ÏÔÊ¾»òÒş²ØÑ¡ÔñÊıÁ¿
+	private ListView listview;// æ˜¾ç¤ºè”ç³»äººçš„åˆ—è¡¨
+	private LinearLayout layBot;// ç”¨æ¥æ˜¾ç¤ºæˆ–éšè—é€‰æ‹©æ•°é‡
 	private Button btfinish;
 	private ImageView back;
 	private LinearLayout addicon;
-	private Cursor cursor;
 	private ContactsAdapter adapter;
-	private ContentResolver resolver;
 	private String type;
 	private String cid;
 	private String cirName;
-	private String cmids = "";// ÑûÇë³ÉÔ±Ê±·µ»ØµÄÑûÇë³ÉÔ±µÄid
-	private String code = "";// ÑûÇëÁ´½ÓÖµ ĞèÒªÑûÇëÊ±ÓĞÖµ
-	private List<SmsPrevieModle> smsList = new ArrayList<SmsPrevieModle>();// Õ¹Ê¾Ê¹ÓÃ
-
-	/** »ñÈ¡¿âPhon±í×Ö¶Î **/
-	private static final String[] PHONES_PROJECTION = new String[] {
-			Phone.DISPLAY_NAME, Phone.NUMBER, Photo._ID, Phone.CONTACT_ID };
-	/** ÁªÏµÈËÏÔÊ¾Ãû³Æ **/
-	private static final int PHONES_DISPLAY_NAME_INDEX = 0;
-
-	/** µç»°ºÅÂë **/
-	private static final int PHONES_NUMBER_INDEX = 1;
-
-	/** Í·ÏñID **/
-	private static final int PHONES_PHOTO_ID_INDEX = 2;
-
-	/** ÁªÏµÈËµÄID **/
-	private static final int PHONES_CONTACT_ID_INDEX = 3;
+	private String cmids = "";// é‚€è¯·æˆå‘˜æ—¶è¿”å›çš„é‚€è¯·æˆå‘˜çš„id
+	private String code = "";// é‚€è¯·é“¾æ¥å€¼ éœ€è¦é‚€è¯·æ—¶æœ‰å€¼
+	private List<SmsPrevieModle> smsList = new ArrayList<SmsPrevieModle>();// å±•ç¤ºä½¿ç”¨
+	private List<ContactModle> listModle = new ArrayList<ContactModle>();
+	private List<ContactModle> searchListModles = new ArrayList<ContactModle>();// å­˜å‚¨æœç´¢åˆ—è¡¨
+	private TextView titleTxt;
+	private AsyncQueryHandler asyncQuery;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -91,13 +80,75 @@ public class SelectContactsActivity extends Activity implements
 			cid = getIntent().getStringExtra("cid");
 			cirName = getIntent().getStringExtra("cirName");
 		}
-		resolver = this.getContentResolver();
 		initView();
-		refreshData();
+		adapter = new ContactsAdapter(this, listModle);
+		listview.setAdapter(adapter);
+		asyncQuery = new MyAsyncQueryHandler(getContentResolver());
+		init();
+	}
+
+	private void init() {
+		Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // è”ç³»äººçš„Uri
+		String[] projection = {
+				ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+				ContactsContract.CommonDataKinds.Phone.NUMBER, "sort_key",
+				ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+				ContactsContract.CommonDataKinds.Phone.PHOTO_ID }; // æŸ¥è¯¢çš„åˆ—
+		asyncQuery.startQuery(0, null, uri, projection, null, null,
+				"sort_key COLLATE LOCALIZED asc"); // æŒ‰ç…§sort_keyå‡åºæŸ¥è¯¢
 	}
 
 	/**
-	 * ³õÊ¼¸÷¸ö»¯¿Ø¼ş
+	 * æ•°æ®åº“å¼‚æ­¥æŸ¥è¯¢ç±»AsyncQueryHandler
+	 * 
+	 * @author administrator
+	 * 
+	 */
+	private class MyAsyncQueryHandler extends AsyncQueryHandler {
+
+		public MyAsyncQueryHandler(ContentResolver cr) {
+			super(cr);
+		}
+
+		/**
+		 * æŸ¥è¯¢ç»“æŸçš„å›è°ƒå‡½æ•°
+		 */
+		@Override
+		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+			if (cursor != null && cursor.getCount() > 0) {
+
+				cursor.moveToFirst();
+				for (int i = 0; i < cursor.getCount(); i++) {
+					cursor.moveToPosition(i);
+					String name = cursor.getString(0);
+					String number = cursor.getString(1);
+					if(!  Utils.isPhoneNum(StringUtils.cutHead(number, "+86"))){
+						continue;
+					}
+					String sortKey = cursor.getString(2);
+					int contactId = cursor.getInt(3);
+					Long photoId = cursor.getLong(4);
+					ContactModle modle = new ContactModle();
+					modle.setName(name);
+					modle.setNum(number);
+					modle.setSort_key(sortKey);
+					modle.setPhotoid(photoId);
+					modle.setKey_pinyin_fir(PinyinUtils.getPinyinFrt(name));
+					modle.setContactid((long) contactId);
+					// listModle.add(modle);
+					adapter.add(modle);
+
+				}
+				// if (listModle.size() > 0) {
+				// adapter.setData(listModle);
+				// }
+			}
+		}
+
+	}
+
+	/**
+	 * åˆå§‹å„ä¸ªåŒ–æ§ä»¶
 	 */
 	private void initView() {
 		addicon = (LinearLayout) findViewById(R.id.addicon);
@@ -106,10 +157,62 @@ public class SelectContactsActivity extends Activity implements
 		btfinish = (Button) findViewById(R.id.btnfinish);
 		btfinish.setOnClickListener(this);
 		layBot = (LinearLayout) findViewById(R.id.layBottom);
+		layBot.setVisibility(View.GONE);
 		listview = (ListView) findViewById(R.id.contactList);
 		listview.setOnItemClickListener(this);
 		listview.setCacheColorHint(0);
+		View view = LayoutInflater.from(this).inflate(R.layout.header, null);
+		SearchEditText editSearch = (SearchEditText) view
+				.findViewById(R.id.search);
+		editSearch.addTextChangedListener(new EditWather());
+		listview.addHeaderView(view);
+		titleTxt = (TextView) findViewById(R.id.titleTxt);
+		titleTxt.setText("æ·»åŠ ç¬¬ä¸€æ‰¹æˆå‘˜");
 	}
+
+	class EditWather implements TextWatcher {
+		@Override
+		public void afterTextChanged(Editable s) {
+			String key = s.toString().toLowerCase();
+			if (key.length() == 0) {
+				adapter.setData(listModle);
+				searchListModles.clear();
+				Utils.hideSoftInput(SelectContactsActivity.this);
+				return;
+			}
+			layBot.setVisibility(View.GONE);
+			searchListModles.clear();
+			for (int i = 0; i < listModle.size(); i++) {
+				String name = listModle.get(i).getName();
+				String pinyin = listModle.get(i).getSort_key().toLowerCase();
+				String pinyinFir = listModle.get(i).getKey_pinyin_fir()
+						.toLowerCase();
+				String mobileNum = listModle.get(i).getNum();
+				if (name.contains(key) || pinyin.contains(key)
+						|| pinyinFir.contains(key) || mobileNum.contains(key)) {
+					ContactModle modle = listModle.get(i);
+					searchListModles.add(modle);
+
+				}
+			}
+			adapter.setData(searchListModles);
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+
+		}
+
+	}
+
+	/** å¾—åˆ°æ‰‹æœºé€šè®¯å½•è”ç³»äººä¿¡æ¯ **/
 
 	private void delicon(String position) {
 		if (position != null) {
@@ -132,29 +235,41 @@ public class SelectContactsActivity extends Activity implements
 		img.setLayoutParams(lp);
 		img.setTag(tag);
 		if (bmp == null) {
-			img.setImageResource(R.drawable.home_image);
+			img.setImageResource(R.drawable.pic);
 		} else {
-			img.setImageBitmap(BitmapUtils.toRoundBitmap(bmp));
+			img.setImageBitmap(bmp);
 		}
 		addicon.addView(img);
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View view, int position,
-			long id) {
+	public void onItemClick(AdapterView<?> arg0, View view, int arg2, long id) {
+
+		layBot.setVisibility(View.VISIBLE);
+		int position = arg2 - 1;
 		ViewHolder holder = (ViewHolder) view.getTag();
 		holder.check.toggle();
-		adapter.selectedMap.put(position, holder.check.isChecked());
+		if (searchListModles.size() > 0) {
+			searchListModles.get(position).setChecked(holder.check.isChecked());
+			adapter.notifyDataSetChanged();
+			if (holder.check.isChecked()) {
+				Bitmap bmp = searchListModles.get(position).getBmp();
+				addImg(bmp, position + "");
+			} else {
+				delicon(position + "");
+			}
+			btfinish.setText("å®Œæˆ(" + addicon.getChildCount() + ")");
+			return;
+		}
+		listModle.get(position).setChecked(holder.check.isChecked());
 		adapter.notifyDataSetChanged();
 		if (holder.check.isChecked()) {
-			// ImageView¶ÔÏó(img)±ØĞë×öÈçÏÂÉèÖÃºó£¬²ÅÄÜ»ñÈ¡ÆäÖĞµÄÍ¼Ïñ
-			holder.img.setDrawingCacheEnabled(true);
-			Bitmap bmp = Bitmap.createBitmap(holder.img.getDrawingCache());
+			Bitmap bmp = listModle.get(position).getBmp();
 			addImg(bmp, position + "");
 		} else {
 			delicon(position + "");
 		}
-		btfinish.setText("Íê³É(" + addicon.getChildCount() + ")");
+		btfinish.setText("å®Œæˆ(" + addicon.getChildCount() + ")");
 
 	}
 
@@ -165,30 +280,30 @@ public class SelectContactsActivity extends Activity implements
 			finish();
 			break;
 		case R.id.btnfinish:
-			List<SmsPrevieModle> listModle = new ArrayList<SmsPrevieModle>();
-			for (int i = 0; i < adapter.getCount(); i++) {
-				if (!adapter.selectedMap.get(i)) {
+			List<SmsPrevieModle> Modles = new ArrayList<SmsPrevieModle>();
+			for (int i = 0; i < listModle.size(); i++) {
+				if (!listModle.get(i).isChecked()) {
 					continue;
 				}
-				Cursor cur = (Cursor) adapter.getItem(i);
-				String name = cur.getString(PHONES_DISPLAY_NAME_INDEX);
-				String num = cur.getString(PHONES_NUMBER_INDEX);
+				ContactModle modle = (ContactModle) adapter.getItem(i);
+				String name = modle.getName();
+				String num = modle.getNum();
 				SmsPrevieModle smsModle = new SmsPrevieModle();
 				smsModle.setName(name);
 				smsModle.setNum(num.replace(" ", ""));
-				listModle.add(smsModle);
+				Modles.add(smsModle);
 			}
-			if (listModle.size() == 0) {
-				Utils.showToast("ÖÁÉÙÑ¡ÔñÒ»Î»ÁªÏµÈË");
+			if (Modles.size() == 0) {
+				Utils.showToast("è‡³å°‘é€‰æ‹©ä¸€ä½è”ç³»äºº");
 				return;
 			}
 			if (type.equals("add")) {
-				addContacts(listModle);
+				addContacts(Modles);
 				return;
 			}
 			Intent intent = new Intent();
 			Bundle bundle = new Bundle();
-			bundle.putSerializable("contactsList", (Serializable) listModle);
+			bundle.putSerializable("contactsList", (Serializable) Modles);
 			intent.putExtras(bundle);
 			intent.setClass(this, CreateCircleActivity.class);
 			intent.putExtra("type", "more");
@@ -202,12 +317,12 @@ public class SelectContactsActivity extends Activity implements
 	}
 
 	/**
-	 * Ìí¼ÓÈ¦×Ó³ÉÔ±
+	 * æ·»åŠ åœˆå­æˆå‘˜
 	 * 
 	 * @param contactsList
 	 */
 	private void addContacts(final List<SmsPrevieModle> contactsList) {
-		// Ìí¼Ó´ÓÍ¨Ñ¶Â¼Ñ¡ÔñµÄÁªÏµÈË
+		// æ·»åŠ ä»é€šè®¯å½•é€‰æ‹©çš„è”ç³»äºº
 		IinviteUserTask task = new IinviteUserTask(cid, contactsList);
 		task.setTaskCallBack(new IinviteUser() {
 
@@ -215,14 +330,14 @@ public class SelectContactsActivity extends Activity implements
 			public void inviteUser(String rt, String details) {
 				if (rt.equals("1")) {
 					getDetails(details, contactsList);
-					Utils.showToast("Ìí¼Ó³É¹¦£¡");
+					Utils.showToast("æ·»åŠ æˆåŠŸï¼");
 					if (code.contains("null")) {
 						finish();
 						return;
 					}
 					intentSmsPreviewActivity();
 				} else {
-					Utils.showToast("ÑûÇëÊ§°Ü£¡");
+					Utils.showToast("é‚€è¯·å¤±è´¥ï¼");
 				}
 			}
 		});
@@ -230,7 +345,7 @@ public class SelectContactsActivity extends Activity implements
 	}
 
 	/**
-	 * Ìø×ªµ½¶ÌĞÅÔ¤ÀÀ½çÃæ
+	 * è·³è½¬åˆ°çŸ­ä¿¡é¢„è§ˆç•Œé¢
 	 */
 	private void intentSmsPreviewActivity() {
 		Intent intent = new Intent();
@@ -245,13 +360,13 @@ public class SelectContactsActivity extends Activity implements
 	}
 
 	/**
-	 * ½âÎö·µ»Ø¹ıÀ´µÄ×Ö·û´®
+	 * è§£æè¿”å›è¿‡æ¥çš„å­—ç¬¦ä¸²
 	 * 
 	 * @param details
-	 *            ÊµÀı ¡¡¡¡"details":" 1,4,EO2VqrHI,6;1,5,E6zBbKeg,7"×Ö·û´®£¬Ê×ÏÈÒÔ·ÖºÅ·Ö¸î£¬
-	 *            ¶ÔÓ¦Ã¿¸öpersonµÄÑûÇë½á¹û
-	 *            £¬È»ºóÒÔ¶ººÅ·Ö¸îµÄËÄ²¿·Ö£¨µÚÒ»²¿·Ö±íÊ¾½á¹ûÊÇ·ñ³É¹¦£¬1³É¹¦£¬·Ç1²»³É¹¦£»µÚ¶ş²¿·ÖÊÇpid£¬µÚÈı²¿·ÖÊÇÑûÇëcode
-	 *            £¬µÚËÄ²¿·ÖÊÇcmid£©
+	 *            å®ä¾‹ ã€€ã€€"details":" 1,4,EO2VqrHI,6;1,5,E6zBbKeg,7"å­—ç¬¦ä¸²ï¼Œé¦–å…ˆä»¥åˆ†å·åˆ†å‰²ï¼Œ
+	 *            å¯¹åº”æ¯ä¸ªpersonçš„é‚€è¯·ç»“æœ
+	 *            ï¼Œç„¶åä»¥é€—å·åˆ†å‰²çš„å››éƒ¨åˆ†ï¼ˆç¬¬ä¸€éƒ¨åˆ†è¡¨ç¤ºç»“æœæ˜¯å¦æˆåŠŸï¼Œ1æˆåŠŸï¼Œé1ä¸æˆåŠŸï¼›ç¬¬äºŒéƒ¨åˆ†æ˜¯pidï¼Œç¬¬ä¸‰éƒ¨åˆ†æ˜¯é‚€è¯·code
+	 *            ï¼Œç¬¬å››éƒ¨åˆ†æ˜¯cmidï¼‰
 	 */
 	private void getDetails(String details, List<SmsPrevieModle> contactsList) {
 		String detail[] = details.split(";");
@@ -266,10 +381,10 @@ public class SelectContactsActivity extends Activity implements
 				code += str[2];
 				cmids += str[3] + ",";
 				SmsPrevieModle modle = new SmsPrevieModle();
-				modle.setContent("Ç×°®µÄ" + contactsList.get(i).getName()
-						+ ",ÑûÇëÄú¼ÓÈë" + cirName
-						+ "È¦×Ó.Äú¿ÉÒÔ·ÃÎÊhttp://clx.teeker.com/a/b/" + str[2]
-						+ "²é¿´ÏêÇé");
+				modle.setContent("äº²çˆ±çš„" + contactsList.get(i).getName()
+						+ ",é‚€è¯·æ‚¨åŠ å…¥" + cirName
+						+ "åœˆå­.æ‚¨å¯ä»¥è®¿é—®http://clx.teeker.com/a/b/" + str[2]
+						+ "æŸ¥çœ‹è¯¦æƒ…");
 				modle.setName(contactsList.get(i).getName());
 				modle.setNum(contactsList.get(i).getNum());
 				smsList.add(modle);
@@ -287,30 +402,11 @@ public class SelectContactsActivity extends Activity implements
 		img.setLayoutParams(lp);
 	}
 
-	// ²éÑ¯Êı¾İ¿â
-	private void refreshData() {
-		cursor = resolver.query(Phone.CONTENT_URI, PHONES_PROJECTION, null,
-				null, "sort_key COLLATE LOCALIZED asc");
-		adapter = new ContactsAdapter(this, cursor);
-		listview.setAdapter(adapter);
-	}
-
 	class ContactsAdapter extends BaseAdapter {
-		Cursor cur;
-		Map<Integer, Boolean> selectedMap;
-		HashSet<String> delContactsIdSet;
 		ViewHolder holder = null;
+		List<ContactModle> listData = new ArrayList<ContactModle>();
 
-		public ContactsAdapter(Context context, Cursor c) {
-			cur = c;
-			// ±£´æÃ¿Ìõ¼ÇÂ¼ÊÇ·ñ±»Ñ¡ÖĞµÄ×´Ì¬
-			selectedMap = new HashMap<Integer, Boolean>();
-			// ±£´æ±»Ñ¡ÖĞ¼ÇÂ¼×÷Êı¾İ¿â±íÖĞµÄId
-			delContactsIdSet = new HashSet<String>();
-
-			for (int i = 0; i < cur.getCount(); i++) {
-				selectedMap.put(i, false);
-			}
+		public ContactsAdapter(Context context, List<ContactModle> list) {
 		}
 
 		@Override
@@ -319,6 +415,7 @@ public class SelectContactsActivity extends Activity implements
 				convertView = LayoutInflater.from(SelectContactsActivity.this)
 						.inflate(R.layout.contact_list_item, null);
 				holder = new ViewHolder();
+				holder.alpha = (TextView) convertView.findViewById(R.id.alpha);
 				holder.laybg = (LinearLayout) convertView
 						.findViewById(R.id.laybg);
 				holder.name = (TextView) convertView.findViewById(R.id.name);
@@ -330,34 +427,55 @@ public class SelectContactsActivity extends Activity implements
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
-			cur.moveToPosition(position);
-			String name = cur.getString(PHONES_DISPLAY_NAME_INDEX);
-			holder.name.setText(name);
-			String num = cur.getString(PHONES_NUMBER_INDEX);
-			if (!TextUtils.isEmpty(num) && num.length() > 10) {
-				holder.num.setText(num);
-			}
-			Long photoid = cur.getLong(PHONES_PHOTO_ID_INDEX);
-			Long contactid = cur.getLong(PHONES_CONTACT_ID_INDEX);
 			setViewWidth(holder.img);
-			Bitmap bitmap = setImage(photoid, contactid);
-			holder.img.setImageBitmap(bitmap);
-			holder.check.setChecked(selectedMap.get(position));
+			// ç»˜åˆ¶è”ç³»äººåç§°
+			holder.name.setText(listData.get(position).getName());
+			// ç»˜åˆ¶è”ç³»äººå·ç 
+			holder.num.setText(listData.get(position).getNum());
+			// ç»˜åˆ¶è”ç³»äººå¤´åƒ
+			if (0 == listModle.get(position).getPhotoid()) {
+				holder.img.setImageResource(R.drawable.pic);
+			} else {
+				Uri uri = ContentUris.withAppendedId(
+						ContactsContract.Contacts.CONTENT_URI,
+						listModle.get(position).getContactid());
+				InputStream input = ContactsContract.Contacts
+						.openContactPhotoInputStream(
+								SelectContactsActivity.this
+										.getContentResolver(), uri);
+				Bitmap contactPhoto = BitmapFactory.decodeStream(input);
+				holder.img.setImageBitmap(contactPhoto);
+			}
+			holder.check.setChecked(listData.get(position).isChecked());
+			if (position % 2 == 0) {
+				holder.laybg.setBackgroundColor(Color.WHITE);
+			} else {
+				holder.laybg.setBackgroundColor(getResources().getColor(
+						R.color.f6));
+			}
+			showAlpha(position, holder);
 			return convertView;
 		}
 
 		@Override
 		public int getCount() {
-			return cur.getCount();
+			return listData.size();
+		}
+
+		public void add(ContactModle modle) {
+			listModle.add(modle);
+			listData = listModle;
+			notifyDataSetChanged();
+		}
+
+		public void setData(List<ContactModle> list) {
+			listData = list;
+			notifyDataSetChanged();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			if (cur.moveToPosition(position)) {
-				return cur;
-			} else {
-				return null;
-			}
+			return listModle.get(position);
 		}
 
 		@Override
@@ -366,30 +484,52 @@ public class SelectContactsActivity extends Activity implements
 		}
 	}
 
-	private Bitmap setImage(long photoid, long contactid) {
-		// µÃµ½ÁªÏµÈËÍ·ÏñBitamp
-		Bitmap contactPhoto = null;
-
-		// photoid ´óÓÚ0 ±íÊ¾ÁªÏµÈËÓĞÍ·Ïñ Èç¹ûÃ»ÓĞ¸ø´ËÈËÉèÖÃÍ·ÏñÔò¸øËûÒ»¸öÄ¬ÈÏµÄ
-		if (photoid > 0) {
-			Uri uri = ContentUris.withAppendedId(
-					ContactsContract.Contacts.CONTENT_URI, contactid);
-			InputStream input = ContactsContract.Contacts
-					.openContactPhotoInputStream(resolver, uri);
-			contactPhoto = BitmapFactory.decodeStream(input);
+	private void showAlpha(int position, ViewHolder holder) {
+		// å½“å‰è”ç³»äººçš„sortKey
+		String currentStr = getAlpha(listModle.get(position).getSort_key());
+		// ä¸Šä¸€ä¸ªè”ç³»äººçš„sortKey
+		String previewStr = (position - 1) >= 0 ? getAlpha(listModle.get(
+				position - 1).getSort_key()) : " ";
+		/**
+		 * åˆ¤æ–­æ˜¾ç¤º#ã€A-Zçš„TextViewéšè—ä¸å¯ï¿½?
+		 */
+		if (!previewStr.equals(currentStr)) { //
+			// å½“å‰è”ç³»äººçš„sortKeyï¿½?ä¸Šä¸€ä¸ªè”ç³»äººçš„sortKeyï¼Œè¯´æ˜å½“å‰è”ç³»äººæ˜¯æ–°ç»„ï¿½?
+			holder.alpha.setVisibility(View.VISIBLE);
+			holder.alpha.setText(currentStr);
 		} else {
-			// contactPhoto = BitmapFactory.decodeResource(getResources(),
-			// R.drawable.hand_pic);
+			holder.alpha.setVisibility(View.GONE);
+		}
+	}
 
+	/**
+	 * æå–è‹±æ–‡çš„é¦–å­—æ¯ï¼Œéè‹±æ–‡å­—æ¯ï¿½?ä»£æ›¿ï¿½?
+	 * 
+	 * @param str
+	 * @return
+	 */
+	private String getAlpha(String str) {
+		if (str == null) {
+			return "#";
 		}
-		if (contactPhoto == null) {
-			contactPhoto = BitmapFactory.decodeResource(getResources(),
-					R.drawable.hand_pic);
+
+		if (str.trim().length() == 0) {
+			return "#";
 		}
-		return BitmapUtils.toRoundBitmap(contactPhoto);
+
+		char c = str.trim().substring(0, 1).charAt(0);
+		// æ­£åˆ™è¡¨è¾¾å¼ï¼Œåˆ¤æ–­é¦–å­—æ¯æ˜¯å¦æ˜¯è‹±æ–‡å­—æ¯
+		Pattern pattern = Pattern.compile("^[A-Za-z]+$");
+		if (pattern.matcher(c + "").matches()) {
+			return (c + "").toUpperCase(); // å¤§å†™è¾“å‡º
+		} else {
+			return "#";
+		}
+
 	}
 
 	class ViewHolder {
+		TextView alpha;
 		LinearLayout laybg;
 		TextView name;
 		CheckBox check;

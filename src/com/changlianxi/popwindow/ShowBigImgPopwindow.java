@@ -84,6 +84,8 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 	private static final int DRAG = 1;
 	private static final int ZOOM = 2;
 	private int mode = NONE;
+	private int position;
+	private boolean click = false;
 
 	/**
 	 * 构造函数 做一些初始化操作
@@ -93,10 +95,11 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 	 * @param data
 	 */
 	public ShowBigImgPopwindow(Context context, View parent,
-			List<GrowthImgModle> data) {
+			List<GrowthImgModle> data, int position) {
 		this.parent = parent;
 		this.data = data;
 		this.mContext = context;
+		this.position = position;
 		LayoutInflater inflater = LayoutInflater.from(mContext);
 		view = inflater.inflate(R.layout.show_img, null);
 		vp = (ViewPager) view.findViewById(R.id.imgPages);
@@ -108,6 +111,7 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 		isSelected.put(0, true);
 		initPopwindow();
 		show();
+		vp.setCurrentItem(position);
 		new GetImage().execute(data.get(0).getImg(), 0 + "");
 	}
 
@@ -462,36 +466,44 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-
 		ImageView myImageView = (ImageView) v;
 		float[] mv = new float[9];
 		Matrix matrix = new Matrix();
 		if (matrixmap.containsKey(showing)) {
 			matrix = matrixmap.get(showing);
 		}
-
 		switch (event.getAction() & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN:// 设置拖拉模式
 			matrix.set(myImageView.getImageMatrix());
 			savedMatrix.set(matrix);
 			start.set(event.getX(), event.getY());
 			mode = DRAG;
+			click = true;
 			break;
 		case MotionEvent.ACTION_UP:
+			if (click) {
+				dismiss();
+			}
 			break;
 		case MotionEvent.ACTION_POINTER_UP:
 			mode = NONE;
 			break;
 		case MotionEvent.ACTION_POINTER_DOWN:// 设置多点触摸模式
 			oldDist = spacing(event);
+
 			if (oldDist > 10f) {
 				savedMatrix.set(matrix);
 				midPoint(mid, event);
 				mode = ZOOM;
+				click = false;
+			} else {
+				click = true;
 			}
+
 			break;
 
 		case MotionEvent.ACTION_MOVE:
+			click = false;
 			if (mode == DRAG) {// 若为DRAG模式，则点击移动图片
 				float tx = (event.getX() - start.x);
 				float ty = (event.getY() - start.y);

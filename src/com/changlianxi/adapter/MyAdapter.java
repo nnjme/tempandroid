@@ -85,6 +85,7 @@ public class MyAdapter extends BaseAdapter {
 			holder.info = (TextView) convertView.findViewById(R.id.userinfo);
 			holder.name = (TextView) convertView.findViewById(R.id.username);
 			holder.alpha = (TextView) convertView.findViewById(R.id.alpha);
+			holder.news = (TextView) convertView.findViewById(R.id.userdt);
 			holder.changeBg = (LinearLayout) convertView
 					.findViewById(R.id.changebg);
 			convertView.setTag(holder);
@@ -93,6 +94,7 @@ public class MyAdapter extends BaseAdapter {
 		}
 		holder.info.setText(list.get(position).getEmployer());
 		holder.name.setText(list.get(position).getName());
+		holder.news.setText(list.get(position).getMobileNum());
 		showAlpha(position, holder);
 		if (position % 2 == 0) {
 			holder.changeBg.setBackgroundColor(Color.WHITE);
@@ -156,6 +158,7 @@ public class MyAdapter extends BaseAdapter {
 	class ViewHolder {
 		ImageView img;
 		TextView info;
+		TextView news;
 		TextView name;
 		TextView alpha;
 		LinearLayout changeBg;

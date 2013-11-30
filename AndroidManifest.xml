@@ -62,11 +62,6 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".AddFriendsActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
             android:name=".CircleUserActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="portrait"
@@ -77,7 +72,8 @@
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
             android:name=".RegisterActivity"
@@ -162,7 +158,8 @@
             android:name=".AddOneMemberActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_add_one_member"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|stateHidden" >
         </activity>
         <activity
             android:name=".MessagesListActivity"

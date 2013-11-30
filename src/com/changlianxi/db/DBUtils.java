@@ -42,16 +42,20 @@ public class DBUtils {
 	 * @param employer
 	 * @param sortkey
 	 */
-	public static  void insertCircleUser(String circleName, String pid, String uid,
-			String name, String img, String employer, String sortkey) {
+	public static void insertCircleUser(String cid, String circleName,
+			String pid, String uid, String name, String img, String employer,
+			String mobileNum, String sortkey, String pinyinFir) {
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
+		values.put("cid", cid);
 		values.put("personID", pid);
 		values.put("userID", uid);
 		values.put("userName", name);
 		values.put("userImg", img);
 		values.put("employer", employer);
+		values.put("mobileNum", mobileNum);
 		values.put("sortkey", sortkey);
+		values.put("pinyinFir", pinyinFir);
 		insertData(circleName, values);
 	}
 
@@ -396,11 +400,70 @@ public class DBUtils {
 		// 创建圈子所对应的表
 		db.execSQL("CREATE TABLE IF NOT EXISTS "
 				+ circleName
-				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,sortkey varchar)");
+				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,cid varchar,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,mobileNum varchar,sortkey varchar,pinyinFir varchar)");
 		db.execSQL("create table IF NOT EXISTS "
 				+ circleName
 				+ "userlist"
 				+ "( _id integer PRIMARY KEY AUTOINCREMENT ,tID varchar,personID varchar,key varchar, value varchar,startDate varchar,endDate)");
+	}
+
+	/**
+	 * 模糊查询
+	 * 
+	 * @param tableName
+	 */
+	public static List<MemberModle> fuzzyQuery(String str) {
+		List<MemberModle> listModle = new ArrayList<MemberModle>();
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		Cursor curCircle = db.query("circlelist", null, null, null, null, null,
+				null);
+		Cursor cur = null;
+		if (curCircle.getCount() > 0) {
+			curCircle.moveToFirst();
+			for (int i = 0; i < curCircle.getCount(); i++) {
+				String cirID = curCircle.getString(curCircle
+						.getColumnIndex("cirID"));
+				cur = db.query(
+						"circle" + cirID,
+						new String[] { "userName", "userImg", "cid",
+								"personID", "sortkey", "pinyinFir", "mobileNum" },
+						"userName like ?  or sortkey like ? or pinyinFir like ? or mobileNum like ?",
+						new String[] { "%" + str + "%", "%" + str + "%",
+								"%" + str + "%", "%" + str + "%" }, null, null,
+						null);
+				if (cur.getCount() > 0) {
+					cur.moveToFirst();
+					for (int j = 0; j < cur.getCount(); j++) {
+						MemberModle modle = new MemberModle();
+						String name = cur.getString(cur
+								.getColumnIndex("userName"));
+						String img = cur.getString(cur
+								.getColumnIndex("userImg"));
+						String cid = cur.getString(cur.getColumnIndex("cid"));
+						String pid = cur.getString(cur
+								.getColumnIndex("personID"));
+						String mobileNum = cur.getString(cur
+								.getColumnIndex("mobileNum"));
+						String circleName = getCircleNameById(cid);
+						modle.setCircleName(circleName);
+						modle.setImg(img);
+						modle.setName(name);
+						modle.setId(pid);
+						modle.setCid(cid);
+						modle.setMobileNum(mobileNum);
+						listModle.add(modle);
+						cur.moveToNext();
+					}
+				}
+				curCircle.moveToNext();
+			}
+		}
+		cur.close();
+		curCircle.close();
+		return listModle;
+
 	}
 
 	public static void close() {

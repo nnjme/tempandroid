@@ -46,6 +46,7 @@ public class SmsInviteActivity extends Activity implements OnClickListener,
 	private String cmids;
 	private String cid;
 	private ProgressDialog pd;
+	private TextView titleTxt;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -71,6 +72,8 @@ public class SmsInviteActivity extends Activity implements OnClickListener,
 		back.setOnClickListener(this);
 		sendByServer.setOnClickListener(this);
 		btnSend.setOnClickListener(this);
+		titleTxt = (TextView) findViewById(R.id.titleTxt);
+		titleTxt.setText("¶ÌÏ¢ÑûÇë");
 	}
 
 	/**

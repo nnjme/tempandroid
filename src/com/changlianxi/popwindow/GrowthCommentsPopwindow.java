@@ -28,6 +28,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
@@ -77,6 +78,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	private ArrayList<String> imgID = new ArrayList<String>();// 存放图片的地址的ID编辑时使用
 	private int pisition;
 	private RecordOperation callBack;
+	private TextView titleTxt;
+	private ScrollView scorll;
 
 	/**
 	 * 构造函数
@@ -128,7 +131,18 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		back = (ImageView) view.findViewById(R.id.back);
 		back.setOnClickListener(this);
 		gridView = (GridView) view.findViewById(R.id.gridView1);
-		gridView.setAdapter(new GrowthImgAdapter(mContext, modle.getImgModle()));
+		int size = modle.getImgModle().size();
+		int average = 0;
+		if (size == 1) {
+			average = 1;
+		} else if (size <= 4) {
+			average = 2;
+		} else if (size >= 5) {
+			average = 4;
+		}
+		gridView.setNumColumns(average);
+		gridView.setAdapter(new GrowthImgAdapter(mContext, modle.getImgModle(),
+				average));
 		praise = (TextView) view.findViewById(R.id.praise);
 		comment = (TextView) view.findViewById(R.id.comments);
 		name = (TextView) view.findViewById(R.id.name);
@@ -140,6 +154,9 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		comment.setText("评论(" + modle.getComment() + ")");
 		praise.setText("赞(" + modle.getPraise() + ")");
 		listview = (ListView) view.findViewById(R.id.listView);
+		titleTxt = (TextView) view.findViewById(R.id.titleTxt);
+		titleTxt.setText("成长");
+		scorll = (ScrollView) view.findViewById(R.id.scroll);
 	}
 
 	/**
@@ -209,7 +226,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 				String gid = jsonobject.getString("gid");
 				String num = jsonobject.getString("num");
 				JSONArray jsonarray = jsonobject.getJSONArray("comments");
-				for (int i = jsonarray.length() - 1; i >= 0; i--) {
+				for (int i = 0; i < jsonarray.length(); i++) {
 					JSONObject object = (JSONObject) jsonarray.opt(i);
 					CommentsModle modle = new CommentsModle();
 					String id = object.getString("id");
@@ -293,9 +310,12 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 				modle.setUid(SharedUtils.getString("uid", ""));
 				modle.setContent(edtContent.getText().toString());
 				modle.setTime(DateUtils.getCurrDateStr());
-				cModle.add(modle);
+				cModle.add(0, modle);
 				adapter.notifyDataSetChanged();
-				listview.setSelection(adapter.getCount());
+				scorll.scrollTo(0, 0);
+				edtContent.setText("");
+				edtContent.clearFocus();
+				Utils.hideSoftInput(mContext);
 
 			} else {
 				Utils.showToast("评论失败!");
@@ -452,8 +472,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 				Utils.showToast("请输入内容！");
 				return;
 			}
-			Utils.hideSoftInput(mContext);
 			new PublishCommentsTask().execute(str);
+
 			break;
 		case R.id.edit:
 			if (isPermission(modle.getUid())) {

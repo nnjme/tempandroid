@@ -70,6 +70,9 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 				insertData(id, name, StringUtils.JoinString(logo, "_200x200"),
 						String.valueOf(modle.isNew()));
 				DBUtils.creatTable("circle" + id);
+				GetCircleUserTask task = new GetCircleUserTask(id, "circle"
+						+ id);
+				task.execute();
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

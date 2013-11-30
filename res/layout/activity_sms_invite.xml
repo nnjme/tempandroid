@@ -4,26 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <LinearLayout
+    <include
+        android:id="@+id/titlebar"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/top_bg"
-        android:gravity="center_vertical" >
-
-        <ImageView
-            android:id="@+id/back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="10dip"
-            android:src="@drawable/icon_return" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="手机联系人"
-            android:textColor="#FFFFFF"
-            android:textSize="@dimen/titleSize" />
-    </LinearLayout>
+        layout="@layout/title_bar" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +18,9 @@
         <EditText
             android:id="@+id/editpriview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="100dip"
+            android:background="@drawable/box_bg"
+            android:gravity="top"
             android:textColor="@color/default_font_color"
             android:textSize="20sp" >
         </EditText>
@@ -53,8 +39,10 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"
+            android:background="@drawable/btn_gray"
             android:gravity="center"
-            android:text="通过手机短信邀请" />
+            android:text="通过手机短信发送"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/sendByServer"

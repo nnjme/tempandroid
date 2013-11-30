@@ -18,10 +18,13 @@ import com.changlianxi.util.Utils;
 public class GrowthImgAdapter extends BaseAdapter {
 	private Context mContext;
 	private List<GrowthImgModle> listData;
+	private int average;
 
-	public GrowthImgAdapter(Context context, List<GrowthImgModle> data) {
+	public GrowthImgAdapter(Context context, List<GrowthImgModle> data,
+			int average) {
 		this.mContext = context;
 		this.listData = data;
+		this.average = average;
 	}
 
 	@Override
@@ -53,9 +56,9 @@ public class GrowthImgAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		int width = Utils.getSecreenWidth(mContext) - 30;
-		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-				width / 4, width / 4);
+		int width = Utils.getSecreenWidth(mContext);
+		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width
+				/ average, width / average);
 		holder.img.setLayoutParams(params);
 		String path;
 		if (listData != null && position < listData.size()) {

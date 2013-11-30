@@ -1,7 +1,5 @@
 package com.changlianxi.modle;
 
-import java.io.Serializable;
-
 import android.graphics.Bitmap;
 
 /**
@@ -10,39 +8,39 @@ import android.graphics.Bitmap;
  * @author teeker_bin
  * 
  */
-public class ContactModle implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class ContactModle {
+
 	private String name = "";// 联系人姓名
-	private String num = "";// 联系人号码
-	private Bitmap bmp;// 联系人头像
-	private boolean selected = false;
-	private String position;// 位置 删除时用
+	private String sort_key = "";// 用来排序的关键字 搜索时使用
+	private String key_pinyin_fir = "";// 名字首字母 搜索时使用
+	private String num = "";
+	private Bitmap bmp = null;
+	private Long photoid = (long) 0;
+	private Long contactid = (long) 0;
+	private boolean checked = false;
 
-	public String getPosition() {
-		return position;
+	public boolean isChecked() {
+		return checked;
 	}
 
-	public void setPosition(String position) {
-		this.position = position;
+	public void setChecked(boolean checked) {
+		this.checked = checked;
 	}
 
-	public boolean isSelected() {
-		return selected;
+	public Long getContactid() {
+		return contactid;
 	}
 
-	public void setSelected(boolean selected) {
-		this.selected = selected;
+	public void setContactid(Long contactid) {
+		this.contactid = contactid;
 	}
 
-	public String getName() {
-		return name;
+	public Long getPhotoid() {
+		return photoid;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setPhotoid(Long photoid) {
+		this.photoid = photoid;
 	}
 
 	public String getNum() {
@@ -59,6 +57,30 @@ public class ContactModle implements Serializable {
 
 	public void setBmp(Bitmap bmp) {
 		this.bmp = bmp;
+	}
+
+	public String getSort_key() {
+		return sort_key;
+	}
+
+	public void setSort_key(String sort_key) {
+		this.sort_key = sort_key;
+	}
+
+	public String getKey_pinyin_fir() {
+		return key_pinyin_fir;
+	}
+
+	public void setKey_pinyin_fir(String key_pinyin_fir) {
+		this.key_pinyin_fir = key_pinyin_fir;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

@@ -65,17 +65,23 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 				String uid = object.getString("uid");
 				String sortkey = PinyinUtils.getPinyin(name).toUpperCase();
 				String pinyin = PinyinUtils.getPinyinFrt(name).toLowerCase();
+				String mobileNum = "";
+				JSONArray newsarray = object.getJSONArray("news");
+				if (newsarray.length() > 0) {
+					mobileNum = newsarray.get(0).toString();
+				}
 				modle.setId(id);
 				modle.setName(name);
 				modle.setEmployer(employer);
 				modle.setImg(StringUtils.JoinString(logo, "_100x100"));
 				modle.setSort_key(sortkey);
 				modle.setUid(uid);
+				modle.setMobileNum(mobileNum);
 				modle.setKey_pinyin_fir(pinyin);
 				listModles.add(modle);
-				DBUtils.insertCircleUser(circleName, id, uid, name,
+				DBUtils.insertCircleUser(cid, circleName, id, uid, name,
 						StringUtils.JoinString(logo, "_100x100"), employer,
-						sortkey);
+						mobileNum, sortkey, pinyin);
 			}
 			MyComparator compartor = new MyComparator();
 			Collections.sort(listModles, compartor);
@@ -88,6 +94,9 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 	@Override
 	protected void onPostExecute(String result) {
 		// 任务结束
+		if (callBack == null) {
+			return;
+		}
 		callBack.getCircleUserList(listModles);
 		return;
 	}

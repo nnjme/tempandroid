@@ -2,20 +2,19 @@ package com.changlianxi.adapter;
 
 import java.util.List;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.SmsPrevieModle;
+import com.changlianxi.popwindow.DialogPopWindow;
+import com.changlianxi.popwindow.DialogPopWindow.OnButtonOnclick;
 import com.changlianxi.popwindow.SmsSetNickNamePopWindow;
 
 /**
@@ -28,10 +27,13 @@ public class SmsAdaprter extends BaseAdapter {
 	private Context mContext;
 	private List<SmsPrevieModle> contactsList;
 	private SmsSetNickNamePopWindow pop;
+	private LinearLayout vtitle;
 
-	public SmsAdaprter(Context context, List<SmsPrevieModle> listdata) {
+	public SmsAdaprter(Context context, List<SmsPrevieModle> listdata,
+			LinearLayout view) {
 		this.mContext = context;
 		this.contactsList = listdata;
+		this.vtitle = view;
 	}
 
 	@Override
@@ -104,27 +106,19 @@ public class SmsAdaprter extends BaseAdapter {
 
 		@Override
 		public void onClick(View v) {
-			inputNickNameDialog(position);
+			DialogPopWindow diaPop = new DialogPopWindow(mContext, vtitle);
+			diaPop.setOnlistOnclick(new OnButtonOnclick() {
+
+				@Override
+				public void onclick(String str) {
+					contactsList.get(position).setName(str);
+					notifyDataSetChanged();
+				}
+			});
+			diaPop.show();
 			pop.dismiss();
 
 		}
-	}
-
-	private void inputNickNameDialog(final int position) {
-		final EditText inputServer = new EditText(mContext);
-		inputServer.setFocusable(true);
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-		builder.setView(inputServer).setNegativeButton("取消", null);
-		builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-
-			public void onClick(DialogInterface dialog, int which) {
-				String inputName = inputServer.getText().toString();
-				contactsList.get(position).setName(inputName);
-				notifyDataSetChanged();
-			}
-		});
-		builder.show();
 	}
 
 	class ViewHolder {

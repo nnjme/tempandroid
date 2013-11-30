@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.changlianxi.activity.LoginActivity;
 import com.changlianxi.activity.R;
+import com.changlianxi.util.ImageManager;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
@@ -60,14 +61,24 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 		listview.setOnItemClickListener(this);
 		btn = (Button) mDesktop.findViewById(R.id.menuback);
 		btn.setOnClickListener(this);
-		avatar = (CircularImage) mDesktop.findViewById(R.id.acatarImg);
-		avatar.setImageResource(R.drawable.menu_pic);
-		avatarBg = (ImageView) mDesktop.findViewById(R.id.acatarBg);
-		// WigdtContorl.setAvatarWidth(mcontext, avatar, avatarBg);
+		avatar = (CircularImage) mDesktop.findViewById(R.id.avatar);
+		avatar.setBackgroundResource(R.drawable.menu_pic);
+		avatarBg = (ImageView) mDesktop.findViewById(R.id.avatarBg);
+		WigdtContorl.setAvatarWidth(mcontext, avatar, avatarBg);
 	}
 
 	public View getView() {
 		return mDesktop;
+	}
+
+	/**
+	 * 设置头像
+	 * 
+	 * @param avatarUrl
+	 */
+	public void setAvatar(String avatarUrl) {
+		ImageManager.from(mcontext).displayImage(avatar, avatarUrl, -1,
+				avatar.getWidth(), avatar.getWidth());
 	}
 
 	private void getMenu() {

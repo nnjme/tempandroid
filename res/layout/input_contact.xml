@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/box_bg"
+        android:paddingBottom="15dip"
+        android:paddingLeft="20dip"
+        android:paddingTop="15dip" >
+
+        <TextView
+            android:id="@+id/zhiwuName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/default_font_color"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/zhiwu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null" >
+        </EditText>
+    </LinearLayout>
+
+</LinearLayout>

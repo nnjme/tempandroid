@@ -130,26 +130,27 @@ public class DateUtils {
 		return date.getTime();
 	}
 
-	/**
-	 * 当前时间加一秒
-	 * 
-	 * @param strTime
-	 */
-	public static String addOneSecond(String strTime) {
-		int num = Integer.valueOf(strTime.substring(strTime.length() - 1)) + 1;
-		return strTime.substring(0, strTime.length() - 1) + num + "";
-
-	}
-
 	public static String publishedTime(String strTime) {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try {
-			Date now = df.parse("2004-03-26 13:31:40");
-			Date date = df.parse("2004-03-26 13:30:24");
+			Date now = df.parse(getCurrDateStr());
+			Date date = df.parse(strTime);
 			long l = now.getTime() - date.getTime();
 			long day = l / (24 * 60 * 60 * 1000);
 			long hour = (l / (60 * 60 * 1000) - day * 24);
 			long min = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
-			System.out.println("" + day + "天" + hour + "小时" + min + "分");
+			if (day < 1) {
+				if (hour < 1) {
+					return min + "分钟前";
+				}
+				return hour + "小时前";
+			} else if (day == 1) {
+				return "昨天";
+			} else if (day == 2) {
+				return "前天";
+			} else {
+				return interceptDateStr(strTime, "yyyy-MM-dd");
+			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

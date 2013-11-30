@@ -15,15 +15,22 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dip"
+            android:paddingLeft="10dip"
             android:src="@drawable/icon_return" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:src="@drawable/top_line" />
 
         <TextView
             android:id="@+id/titleName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center"
+            android:gravity="left"
             android:singleLine="true"
             android:textColor="#FFFFFF"
             android:textSize="@dimen/titleSize" />

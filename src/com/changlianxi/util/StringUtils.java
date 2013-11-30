@@ -62,4 +62,45 @@ public class StringUtils {
 
 		return str.substring(idx + separator.length());
 	}
+
+	/**
+	 * 去除字符串头部字符 比如 +86
+	 * 
+	 * @param srcStr
+	 * @param head
+	 * @return
+	 */
+	public static String cutHead(String srcStr, String head) {
+		if (TextUtils.isEmpty(srcStr))
+			return srcStr;
+		if (srcStr.startsWith(head))
+			return substringAfter(srcStr, head);
+		return srcStr;
+	}
+
+	/**
+	 * 返回str中separator子串后面的字符串 当str == null || str == "" || separator == ""
+	 * 时返回str； 当separator==null || 在str中不存在子串separator 时返回 ""
+	 * 
+	 * @param str
+	 *            源串
+	 * @param separator
+	 *            子串
+	 * @return
+	 */
+	public static String substringAfter(String str, String separator) {
+		if (TextUtils.isEmpty(str) || "".equals(separator)) {
+			return str;
+		}
+
+		if (separator == null) {
+			return "";
+		}
+		int idx = str.indexOf(separator);
+		if (idx < 0) {
+			return "";
+		}
+
+		return str.substring(idx + separator.length());
+	}
 }

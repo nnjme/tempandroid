@@ -12,6 +12,8 @@ import android.view.Window;
 
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.task.GetMyDetailTask;
+import com.changlianxi.task.GetMyDetailTask.GetMyDetail;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.Utils;
@@ -65,6 +67,14 @@ public class MainActivity extends Activity implements OnOpenListener {
 		mRoot.addView(mHome.getView(), params);
 		setContentView(mRoot);
 		setListener();
+		GetMyDetailTask task = new GetMyDetailTask();
+		task.setTaskCallBack(new GetMyDetail() {
+			@Override
+			public void getMydetail(String avatarUrl) {
+				mDesktop.setAvatar(avatarUrl);
+			}
+		});
+		task.execute();
 	}
 
 	@Override

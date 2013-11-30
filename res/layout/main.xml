@@ -12,12 +12,19 @@
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 
-        <ImageView
+            <ImageView
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dip"
+            android:paddingLeft="10dip"
             android:src="@drawable/icon_return" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:src="@drawable/top_line" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -35,13 +42,13 @@
                 android:textColor="#FFFFFF"
                 android:textSize="@dimen/titleSize" />
 
-            <ImageView
-                android:id="@+id/px"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_gravity="center"
-                android:padding="10dip"
-                android:src="@drawable/angle_down1" />
+<!--             <ImageView -->
+<!--                 android:id="@+id/px" -->
+<!--                 android:layout_width="wrap_content" -->
+<!--                 android:layout_height="fill_parent" -->
+<!--                 android:layout_gravity="center" -->
+<!--                 android:padding="10dip" -->
+<!--                 android:src="@drawable/angle_down1" /> -->
         </LinearLayout>
 
         <ImageView
@@ -55,24 +62,48 @@
     <LinearLayout
         android:id="@+id/layInvitate"
         android:layout_width="fill_parent"
-        android:layout_height="50dip"
-        android:background="#99fff9b5"
+        android:layout_height="wrap_content"
+        android:background="@drawable/footer_bg"
         android:gravity="center"
         android:visibility="gone" >
 
-        <Button
-            android:id="@+id/btnAccetpt"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="加入圈子" />
+            android:layout_marginBottom="15dip"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:layout_marginTop="15dip"
+            android:background="@drawable/btn"
+            android:gravity="center" >
 
-        <Button
-            android:id="@+id/btnrefuse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="拒绝加入" />
+            <Button
+                android:id="@+id/btnAccetpt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:text="加入圈子"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/top_line" />
+
+            <Button
+                android:id="@+id/btnrefuse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:text="忽略邀请"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout

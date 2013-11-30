@@ -61,7 +61,7 @@ public class NewsActivity extends Activity implements OnClickListener,
 
 	private void findViewByID() {
 		back = (ImageView) findViewById(R.id.back);
-		cirName = (TextView) findViewById(R.id.circleName);
+		cirName = (TextView) findViewById(R.id.titleTxt);
 		mPullDownView = (PullDownView) findViewById(R.id.PullDownlistView);
 		adapter = new NewsListAdapter(this, listModle);
 		mListView = mPullDownView.getListView();

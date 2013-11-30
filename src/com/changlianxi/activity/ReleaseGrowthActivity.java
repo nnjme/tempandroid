@@ -65,6 +65,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 	private String editcontent;
 	private List<String> imgID = new ArrayList<String>();
 	private SelectPicPopwindow pop;
+	private TextView titleTxt;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -89,6 +90,8 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 		gridView = (GrowthImgGridView) findViewById(R.id.imgGridview);
 		adapter = new MyAdapter();
 		gridView.setAdapter(adapter);
+		titleTxt = (TextView) findViewById(R.id.titleTxt);
+		titleTxt.setText("发布成长记录");
 	}
 
 	/**

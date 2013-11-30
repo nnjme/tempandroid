@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
-import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.popwindow.GrowthCommentsPopwindow;
 import com.changlianxi.popwindow.GrowthCommentsPopwindow.RecordOperation;
@@ -64,8 +63,8 @@ public class GrowthAdapter extends BaseAdapter {
 					R.layout.growth_item, null);
 			holder.name = (TextView) convertView.findViewById(R.id.name);
 			holder.time = (TextView) convertView.findViewById(R.id.time);
-			holder.location = (TextView) convertView
-					.findViewById(R.id.txtLocate);
+			// holder.location = (TextView) convertView
+			// .findViewById(R.id.txtLocate);
 			holder.content = (TextView) convertView.findViewById(R.id.content);
 			holder.praise = (TextView) convertView.findViewById(R.id.praise);
 			holder.comment = (TextView) convertView.findViewById(R.id.comment);
@@ -80,14 +79,24 @@ public class GrowthAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
+		int size = listData.get(position).getImgModle().size();
+		int average = 0;
+		if (size == 1) {
+			average = 1;
+		} else if (size <= 4) {
+			average = 2;
+		} else if (size >= 5) {
+			average = 4;
+		}
+		holder.gridView.setNumColumns(average);
 		holder.gridView.setAdapter(new GrowthImgAdapter(mContext, listData.get(
-				position).getImgModle()));
+				position).getImgModle(), average));
 		holder.gridView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
 				new ShowBigImgPopwindow(mContext, arg0, listData.get(position)
-						.getImgModle());
+						.getImgModle(), arg2);
 			}
 		});
 		holder.layParise.setOnClickListener(new BtnClick(holder, position));
@@ -101,7 +110,7 @@ public class GrowthAdapter extends BaseAdapter {
 		}
 		holder.name.setText(listData.get(position).getName());
 		holder.time.setText(listData.get(position).getPublish());
-		holder.location.setText(listData.get(position).getLocation());
+		// holder.location.setText(listData.get(position).getLocation());
 		holder.content.setText(listData.get(position).getContent());
 		holder.praise.setText(listData.get(position).getPraise() + "");
 		holder.comment.setText(listData.get(position).getComment() + "");
@@ -113,11 +122,11 @@ public class GrowthAdapter extends BaseAdapter {
 		LinearLayout layComment;
 		TextView name;
 		TextView time;
-		TextView location;
+		// TextView location;
 		TextView content;
 		TextView praise;
 		TextView comment;
-		LinearLayout layImg;
+		// LinearLayout layImg;
 		GridView gridView;
 		ImageView img;
 	}
@@ -177,19 +186,6 @@ public class GrowthAdapter extends BaseAdapter {
 				break;
 			}
 
-		}
-	}
-
-	class ImgClick implements OnClickListener {
-		List<GrowthImgModle> modle;
-
-		public ImgClick(List<GrowthImgModle> modle) {
-			this.modle = modle;
-		}
-
-		@Override
-		public void onClick(View v) {
-			new ShowBigImgPopwindow(mContext, v, modle);
 		}
 	}
 
