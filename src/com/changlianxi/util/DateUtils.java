@@ -123,11 +123,11 @@ public class DateUtils {
 		Date date = null;
 		try {
 			date = df.parse(str);
+			return date.getTime();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return 0L;
 		}
-		return date.getTime();
 	}
 
 	public static String publishedTime(String strTime) {
