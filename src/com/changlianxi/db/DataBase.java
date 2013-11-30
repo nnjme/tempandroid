@@ -46,4 +46,11 @@ public class DataBase extends SQLiteOpenHelper {
 
 	}
 
+	public void initDB(SQLiteDatabase db) {
+		db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_TABLE_NAME
+				+ "( " + Const.CIRCLE_TABLE_STRUCTURE + " )");
+		db.execSQL("create table IF NOT EXISTS " + Const.CHAT_TABLE_NAME
+				+ "( " + Const.CHAT_TABLE_STRUCTURE + " )");
+	}
+
 }
