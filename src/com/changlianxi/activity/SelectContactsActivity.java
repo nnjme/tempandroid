@@ -43,7 +43,10 @@ import com.changlianxi.task.IinviteUserTask.IinviteUser;
 import com.changlianxi.util.PinyinUtils;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.QuickAlphabeticBar;
 import com.changlianxi.view.SearchEditText;
+import com.changlianxi.view.QuickAlphabeticBar.OnTouchingLetterChangedListener;
+import com.changlianxi.view.QuickAlphabeticBar.touchUp;
 
 /**
  * 从通讯录导入圈子程序界面
@@ -52,7 +55,8 @@ import com.changlianxi.view.SearchEditText;
  * 
  */
 public class SelectContactsActivity extends Activity implements
-		OnClickListener, OnItemClickListener {
+		OnClickListener, OnItemClickListener, OnTouchingLetterChangedListener,
+		touchUp {
 	private ListView listview;// 显示联系人的列表
 	private LinearLayout layBot;// 用来显示或隐藏选择数量
 	private Button btfinish;
@@ -69,6 +73,9 @@ public class SelectContactsActivity extends Activity implements
 	private List<ContactModle> searchListModles = new ArrayList<ContactModle>();// 存储搜索列表
 	private TextView titleTxt;
 	private AsyncQueryHandler asyncQuery;
+	private QuickAlphabeticBar indexBar;// 右侧字母拦
+	private TextView selectedChar;// 显示选择字母
+	private int position;// 当前字母子listview中所对应的位置
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -122,7 +129,7 @@ public class SelectContactsActivity extends Activity implements
 					cursor.moveToPosition(i);
 					String name = cursor.getString(0);
 					String number = cursor.getString(1);
-					if(!  Utils.isPhoneNum(StringUtils.cutHead(number, "+86"))){
+					if (!Utils.isPhoneNum(StringUtils.cutHead(number, "+86"))) {
 						continue;
 					}
 					String sortKey = cursor.getString(2);
@@ -168,6 +175,12 @@ public class SelectContactsActivity extends Activity implements
 		listview.addHeaderView(view);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("添加第一批成员");
+		indexBar = (QuickAlphabeticBar) findViewById(R.id.indexBar);
+		indexBar.setOnTouchingLetterChangedListener(this);
+		indexBar.getBackground().setAlpha(125);
+		indexBar.setOnTouchUp(this);
+		selectedChar = (TextView) findViewById(R.id.selected_tv);
+		selectedChar.setVisibility(View.INVISIBLE);
 	}
 
 	class EditWather implements TextWatcher {
@@ -177,9 +190,11 @@ public class SelectContactsActivity extends Activity implements
 			if (key.length() == 0) {
 				adapter.setData(listModle);
 				searchListModles.clear();
+				indexBar.setVisibility(View.VISIBLE);
 				Utils.hideSoftInput(SelectContactsActivity.this);
 				return;
 			}
+			indexBar.setVisibility(View.GONE);
 			layBot.setVisibility(View.GONE);
 			searchListModles.clear();
 			for (int i = 0; i < listModle.size(); i++) {
@@ -244,7 +259,6 @@ public class SelectContactsActivity extends Activity implements
 
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View view, int arg2, long id) {
-
 		layBot.setVisibility(View.VISIBLE);
 		int position = arg2 - 1;
 		ViewHolder holder = (ViewHolder) view.getTag();
@@ -535,5 +549,38 @@ public class SelectContactsActivity extends Activity implements
 		CheckBox check;
 		TextView num;
 		ImageView img;
+	}
+
+	/**
+	 * 设置listview的当前选中值
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public int findIndexer(String s) {
+		int position = 0;
+		for (int i = 0; i < listModle.size(); i++) {
+			String sortkey = listModle.get(i).getSort_key().toUpperCase();
+			if (sortkey.startsWith(s)) {
+				position = i;
+				break;
+			}
+		}
+		return position;
+	}
+
+	@Override
+	public void onTouchingLetterChanged(String s) {
+		selectedChar.setText(s);
+		selectedChar.setVisibility(View.VISIBLE);
+		position = (findIndexer(s)) + 1;
+		listview.setSelection(position);
+	}
+
+	@Override
+	public void onTouchUp() {
+		selectedChar.setVisibility(View.GONE);
+		listview.setSelection(position);
+
 	}
 }

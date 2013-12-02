@@ -9,11 +9,11 @@ public class ErrorCodeUtil {
 			"PERMISSION_DENIED", "IMAGE_SAVE_ERROR",
 			"CREATOR_CANNOT_QUIT_CIRCLE", "CIRCLE_CANNOT_DISSOLVE",
 			"REPEAT_OPERATION", "TARGET_NOT_EXIST", "MSG_DIST_ERROR",
-			"CONDITION_NOT_SATISFY" };
+			"CONDITION_NOT_SATISFY", "TOKEN_INVALID", "OLD_PASSWD_WRONG" };
 	private static String errorCodeChinese[] = { "非post请求", "请求参数不完整", "用户不存在",
 			"用户已存在", "密码不正确", "发送校验码短信失败", "数据库操作失败", "校验码不正确", "字段不存在",
 			"成员不存在", "成员已存在圈子中", "圈子不存在", "权限不够", "保存图片出错", "创建者不能退出圈子",
-			"圈子不能被解散", "重复操作", "目标不存在", "消息发送出错", "条件不满足" };
+			"圈子不能被解散", "重复操作", "目标不存在", "消息发送出错", "条件不满足", "用户身份验证失败", "老密码错误" };
 
 	/**
 	 * 将英文错误码转换为汉语错误码

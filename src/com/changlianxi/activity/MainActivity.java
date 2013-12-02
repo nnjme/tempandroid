@@ -24,12 +24,17 @@ import com.changlianxi.view.MessagesList;
 import com.changlianxi.view.MyCard;
 import com.changlianxi.view.SetMenu;
 import com.changlianxi.view.SetMenu.onChangeViewListener;
+import com.changlianxi.view.Setting;
 
 public class MainActivity extends Activity implements OnOpenListener {
 	/**
 	 * 当前显示内容的容器(继承于ViewGroup)
 	 */
 	private FlipperLayout mRoot;
+	/**
+	 * 设置界面
+	 */
+	private Setting mSetting;
 	/**
 	 * 私信列表界面
 	 */
@@ -143,7 +148,14 @@ public class MainActivity extends Activity implements OnOpenListener {
 					mMessage.setOnOpenListener(MainActivity.this);
 					mRoot.close(mMessage.getView());
 					break;
+				case 3:
+					if (mSetting == null) {
+						mSetting = new Setting(MainActivity.this);
+						mSetting.setOnOpenListener(MainActivity.this);
+					}
+					mRoot.close(mSetting.getView());
 
+					break;
 				default:
 					break;
 				}

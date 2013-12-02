@@ -233,7 +233,26 @@
             android:name="api_key"
             android:value="QdCuL0S0CEP8TgTPrHb3FYmt" />
         <!-- push service end -->
-
+        <activity
+            android:name=".ChangePassswordActivity"
+            android:label="@string/title_activity_change_passsword" >
+        </activity>
+        <activity
+            android:name=".AdviceFeedBackActivity"
+            android:label="@string/title_activity_advice_feed_back" >
+        </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/title_activity_about" >
+        </activity>
+        <activity
+            android:name=".ProblemActivity"
+            android:label="@string/title_activity_problem" >
+        </activity>
+        <activity
+            android:name=".NoticesActivity"
+            android:label="@string/title_activity_notices" >
+        </activity>
     </application>
 
 </manifest>

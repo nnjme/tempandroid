@@ -48,5 +48,10 @@
     <string name="title_activity_message">MessageActivity</string>
     <string name="title_activity_circle_info">CircleInfoActivity</string>
     <string name="title_activity_edit_circle">EditCircleActivity</string>
+    <string name="title_activity_change_passsword">ChangePassswordActivity</string>
+    <string name="title_activity_advice_feed_back">AdviceFeedBackActivity</string>
+    <string name="title_activity_about">AboutActivity</string>
+    <string name="title_activity_problem">ProblemActivity</string>
+    <string name="title_activity_notices">NoticesActivity</string>
 
 </resources>

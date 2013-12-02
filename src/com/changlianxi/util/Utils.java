@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.ConnectivityManager;
@@ -17,14 +18,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.changlianxi.activity.CLXApplication;
+import com.changlianxi.activity.CircleActivity;
+import com.changlianxi.activity.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
@@ -71,6 +77,25 @@ public class Utils {
 	public static void showToast(String str) {
 		Toast toast = Toast.makeText(CLXApplication.getInstance(), str,
 				Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
+
+	}
+
+	/**
+	 * 显示提示信息
+	 * 
+	 * @param str
+	 */
+	public static void showViewToast(String str, Context context) {
+		Toast toast = new Toast(context);
+		LayoutInflater inflater = LayoutInflater.from(context);
+		View layout = inflater.inflate(R.layout.toast, null);
+		TextView title = (TextView) layout.findViewById(R.id.txt);
+		title.setText(str);
+		title.getBackground().setAlpha(125);
+		toast.setDuration(Toast.LENGTH_SHORT);
+		toast.setView(layout);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
 
@@ -260,6 +285,31 @@ public class Utils {
 		String release = "Release:" + android.os.Build.VERSION.RELEASE; // android系统版本号
 		return "android:" + release;
 
+	}
+
+	/**
+	 * 获取应用的当前版本号
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public static String getVersionName(Context context) {
+		String version = "";
+		try {
+
+			// 获取packagemanager的实例
+			PackageManager packageManager = context.getPackageManager();
+			// getPackageName()是你当前类的包名，0代表是获取版本信息
+			PackageInfo packInfo;
+			packInfo = packageManager.getPackageInfo(context.getPackageName(),
+					0);
+			version = packInfo.versionName;
+
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return version;
 	}
 
 	/**

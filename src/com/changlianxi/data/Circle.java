@@ -68,7 +68,7 @@ public class Circle extends AbstractData {
 	public String getLogo() {
 		return logo;
 	}
-	
+
 	public String getLogo(String size) {
 		return StringUtils.JoinString(logo, size);
 	}

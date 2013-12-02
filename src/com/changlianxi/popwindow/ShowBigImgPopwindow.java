@@ -43,6 +43,7 @@ import android.widget.PopupWindow;
 
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.GrowthImgModle;
+import com.changlianxi.photoview.PhotoView;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.RoundProgressBar;
@@ -119,7 +120,6 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 	 * 初始化popwindow
 	 */
 	private void initPopwindow() {
-
 		popupWindow = new PopupWindow(view, LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT);
 		// 这个是为了点击“返回Back”也能使其消失，并且并不会影响你的背景（很神奇的）
@@ -133,14 +133,14 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 		ViewGroup group = (ViewGroup) view.findViewById(R.id.viewGroup);// 包裹小圆点的LinearLayout
 		imageViews = new ImageView[data.size()];
 		for (int i = 0; i < data.size(); i++) {
-			ImageView img = new ImageView(mContext);
+			PhotoView img = new PhotoView(mContext);
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
 					LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.MATCH_PARENT);
 			img.setLayoutParams(lp);
-			img.setOnClickListener(this);
-			img.setScaleType(ImageView.ScaleType.MATRIX);
-			img.setOnTouchListener(this);
+			// img.setOnClickListener(this);
+			// img.setScaleType(ImageView.ScaleType.MATRIX);
+			// img.setOnTouchListener(this);
 			views.add(img);
 			// 设置 每张图片的句点
 			ImageView imageView = new ImageView(mContext);
