@@ -6,22 +6,21 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.changlianxi.task.PostAsyncTask;
-import com.changlianxi.task.PostAsyncTask.PostCallBack;
-import com.changlianxi.util.ErrorCodeUtil;
-import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.Utils;
-
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.ErrorCodeUtil;
+import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 
 /**
  * 意见反馈界面
@@ -29,18 +28,17 @@ import android.widget.TextView;
  * @author teeker_bin
  * 
  */
-public class AdviceFeedBackActivity extends Activity implements
+public class AdviceFeedBackActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
 	private ImageView back;
 	private TextView titleTxt;
 	private EditText editAdvice;
 	private Button submit;
-	private ProgressDialog pd;
+	private Dialog pd;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_advice_feed_back);
 		findViewByID();
 		setListener();
@@ -79,7 +77,7 @@ public class AdviceFeedBackActivity extends Activity implements
 		PostAsyncTask task = new PostAsyncTask(this, map, "/feedbacks/icommit");
 		task.setTaskCallBack(this);
 		task.execute();
-		pd = new ProgressDialog(this);
+		pd = DialogUtil.getWaitDialog(this, "请稍后");
 		pd.show();
 	}
 
@@ -88,6 +86,8 @@ public class AdviceFeedBackActivity extends Activity implements
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			Utils.rightOut(this);
+
 			break;
 		case R.id.submit:
 			PostSubmit();
@@ -106,6 +106,8 @@ public class AdviceFeedBackActivity extends Activity implements
 			if (rt == 1) {
 				Utils.showToast("提交成功");
 				finish();
+				Utils.rightOut(this);
+
 			} else {
 				String err = object.getString("err");
 				Utils.showToast(ErrorCodeUtil.convertToChines(err));

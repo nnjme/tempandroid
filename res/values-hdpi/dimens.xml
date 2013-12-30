@@ -10,6 +10,6 @@
     <dimen name="textsize26">16sp</dimen>
     <dimen name="picwidth">106dip</dimen>
     <dimen name="picbgwidth">124dip</dimen>
-    <dimen name="width">238dip</dimen>
+    <dimen name="width">24dip</dimen>
 
 </resources>

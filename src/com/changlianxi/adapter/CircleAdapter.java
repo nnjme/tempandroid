@@ -2,23 +2,23 @@ package com.changlianxi.adapter;
 
 import java.util.List;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.CircleModle;
-import com.changlianxi.util.AsyncImageLoader;
-import com.changlianxi.util.WigdtContorl;
-import com.changlianxi.util.AsyncImageLoader.ImageCallback;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.view.CircularImage;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * 圈子显示的自定义adapter
@@ -29,15 +29,14 @@ import com.changlianxi.view.CircularImage;
 public class CircleAdapter extends BaseAdapter {
 	private List<CircleModle> listmodle;
 	private Context mcontext;
-	private GridView listView;
-	private AsyncImageLoader ImageLoader;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 
-	public CircleAdapter(Context context, List<CircleModle> listModle,
-			GridView listView, Activity activity) {
+	public CircleAdapter(Context context, List<CircleModle> listModle) {
 		this.listmodle = listModle;
 		this.mcontext = context;
-		this.listView = listView;
-		ImageLoader = new AsyncImageLoader(activity);
+		options = CLXApplication.getOptions();
+		imageLoader = CLXApplication.getImageLoader();
 	}
 
 	public CircleAdapter(Context context) {
@@ -46,7 +45,6 @@ public class CircleAdapter extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
 		return listmodle.size();
 	}
 
@@ -57,16 +55,15 @@ public class CircleAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public long getItemId(int position) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder holder = null;
@@ -85,33 +82,14 @@ public class CircleAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		WigdtContorl
-				.setAvatarWidth(mcontext, holder.circleImg, holder.circleBg);
+		// WigdtContorl.setAvatarWidth(mcontext, holder.circleImg,
+		// holder.circleBg, 5, 6);
 		String imgUrl = listmodle.get(position).getCirIcon();
-		if (imgUrl.equals("addroot")) {
-			holder.circleImg.setImageResource(R.drawable.pic_add);
+		if (imgUrl.equals("addroot") || imgUrl.contains(FileUtils.getRootDir())) {
+			holder.circleBg.setImageResource(R.drawable.pic_add);
+			holder.circleImg.setImageBitmap(null);
 		} else {
-			ImageView imageView = holder.circleImg;
-			imageView.setTag(imgUrl);
-			// 异步下载图片
-			Bitmap cachedImage = ImageLoader.loaDrawable(imgUrl,
-					new ImageCallback() {
-						@Override
-						public void imageLoaded(Bitmap imageDrawable,
-								String imageUrl) {
-							ImageView imageViewByTag = (ImageView) listView
-									.findViewWithTag(imageUrl);
-							if (imageViewByTag != null) {
-								imageViewByTag.setImageBitmap(imageDrawable);
-							}
-						}
-					});
-			if (cachedImage != null) {
-				holder.circleImg.setImageBitmap(cachedImage);
-
-			} else {
-				holder.circleImg.setImageResource(R.drawable.pic);
-			}
+			imageLoader.displayImage(imgUrl, holder.circleImg, options);
 		}
 		if (listmodle.get(position).isNew()) {
 			holder.isnew.setVisibility(View.VISIBLE);
@@ -119,6 +97,7 @@ public class CircleAdapter extends BaseAdapter {
 			holder.isnew.setVisibility(View.GONE);
 
 		}
+		holder.circleName.setTextColor(Color.argb(150, 0, 0, 0));
 		holder.circleName.setText(listmodle.get(position).getCirName());
 		return convertView;
 	}

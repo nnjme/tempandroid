@@ -62,6 +62,7 @@ public class UserSortPopwindow implements OnItemClickListener {
 	/**
 	 * 初始化popwindow
 	 */
+	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
 		popupWindow = new PopupWindow(view, LayoutParams.WRAP_CONTENT,
 				LayoutParams.WRAP_CONTENT);

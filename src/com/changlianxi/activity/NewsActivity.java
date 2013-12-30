@@ -4,21 +4,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.changlianxi.adapter.NewsListAdapter;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.GetNewsList;
 import com.changlianxi.modle.NewsModle;
 import com.changlianxi.task.GetNewsListTask;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.PullDownView;
 import com.changlianxi.view.PullDownView.OnPullDownListener;
@@ -29,13 +35,13 @@ import com.changlianxi.view.PullDownView.OnPullDownListener;
  * @author teeker_bin
  * 
  */
-public class NewsActivity extends Activity implements OnClickListener,
+public class NewsActivity extends BaseActivity implements OnClickListener,
 		OnPullDownListener, GetNewsList {
 	private ImageView back;
 	private TextView cirName;
 	private String cid = "";
 	private String txtCirName;
-	private ProgressDialog pd;
+	private Dialog pd;
 	private PullDownView mPullDownView;
 	private NewsListAdapter adapter;
 	private List<NewsModle> listModle = new ArrayList<NewsModle>();
@@ -45,18 +51,31 @@ public class NewsActivity extends Activity implements OnClickListener,
 	private boolean loadMore;// 是否加载更多
 	private boolean isRefresh;// 是否下拉刷新
 	private boolean isShowPd = true;// 是否显示进度框
+	private LinearLayout newsWarn;
+	private TextView newsCount;
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				newsWarn.setVisibility(View.GONE);
+				break;
+			default:
+				break;
+			}
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_dt);
 		cid = getIntent().getStringExtra("cirID");
 		txtCirName = getIntent().getStringExtra("cirName");
 		end = DateUtils.phpTime(System.currentTimeMillis());
 		findViewByID();
 		setListener();
-		getSeverNewsList();
+		getNewsListFromDB();
 	}
 
 	private void findViewByID() {
@@ -65,7 +84,9 @@ public class NewsActivity extends Activity implements OnClickListener,
 		mPullDownView = (PullDownView) findViewById(R.id.PullDownlistView);
 		adapter = new NewsListAdapter(this, listModle);
 		mListView = mPullDownView.getListView();
-
+		mListView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+		newsWarn = (LinearLayout) findViewById(R.id.newsWarn);
+		newsCount = (TextView) findViewById(R.id.newsCount);
 	}
 
 	private void setListener() {
@@ -73,18 +94,18 @@ public class NewsActivity extends Activity implements OnClickListener,
 		cirName.setText(txtCirName);
 		mPullDownView.setOnPullDownListener(this);
 		mListView.setAdapter(adapter);
-		// // 设置可以自动获取更多 滑到最后一个自动获取 改成false将禁用自动获取更多
-		// mPullDownView.enableAutoFetchMore(false, 1);
-		// // 隐藏 并禁用尾部
-		// mPullDownView.setHideFooter();
-		// // 显示并启用自动获取更多
-		// mPullDownView.setShowFooter();
-		// // 隐藏并且禁用头部刷新
-		// mPullDownView.setHideHeader();
-		// // 显示并且可以使用头部刷新
-		// mPullDownView.setShowHeader();
 		mPullDownView.notifyDidMore();
 		mPullDownView.setFooterVisible(false);
+	}
+
+	private void getNewsListFromDB() {
+		listModle = DBUtils.getNewsList(cid);
+		if (listModle.size() > 0) {
+			adapter.setData(listModle);
+			isShowPd = false;
+			return;
+		}
+		getSeverNewsList();
 	}
 
 	/**
@@ -97,11 +118,12 @@ public class NewsActivity extends Activity implements OnClickListener,
 		map.put("cid", cid);
 		map.put("start", start);
 		map.put("end", end);
-		GetNewsListTask task = new GetNewsListTask(this, map, "/news/ilist");
+		GetNewsListTask task = new GetNewsListTask(this, map, "/news/ilist",
+				cid);
 		task.setTaskCallBack(this);
 		task.execute();
 		if (isShowPd) {
-			pd = new ProgressDialog(this);
+			pd = DialogUtil.getWaitDialog(this, "请稍后");
 			pd.show();
 		}
 
@@ -112,6 +134,8 @@ public class NewsActivity extends Activity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			this.getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
 			break;
 		default:
 			break;
@@ -132,8 +156,10 @@ public class NewsActivity extends Activity implements OnClickListener,
 			mPullDownView.setFooterVisible(true);
 		}
 		if (isRefresh) {
-			listModle.clear();
-			listModle = list;
+			// listModle.clear();
+			// listModle = list;
+			list.remove(0);
+			list.addAll(list);
 		} else if (loadMore) {
 			list.remove(0);
 			listModle.addAll(listModle.size(), list);
@@ -141,6 +167,9 @@ public class NewsActivity extends Activity implements OnClickListener,
 			listModle = list;
 		}
 		adapter.setData(listModle);
+		newsWarn.setVisibility(View.VISIBLE);
+		newsCount.setText(list.size() + "条新动态");
+		mHandler.sendEmptyMessageDelayed(0, 1000);
 	}
 
 	/** 刷新事件接口 这里要注意的是获取更多完 要关闭 刷新的进度条RefreshComplete() **/
@@ -149,7 +178,13 @@ public class NewsActivity extends Activity implements OnClickListener,
 		isRefresh = true;
 		loadMore = false;
 		isShowPd = false;
-		end = DateUtils.phpTime(System.currentTimeMillis());
+		if (listModle.size() > 0) {
+			start = DateUtils.phpTime(DateUtils.convertToDate(listModle.get(0)
+					.getCreatedTime()));
+		} else {
+			start = DateUtils.phpTime(System.currentTimeMillis());
+		}
+		end = "0";
 		getSeverNewsList();
 	}
 
@@ -165,4 +200,30 @@ public class NewsActivity extends Activity implements OnClickListener,
 		getSeverNewsList();
 
 	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			finish();
+			getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
+		}
+		return super.onKeyDown(keyCode, event);
+
+	}
+
+	@Override
+	protected void onStop() {
+		for (int i = 0; i < listModle.size(); i++) {
+			NewsModle modle = listModle.get(i);
+			DBUtils.insertNews(cid, modle.getId(), modle.getUser1(),
+					modle.getUser2(), modle.getPerson2(),
+					modle.getCreatedTime(), modle.getContent(),
+					modle.getDetail(), modle.getUser1Name(),
+					modle.getUser2Name(), modle.getAvatarUrl(),
+					modle.getNeed_approve());
+		}
+		super.onStop();
+	}
+
 }

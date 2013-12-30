@@ -1,7 +1,5 @@
 package com.changlianxi.view;
 
-import java.util.Date;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -20,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.changlianxi.activity.R;
+import com.changlianxi.util.DateUtils;
 
 public class ScrollOverListView extends ListView implements OnScrollListener {
 
@@ -45,6 +44,7 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 	private LayoutInflater inflater;
 	/** 头部刷新的布局 **/
 	private LinearLayout headView;
+	private LinearLayout parent;
 	/** 头部显示下拉刷新等的控件 **/
 	private TextView tipsTextview;
 	/** 刷新控件 **/
@@ -94,8 +94,8 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 		mBottomPosition = 0;
 		setCacheColorHint(0);
 		inflater = LayoutInflater.from(context);
-
 		headView = (LinearLayout) inflater.inflate(R.layout.head, null);
+		parent = (LinearLayout) headView.findViewById(R.id.parent);
 		arrowImageView = (ImageView) headView
 				.findViewById(R.id.head_arrowImageView);
 		arrowImageView.setMinimumWidth(70);
@@ -134,6 +134,10 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 		reverseAnimation.setFillAfter(true);
 
 		state = DONE;
+	}
+
+	public void setParentLayBg(int id) {
+		parent.setBackgroundColor(id);
 	}
 
 	/** 触摸事件的处理 **/
@@ -450,7 +454,7 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 	private void measureView(View child) {
 		ViewGroup.LayoutParams p = child.getLayoutParams();
 		if (p == null) {
-			p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+			p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT);
 		}
 		int childWidthSpec = ViewGroup.getChildMeasureSpec(0, 0 + 0, p.width);
@@ -468,7 +472,7 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 
 	public void onRefreshComplete() {
 		state = DONE;
-		lastUpdatedTextView.setText("最近更新:" + new Date().toLocaleString());
+		lastUpdatedTextView.setText("最近更新:" + DateUtils.getCurrDateStr());
 		changeHeaderViewByState();
 	}
 

@@ -3,22 +3,23 @@ package com.changlianxi.view;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -35,6 +36,7 @@ import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.task.GetCircleListTask;
 import com.changlianxi.task.GetCircleListTask.GetCircleList;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.BounceScrollView.OnRefreshComplete;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
@@ -45,18 +47,18 @@ import com.changlianxi.view.FlipperLayout.OnOpenListener;
  * @author teeker_bin
  * 
  */
-public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
+public class Home implements OnClickListener, OnRefreshComplete,
 		OnItemClickListener {
 	private Context mcontext;
 	private View mHome;
 	private LinearLayout mMenu;
 	private OnOpenListener mOnOpenListener;
 	private static List<CircleModle> listModle = new ArrayList<CircleModle>();
-	private GridView gView;
+	private GrowthImgGridView gView;
 	private static CircleAdapter adapter;
 	private BounceScrollView scrollView;
 	private EditText search;
-	private ProgressDialog progressDialog;
+	private static Dialog progressDialog;
 	public static ImageView imgPromte;
 	private ListView searchListView;
 	private List<MemberModle> searchListModle = new ArrayList<MemberModle>();// 搜索时使用
@@ -75,14 +77,11 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 		searchAdapter = new CircleSearchAdapter(mcontext, searchListModle);
 		searchListView.setAdapter(searchAdapter);
 		listModle.add(newCircle());
-		adapter = new CircleAdapter(mcontext, listModle, gView,
-				(Activity) mcontext);
+		adapter = new CircleAdapter(mcontext, listModle);
 		gView.setAdapter(adapter);
 		if (Utils.isNetworkAvailable()) {
-			GetCircleListTask task = new GetCircleListTask();
-			task.setTaskCallBack(this);
-			task.execute();
-			progressDialog = new ProgressDialog(mcontext);
+			getServerCircleLists();
+			progressDialog = DialogUtil.getWaitDialog(mcontext, "请稍后");
 			if (listModle.size() > 1) {
 				return;
 			}
@@ -90,7 +89,27 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 		} else {
 			Utils.showToast("请检查网络");
 		}
+	}
 
+	public static void getServerCircleLists() {
+		GetCircleListTask task = new GetCircleListTask();
+		task.setTaskCallBack(new GetCircleList() {
+
+			@Override
+			public void getCircleList(List<CircleModle> modles) {
+				if (progressDialog != null) {
+					progressDialog.dismiss();
+				}
+				if (modles.size() == 0) {
+					return;
+				}
+				modles.add(newCircle());
+				listModle.clear();
+				listModle.addAll(modles);
+				adapter.setData(listModle);
+			}
+		});
+		task.execute();
 	}
 
 	/**
@@ -99,9 +118,7 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 	 * @param modle
 	 */
 	public static void refreshCircleList(CircleModle modle) {
-		listModle.add(0, modle);
-		adapter.setData(listModle);
-		DBUtils.creatTable("circle" + modle.getCirID());
+		getServerCircleLists();
 	}
 
 	/**
@@ -154,7 +171,7 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 	 */
 	private void findViewById() {
 		mMenu = (LinearLayout) mHome.findViewById(R.id.home_menu);
-		gView = (GridView) mHome.findViewById(R.id.gridView1);
+		gView = (GrowthImgGridView) mHome.findViewById(R.id.gridView1);
 		gView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		scrollView = (BounceScrollView) mHome
 				.findViewById(R.id.bounceScrollView);
@@ -183,6 +200,7 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 					intent.setClass(mcontext, AddCircleMemberActivity.class);
 					intent.putExtra("type", "create");
 					mcontext.startActivity(intent);
+					Utils.leftOutRightIn(mcontext);
 					return;
 				}
 				TextView txt = (TextView) v.findViewById(R.id.circleName);
@@ -192,8 +210,19 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 				it.putExtra("name", name);
 				it.putExtra("type", "home");// 从圈子列表界面跳转
 				it.putExtra("is_New", listModle.get(position).isNew());
+				it.putExtra("inviterID", listModle.get(position).getInviterID());
 				it.putExtra("cirID", listModle.get(position).getCirID());
 				mcontext.startActivity(it);
+				Utils.leftOutRightIn(mcontext);
+
+			}
+		});
+
+		gView.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				return MotionEvent.ACTION_MOVE == event.getAction() ? true
+						: false;
 			}
 		});
 	}
@@ -207,9 +236,12 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 				Utils.hideSoftInput(mcontext);
 				gView.setVisibility(View.VISIBLE);
 				searchListView.setVisibility(View.GONE);
+				search.setCompoundDrawables(null, null, null, null);
 				return;
 			}
-
+			Drawable del = mcontext.getResources().getDrawable(R.drawable.del);
+			del.setBounds(0, 0, del.getMinimumWidth(), del.getMinimumHeight());
+			search.setCompoundDrawables(null, null, del, null);
 			searchListModle = DBUtils.fuzzyQuery(key);
 			gView.setVisibility(View.GONE);
 			searchListView.setVisibility(View.VISIBLE);
@@ -261,7 +293,7 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 	 * 
 	 * @return
 	 */
-	private CircleModle newCircle() {
+	private static CircleModle newCircle() {
 		CircleModle modle = new CircleModle();
 		modle.setCirIcon("addroot");
 		modle.setNew(false);
@@ -270,30 +302,19 @@ public class Home implements OnClickListener, OnRefreshComplete, GetCircleList,
 	}
 
 	@Override
-	public void getCircleList(List<CircleModle> modles) {
-		if (progressDialog != null) {
-			progressDialog.dismiss();
-		}
-		if (modles.size() == 0) {
-			return;
-		}
-		modles.add(newCircle());
-		listModle.clear();
-		listModle = modles;
-		adapter.setData(listModle);
-	}
-
-	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		Intent it = new Intent();
 		it.setClass(mcontext, UserInfoActivity.class);
 		it.putExtra("cid", searchListModle.get(arg2).getCid());
 		it.putExtra("pid", searchListModle.get(arg2).getId());
+		it.putExtra("uid", searchListModle.get(arg2).getUid());
 		it.putExtra("username", searchListModle.get(arg2).getName());
 		it.putExtra("userlistname", "circle"
 				+ searchListModle.get(arg2).getCid() + "userlist");
 		it.putExtra("iconImg", searchListModle.get(arg2).getImg());
 		mcontext.startActivity(it);
+		Utils.leftOutRightIn(mcontext);
+
 	}
 
 }

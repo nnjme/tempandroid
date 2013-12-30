@@ -7,17 +7,18 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/box_bg"
-        android:paddingBottom="15dip"
+        android:layout_marginTop="12dip"
+        android:background="@drawable/input_bg"
+        android:paddingBottom="10dip"
         android:paddingLeft="20dip"
-        android:paddingTop="15dip" >
+        android:paddingTop="10dip" >
 
         <TextView
             android:id="@+id/zhiwuName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/default_font_color"
-            android:textSize="18sp" />
+            android:textColor="#a0a0a0"
+            android:textSize="15sp" />
 
         <EditText
             android:id="@+id/zhiwu"

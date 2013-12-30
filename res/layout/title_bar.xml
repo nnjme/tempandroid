@@ -6,7 +6,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/scale110dip"
         android:background="@drawable/top_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
@@ -15,14 +15,14 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dip"
+            android:paddingLeft="@dimen/scale30dip"
+            android:paddingRight="@dimen/scale29dip"
             android:src="@drawable/icon_return" />
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginRight="10dip"
+            android:layout_height="fill_parent"
+            android:layout_marginRight="@dimen/scale28dip"
             android:src="@drawable/top_line" />
 
         <TextView
@@ -30,8 +30,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:singleLine="true"
             android:textColor="#FFFFFF"
-            android:textSize="@dimen/titleSize" />
+            android:textSize="@dimen/scale42sp" />
     </LinearLayout>
 
 </merge>

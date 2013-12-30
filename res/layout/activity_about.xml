@@ -13,7 +13,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dip"
+        android:layout_marginTop="@dimen/scale159dip"
         android:gravity="center"
         android:orientation="vertical" >
 
@@ -21,43 +21,48 @@
             android:id="@+id/imageView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/app_icon_1" />
+            android:src="@drawable/about_logo" />
 
         <TextView
             android:id="@+id/version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView" />
+            android:layout_marginTop="@dimen/scale50dip"
+            android:text="TextView"
+            android:textSize="@dimen/scale24sp" />
 
         <TextView
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dip"
+            android:layout_marginTop="@dimen/scale398dip"
             android:text="北京驯鹿科技有限公司"
-            android:textSize="23sp" />
+            android:textSize="@dimen/scale34sp" />
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dip"
+            android:layout_marginTop="@dimen/scale40dip"
             android:text="Copyright 2013"
-            android:textColor="@color/default_font_color" />
+            android:textColor="#8c000000"
+            android:textSize="@dimen/scale20sp" />
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Xun.lu Corporation Beijing"
-            android:textColor="@color/default_font_color" />
+            android:textColor="#8c000000"
+            android:textSize="@dimen/scale20sp" />
 
         <TextView
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="All Right Reserved"
-            android:textColor="@color/default_font_color" />
+            android:textColor="#8c000000"
+            android:textSize="@dimen/scale20sp" />
     </LinearLayout>
 
 </LinearLayout>

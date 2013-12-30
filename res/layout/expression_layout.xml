@@ -7,49 +7,74 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:background="#efefef"
         android:orientation="vertical" >
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/default_font_color"
+            android:layout_gravity="bottom"
+            android:background="@drawable/footer_nav_bg"
             android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="5dip" >
+            android:paddingBottom="10dip"
+            android:paddingLeft="10dip"
+            android:paddingRight="10dip"
+            android:paddingTop="15dip" >
 
             <ImageView
                 android:id="@+id/imgAdd"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="5dip"
                 android:src="@drawable/add" />
 
             <EditText
                 android:id="@+id/editContent"
-                android:layout_width="wrap_content"
+                android:layout_width="0dip"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" >
+                android:layout_weight="1"
+                android:background="@drawable/growth_search_bg"
+                android:padding="8dip"
+                android:scrollbars="vertical"
+                android:textSize="15sp" >
             </EditText>
 
             <Button
                 android:id="@+id/btnSend"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="发送" />
+                android:background="@drawable/growth_btn_bg"
+                android:paddingBottom="7dip"
+                android:paddingLeft="17dip"
+                android:paddingRight="17dip"
+                android:paddingTop="5dip"
+                android:text="发送"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/layoutAdd"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#f2f2f2"
+            android:layout_marginBottom="20dip"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:layout_marginTop="5dip"
+            android:background="@drawable/input_bg"
             android:padding="5dip"
             android:visibility="gone" >
 
+            <!-- android:visibility="gone" -->
+
             <LinearLayout
                 android:id="@+id/layoutExpression"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_marginBottom="5dip"
+                android:layout_marginLeft="20dip"
+                android:layout_marginRight="10dip"
+                android:layout_marginTop="5dip"
                 android:gravity="center"
                 android:orientation="vertical" >
 
@@ -57,20 +82,32 @@
                     android:id="@+id/imageView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/expression" />
+                    android:src="@drawable/caht_expression" />
 
                 <TextView
                     android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="表情" />
+                    android:layout_marginTop="5dip"
+                    android:text="表情"
+                    android:textColor="@color/default_font_color" />
             </LinearLayout>
 
+            <View
+                android:layout_width="0.2dip"
+                android:layout_height="60dip"
+                android:layout_marginLeft="20dip"
+                android:layout_marginRight="20dip"
+                android:background="#d1d1d1" />
+
             <LinearLayout
-                android:id="@+id/layoutExpression"
+                android:id="@+id/layoutImg"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_marginBottom="5dip"
+                android:layout_marginLeft="10dip"
+                android:layout_marginRight="20dip"
+                android:layout_marginTop="5dip"
                 android:gravity="center"
                 android:orientation="vertical" >
 
@@ -78,13 +115,15 @@
                     android:id="@+id/imageView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/chat_pic" />
+                    android:src="@drawable/caht_pic" />
 
                 <TextView
                     android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="图片" />
+                    android:layout_marginTop="5dip"
+                    android:text="图片"
+                    android:textColor="@color/default_font_color" />
             </LinearLayout>
         </LinearLayout>
 
@@ -97,7 +136,7 @@
             <android.support.v4.view.ViewPager
                 android:id="@+id/viewpager"
                 android:layout_width="wrap_content"
-                android:layout_height="135dip"
+                android:layout_height="130dip"
                 android:layout_gravity="center"
                 android:background="#f32f33" >
             </android.support.v4.view.ViewPager>
@@ -107,7 +146,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/viewpager"
-                android:background="#ddd"
+                android:background="#efefef"
                 android:gravity="center_horizontal" >
 
                 <LinearLayout

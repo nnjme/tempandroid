@@ -1,6 +1,5 @@
 package com.changlianxi.activity;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,23 +9,23 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -36,21 +35,23 @@ import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.UpLoadGrowthPicTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.GrowthImgGridView;
+import com.changlianxi.view.RoundAngleImageView;
 
-public class ReleaseGrowthActivity extends Activity implements OnClickListener,
-		UpLoadPic {
-	private ImageView addPic;
-	private TextView time;
+public class ReleaseGrowthActivity extends BaseActivity implements
+		OnClickListener, UpLoadPic, OnItemClickListener {
+	private EditText time;
 	private EditText location;// 地点输入框
 	private EditText content;// 内容输入框
 	private String cid;
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 	private Button btnUpload;
 	private ImageView btnback;
 	private String gid = "";// 成长记录id
@@ -70,15 +71,13 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_release_growth_main);
-		addPic = (ImageView) findViewById(R.id.addPicture);
-		addPic.setOnClickListener(this);
-		time = (TextView) findViewById(R.id.time);
+		time = (EditText) findViewById(R.id.time);
 		location = (EditText) findViewById(R.id.location);
 		content = (EditText) findViewById(R.id.content);
-		time.setText(getDate());
+		time.setText(DateUtils.getCurrDateStr("yyyy-MM-dd HH:mm"));
 		type = getIntent().getStringExtra("type");
+		listBmp.add(null);
 		if (type.equals("edit")) {
 			edit();
 		}
@@ -88,10 +87,13 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 		btnback = (ImageView) findViewById(R.id.back);
 		btnback.setOnClickListener(this);
 		gridView = (GrowthImgGridView) findViewById(R.id.imgGridview);
+		gridView.setOnItemClickListener(this);
 		adapter = new MyAdapter();
 		gridView.setAdapter(adapter);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("发布成长记录");
+		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+
 	}
 
 	/**
@@ -113,34 +115,28 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 					.get(i)));
 			modle.setBmp(bm);
 			modle.setImgID(imgID.get(i));
-			listBmp.add(modle);
+			listBmp.add(listBmp.size() - 1, modle);
 		}
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.addPicture:
-			pop = new SelectPicPopwindow(this, v);
-			pop.show();
-			break;
-		case R.id.btn_cancel:
-			break;
 		case R.id.btnUpload:
 			new UpDataTask().execute(content.getText().toString(), time
 					.getText().toString(), location.getText().toString());
 			break;
 		case R.id.back:
+			Intent intent = new Intent();
+			intent.putExtra("flag", false);
+			setResult(2, intent);
 			finish();
+			Utils.rightOut(this);
+
 			break;
 		default:
 			break;
 		}
-	}
-
-	private String getDate() {
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm");
-		return df.format(new Date());
 	}
 
 	/**
@@ -164,11 +160,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			map.put("time", time.substring(0, time.length() - 3));
 			map.put("token", SharedUtils.getString("token", ""));
 			String result = HttpUrlHelper.postData(map, "/growth/igrowth");
-			Logger.debug(this,
-					"cid" + cid + "  uid:" + SharedUtils.getString("uid", "")
-							+ "    gid:" + gid + " content:" + params[0]
-							+ "  location:" + params[2] + "  time:" + params[1]);
-			Logger.debug(this, "Growthresult:" + result);
 			try {
 				JSONObject jsonobject = new JSONObject(result);
 				rt = jsonobject.getString("rt");
@@ -186,11 +177,10 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 		@Override
 		protected void onPostExecute(String result) {
 			if (result.equals("1")) {
-				Logger.debug(this, "lsitBmap.size:" + listBmp.size());
 				if (listBmp.size() == 0 && delID.size() == 0) {// 当没有图片要上传并且也没有要删除的图片则返回
 					Utils.showToast("成长记录已发布!");
 					progressDialog.dismiss();
-					finish();
+					exitSuccess();
 					return;
 				}
 				Map<String, Object> map = new HashMap<String, Object>();
@@ -199,10 +189,22 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 				map.put("token", SharedUtils.getString("token", ""));
 				map.put("gid", gid);
 				if (type.equals("add")) {
+					if (listBmp.size() == 1) {
+						Utils.showToast("成长记录已发布!");
+						if (progressDialog != null
+								&& progressDialog.isShowing()) {
+							progressDialog.dismiss();
+						}
+						setResult(2);
+						exitSuccess();
+						return;
+					}
 					List<String> picPath = new ArrayList<String>();
-					for (PicModle modle : listBmp) {
+					for (int i = 0; i < listBmp.size() - 1; i++) {
+						PicModle modle = listBmp.get(i);
 						picPath.add(modle.getPath());
 					}
+
 					picTask = new UpLoadGrowthPicTask(picPath, map);
 				} else {
 					picTask = new UpLoadGrowthPicTask(newAdd, map);
@@ -213,6 +215,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 				Utils.showToast("发布失败!");
 				progressDialog.dismiss();
 				finish();
+				Utils.rightOut(ReleaseGrowthActivity.this);
 
 			}
 		}
@@ -220,7 +223,8 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(ReleaseGrowthActivity.this);
+			progressDialog = DialogUtil.getWaitDialog(
+					ReleaseGrowthActivity.this, "请稍后");
 			progressDialog.show();
 		}
 	}
@@ -248,11 +252,8 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 				if (delID.get(i) == null) {
 					continue;
 				}
-				Logger.debug(this, "cid:" + cid + " gid:" + gid + "  imgid:"
-						+ delID.get(i));
 				String result = HttpUrlHelper.postData(map,
 						"/growth/iremoveImage");
-				Logger.debug(this, "resultdel:" + result);
 				try {
 					jsonobject = new JSONObject(result);
 					rt = jsonobject.getString("rt");
@@ -269,7 +270,6 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 
 		@Override
 		protected void onPostExecute(String result) {
-			Logger.debug(this, "DelTask完成");
 			if (result.equals("1")) {
 				Utils.showToast("成长记录已发布!");
 			} else {
@@ -278,7 +278,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (progressDialog != null && progressDialog.isShowing()) {
 				progressDialog.dismiss();
 			}
-			finish();
+			exitSuccess();
 		}
 
 		@Override
@@ -304,23 +304,26 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (type.equals("edit")) {
 				newAdd.add(picmodle.getPicPath());
 			}
-			modle.setBmp(picmodle.getBmp());
-			modle.setPath(picmodle.getPicPath());
+			String fileName = picmodle.getPicPath();
+			int degree = BitmapUtils.readPictureDegree(fileName);
+			bitmap = BitmapUtils.FitSizeImg(fileName);
+			Bitmap degreeBitmap = BitmapUtils.rotaingImageView(degree, bitmap);
+			modle.setBmp(degreeBitmap);
+			modle.setPath(fileName);
 		}
 		// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
 			if (resultCode != RESULT_OK) {
 				return;
 			}
-			if (resultCode != RESULT_OK) {
-				return;
-			}
 			String fileName = pop.getTakePhotoPath();
+			int degree = BitmapUtils.readPictureDegree(fileName);
 			bitmap = BitmapUtils.FitSizeImg(fileName);
+			Bitmap degreeBitmap = BitmapUtils.rotaingImageView(degree, bitmap);
 			modle.setPath(fileName);
-			modle.setBmp(bitmap);
+			modle.setBmp(degreeBitmap);
 		}
-		listBmp.add(modle);
+		listBmp.add(listBmp.size() - 1, modle);
 		adapter.notifyDataSetChanged();
 	}
 
@@ -350,48 +353,24 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (convertView == null) {
 				holder = new ViewHolder();
 				convertView = LayoutInflater.from(ReleaseGrowthActivity.this)
-						.inflate(R.layout.grow_img_gridview_item, null);
-				holder.img = (ImageView) convertView.findViewById(R.id.img);
+						.inflate(R.layout.growth_publich_grid_item, null);
+				holder.img = (RoundAngleImageView) convertView
+						.findViewById(R.id.img);
 				holder.del = (ImageView) convertView.findViewById(R.id.del);
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
-			holder.del.setVisibility(View.VISIBLE);
-			holder.del.setOnClickListener(new BtnDelClick(position));
-			int width = Utils.getSecreenWidth(ReleaseGrowthActivity.this) - 30;
-			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-					width / 4, width / 4);
-			holder.img.setLayoutParams(params);
-			Bitmap bmp = listBmp.get(position).getBmp();
-			if (bmp != null) {
-				BitmapDrawable bd = new BitmapDrawable(bmp);
-				holder.img.setBackgroundDrawable(bd);
+			if (position == listBmp.size() - 1) {
+				holder.del.setVisibility(View.GONE);
+				holder.img.setImageResource(R.drawable.add_pic);
+			} else {
+				Bitmap bmp = listBmp.get(position).getBmp();
+				holder.img.setImageBitmap(bmp);
+				holder.del.setVisibility(View.VISIBLE);
+				// holder.del.setOnClickListener(new BtnDelClick(position));
 			}
 			return convertView;
-		}
-	}
-
-	class BtnDelClick implements OnClickListener {
-		int position;
-
-		public BtnDelClick(int position) {
-			this.position = position;
-		}
-
-		@Override
-		public void onClick(View v) {
-			if (type.equals("edit")) {
-				delID.add(listBmp.get(position).getImgID());
-			}
-			for (int i = 0; i < newAdd.size(); i++) {// 删除新增图片
-				if (listBmp.get(position).getPath().equals(newAdd.get(i))) {
-					newAdd.remove(newAdd.get(i));
-					break;
-				}
-			}
-			listBmp.remove(position);
-			adapter.notifyDataSetChanged();
 		}
 	}
 
@@ -436,7 +415,7 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 	}
 
 	class ViewHolder {
-		ImageView img;
+		RoundAngleImageView img;
 		ImageView del;
 	}
 
@@ -449,10 +428,40 @@ public class ReleaseGrowthActivity extends Activity implements OnClickListener,
 			if (progressDialog != null && progressDialog.isShowing()) {
 				progressDialog.dismiss();
 			}
-			finish();
+			exitSuccess();
 		} else {
 			new DelTask().execute();
 		}
 
+	}
+
+	private void exitSuccess() {
+		// Intent intent = new Intent();
+		// intent.putExtra("flag", true);
+		// setResult(2, intent);
+		finish();
+		Utils.rightOut(this);
+
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		if (arg2 == listBmp.size() - 1) {
+			Utils.hideSoftInput(this);
+			pop = new SelectPicPopwindow(this, arg1);
+			pop.show();
+			return;
+		}
+		if (type.equals("edit")) {
+			delID.add(listBmp.get(arg2).getImgID());
+		}
+		for (int i = 0; i < newAdd.size(); i++) {// 删除新增图片
+			if (listBmp.get(arg2).getPath().equals(newAdd.get(i))) {
+				newAdd.remove(newAdd.get(i));
+				break;
+			}
+		}
+		listBmp.remove(arg2);
+		adapter.notifyDataSetChanged();
 	}
 }

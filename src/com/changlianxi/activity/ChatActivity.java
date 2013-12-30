@@ -10,10 +10,12 @@ import java.util.Queue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,6 +25,7 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -44,22 +47,29 @@ import com.changlianxi.adapter.MessageAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.PushChat;
 import com.changlianxi.inteface.SendMessageAndChatCallBack;
+import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
+import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.popwindow.SelectPicPopwindow;
 import com.changlianxi.task.GetChatListTask;
+import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.task.GetChatListTask.GetChatsList;
 import com.changlianxi.task.SendMessageThread;
+import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Expressions;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.PushMessageReceiver;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyListView;
 import com.changlianxi.view.MyListView.OnRefreshListener;
 
-public class ChatActivity extends Activity implements OnClickListener,
+public class ChatActivity extends BaseActivity implements OnClickListener,
 		OnItemClickListener, SendMessageAndChatCallBack, PushChat {
 	private ImageView back;
 	private TextView cirName;
@@ -71,6 +81,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 	private MyListView listview;
 	private LinearLayout layAdd;
 	private LinearLayout layoutExpression;
+	private LinearLayout layoutImg;
 	private RelativeLayout expression;
 	private boolean layAddIsShow = false;
 	private ViewPager viewPager;
@@ -82,16 +93,21 @@ public class ChatActivity extends Activity implements OnClickListener,
 	private String[] expressionImageNames1;
 	private int[] expressionImages2;
 	private String[] expressionImageNames2;
+	private int[] expressionImages3;
+	private String[] expressionImageNames3;
+	private int[] expressionImages4;
+	private String[] expressionImageNames4;
 	private int page = 0;// 标记表情当前页
 	private List<MessageModle> listModle = new ArrayList<MessageModle>();
 	private MessageAdapter adapter;
 	private Queue<HashMap<String, Object>> queueMap = new LinkedList<HashMap<String, Object>>();// 用于发送私信的队列
 	private SendMessageThread messageThread;
-	private String name;
 	private String avatarPath;
-	private ProgressDialog pd;
-	private String startTime = "2008-08-08 12:10:12";
+	private Dialog dialog;
+	private String startTime = "";
+	private String endTime = "";
 	private boolean isRefresh = false;// 是否是下拉刷新
+	private SelectPicPopwindow pop;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -111,6 +127,8 @@ public class ChatActivity extends Activity implements OnClickListener,
 		setContentView(R.layout.activity_chat);
 		cid = getIntent().getStringExtra("cirID");
 		txtCirName = getIntent().getStringExtra("cirName");
+		endTime = DateUtils.phpTime(System.currentTimeMillis());
+		PushMessageReceiver.setPushChatCallBack(this);
 		findViewById();
 		setListener();
 		initExpression();
@@ -128,15 +146,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 		} else {
 			avatarPath = info.getAvator();
 		}
-		pd = new ProgressDialog(this);
-		pd.show();
-		getChats();
-	}
-
-	@Override
-	protected void onPause() {
-		PushMessageReceiver.pushChat = null;
-		super.onPause();
+		getChatRecord();
 	}
 
 	@Override
@@ -144,13 +154,18 @@ public class ChatActivity extends Activity implements OnClickListener,
 		super.onResume();
 		CircleActivity
 				.setInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-		PushMessageReceiver.setPushChatCallBack(this);
-		// 获取聊天信息
-		List<MessageModle> modles = CLXApplication.getChatModle();
+	}
+
+	private void getChatRecord() {
+		List<MessageModle> modles = DBUtils.getChatMessage(cid);
 		listModle.addAll(modles);
 		adapter.setData(listModle);
 		listview.setSelection(listModle.size());// 将listview滑动到最低端
-		CLXApplication.removeChatModle();
+		if (modles.size() == 0) {
+			dialog = DialogUtil.getWaitDialog(this, "请稍后");
+			dialog.show();
+			getChats();
+		}
 	}
 
 	/**
@@ -162,6 +177,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 		cirName = (TextView) findViewById(R.id.titleTxt);
 		expression = (RelativeLayout) findViewById(R.id.expression);
 		layoutExpression = (LinearLayout) findViewById(R.id.layoutExpression);
+		layoutImg = (LinearLayout) findViewById(R.id.layoutImg);
 		layAdd = (LinearLayout) findViewById(R.id.layoutAdd);
 		imgAdd = (ImageView) findViewById(R.id.imgAdd);
 		listview = (MyListView) findViewById(R.id.listView);
@@ -177,11 +193,24 @@ public class ChatActivity extends Activity implements OnClickListener,
 		cirName.setText(txtCirName);
 		imgAdd.setOnClickListener(this);
 		layoutExpression.setOnClickListener(this);
+		layoutImg.setOnClickListener(this);
 		btnSend.setOnClickListener(this);
 		listview.setCacheColorHint(0);
+		listview.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		listview.setonRefreshListener(new OnRefreshListener() {
 			public void onRefresh() {
+				if (!Utils.isNetworkAvailable()) {
+					Utils.showToast("当前无网络，请检查网络连接");
+					return;
+				}
 				isRefresh = true;
+				if (listModle.size() == 0) {
+					endTime = DateUtils.phpTime(System.currentTimeMillis());
+				} else {
+					endTime = DateUtils.phpTime(DateUtils
+							.convertToDate(listModle.get(0).getTime()));
+
+				}
 				getChats();
 			}
 		});
@@ -191,19 +220,22 @@ public class ChatActivity extends Activity implements OnClickListener,
 	 * 初始化圆点
 	 */
 	private void initImageViews() {
-		ViewGroup group = (ViewGroup) findViewById(R.id.viewGroup);// 包裹小圆点的LinearLayout
-		imageViews = new ImageView[3];
+		ViewGroup group = (ViewGroup) findViewById(R.id.viewGroup);//
+		// 包裹小圆点的LinearLayout
+		imageViews = new ImageView[5];
 		for (int i = 0; i < imageViews.length; i++) {
 			// 设置 每张图片的句点
 			ImageView imageView = new ImageView(this);
-			imageView.setLayoutParams(new LayoutParams(20, 20));
-			imageView.setPadding(20, 0, 20, 0);
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+					LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			params.setMargins(5, 5, 5, 5);
+			imageView.setLayoutParams(params);
 			imageViews[i] = imageView;
 			if (i == 0) {
 				// 默认选中第一张图片
-				imageViews[i].setBackgroundResource(R.drawable.point01);
+				imageViews[i].setBackgroundResource(R.drawable.face_current);
 			} else {
-				imageViews[i].setBackgroundResource(R.drawable.point02);
+				imageViews[i].setBackgroundResource(R.drawable.face);
 			}
 			group.addView(imageViews[i]);
 		}
@@ -216,7 +248,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 		LayoutInflater inflater = LayoutInflater.from(this);
 		grids = new ArrayList<GridView>();
 		int expressionimage[] = null;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			switch (i) {
 			case 0:
 				expressionimage = expressionImages;
@@ -227,13 +259,20 @@ public class ChatActivity extends Activity implements OnClickListener,
 			case 2:
 				expressionimage = expressionImages2;
 				break;
+			case 3:
+				expressionimage = expressionImages3;
+				break;
+			case 4:
+				expressionimage = expressionImages4;
+				break;
 			default:
 				break;
 			}
 			GridView gView = (GridView) inflater.inflate(R.layout.grid1, null);
+			gView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 			List<Map<String, Object>> listItems = new ArrayList<Map<String, Object>>();
 			// 生成24个表情 每页显示个数
-			for (int j = 0; j < 24; j++) {
+			for (int j = 0; j < 21; j++) {
 				Map<String, Object> listItem = new HashMap<String, Object>();
 				listItem.put("image", expressionimage[j]);
 				listItems.add(listItem);
@@ -258,6 +297,10 @@ public class ChatActivity extends Activity implements OnClickListener,
 		expressionImageNames1 = Expressions.expressionImgNames1;
 		expressionImages2 = Expressions.expressionImgs2;
 		expressionImageNames2 = Expressions.expressionImgNames2;
+		expressionImages3 = Expressions.expressionImgs3;
+		expressionImageNames3 = Expressions.expressionImgNames3;
+		expressionImages4 = Expressions.expressionImgs4;
+		expressionImageNames4 = Expressions.expressionImgNames4;
 	}
 
 	// 填充ViewPager的数据适配器
@@ -300,34 +343,37 @@ public class ChatActivity extends Activity implements OnClickListener,
 			page = arg0;
 			for (int i = 0; i < imageViews.length; i++) {// 设置当前圆点
 				if (arg0 == i) {
-					imageViews[arg0].setBackgroundResource(R.drawable.point01);
+					imageViews[arg0]
+							.setBackgroundResource(R.drawable.face_current);
 					continue;
 				}
-				imageViews[i].setBackgroundResource(R.drawable.point02);
+				imageViews[i].setBackgroundResource(R.drawable.face);
 			}
 		}
 	}
 
 	private void getChats() {
-		GetChatListTask task = new GetChatListTask(cid, startTime,
-				DateUtils.phpTime(System.currentTimeMillis()));
+		GetChatListTask task = new GetChatListTask(cid, startTime, endTime);
 		task.setTaskCallBack(new GetChatsList() {
 			@Override
 			public void getChatsList(List<MessageModle> modles) {
-				if (pd != null) {
-					pd.dismiss();
+				if (dialog != null) {
+					dialog.dismiss();
 				}
 				listview.onRefreshComplete();
 				if (modles.size() == 0) {
+					Utils.showToast("没有可展示的聊天记录");
 					return;
 				}
-				startTime = modles.get(modles.size() - 1).getTime();
 				if (isRefresh) {
 					modles.remove(0);
+					listModle.addAll(0, modles);
+					adapter.setData(listModle);
+				} else {
+					listModle.addAll(modles);
+					adapter.setData(listModle);
+					listview.setSelection(listModle.size());// 将listview滑动到最低端
 				}
-				listModle.addAll(modles);
-				adapter.setData(listModle);
-				listview.setSelection(listModle.size());// 将listview滑动到最低端
 
 			}
 		});
@@ -337,15 +383,12 @@ public class ChatActivity extends Activity implements OnClickListener,
 	/**
 	 * 将信息发送到服务器
 	 */
-	private void sendToServer() {
+	private void sendToServer(String content) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("cid", cid);
 		map.put("token", SharedUtils.getString("token", ""));
-		map.put("content", editContent.getText().toString());
-		Logger.debug(this, "uid:" + SharedUtils.getString("uid", "") + "  cid:"
-				+ cid + "   token:" + SharedUtils.getString("token", "")
-				+ " content:" + editContent.getText().toString());
+		map.put("content", content);
 		queueMap.offer(map);
 		messageThread.setQueueMap(queueMap);
 	}
@@ -355,8 +398,11 @@ public class ChatActivity extends Activity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			this.getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
 			break;
 		case R.id.imgAdd:
+			listview.setSelection(listModle.size());// 将listview滑动到最低端
 			if (layAddIsShow) {
 				layAdd.setVisibility(View.GONE);
 				expression.setVisibility(View.GONE);
@@ -366,29 +412,32 @@ public class ChatActivity extends Activity implements OnClickListener,
 			layAddIsShow = true;
 			Utils.hideSoftInput(this);
 			layAdd.setVisibility(View.VISIBLE);
+
 			break;
 		case R.id.layoutExpression:
 			expression.setVisibility(View.VISIBLE);
 			layAdd.setVisibility(View.GONE);
+			listview.setSelection(listModle.size());// 将listview滑动到最低端
 
 			break;
+		case R.id.layoutImg:
+			pop = new SelectPicPopwindow(this, v);
+			pop.show();
+			layAdd.setVisibility(View.GONE);
+			break;
 		case R.id.btnSend:
-			if (editContent.getText().toString().length() == 0) {
+			if (!DBUtils.isAuth("circle" + cid,
+					SharedUtils.getString("uid", ""))) {
+				Utils.showToast("您不是认证人员，没有权限发送消息");
+				return;
+			}
+			String content = editContent.getText().toString();
+			if (content.length() == 0) {
 				Utils.showToast("发送内容不能为空");
 				return;
 			}
-
-			MessageModle modle = new MessageModle();
-			modle.setContent(editContent.getText().toString());
-			modle.setSelf(true);
-			modle.setAvatar(avatarPath);
-			modle.setTime(DateUtils.getCurrDateStr());
-			listModle.add(modle);
-			adapter.notifyDataSetChanged();
-			listview.setSelection(listModle.size());// 每次发送之后将listview滑动到最低端
-			// 从而显示最新消息
-			sendToServer();
-			editContent.setText("");
+			refushAdapter(content, 0);
+			sendToServer(content);
 			break;
 		case R.id.editContent:
 			break;
@@ -415,8 +464,31 @@ public class ChatActivity extends Activity implements OnClickListener,
 			expressionimage = expressionImages2;
 			expressionname = expressionImageNames2;
 			break;
+		case 3:
+			expressionimage = expressionImages3;
+			expressionname = expressionImageNames3;
+			break;
+		case 4:
+			expressionimage = expressionImages4;
+			expressionname = expressionImageNames4;
+			break;
 		default:
 			break;
+		}
+		if (arg2 == expressionimage.length - 1) {
+			int selection = editContent.getSelectionStart();
+			String text = editContent.getText().toString();
+			if (selection > 0) {
+				String text2 = text.substring(selection - 1);
+				if (":".equals(text2)) {
+					int start = StringUtils.getPositionEmoj(text);
+					int end = selection;
+					editContent.getText().delete(start, end);
+					return;
+				}
+				editContent.getText().delete(selection - 1, selection);
+			}
+			return;
 		}
 		Bitmap bitmap = null;
 		bitmap = BitmapFactory.decodeResource(getResources(),
@@ -429,7 +501,9 @@ public class ChatActivity extends Activity implements OnClickListener,
 				expressionname[arg2].length() - 2,
 				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		// 编辑框设置数据
+		System.out.println("spannableString" + spannableString);
 		editContent.append(spannableString);
+
 	}
 
 	@Override
@@ -444,9 +518,7 @@ public class ChatActivity extends Activity implements OnClickListener,
 				msg.what = 0;
 				msg.obj = strError;
 				mHandler.sendMessage(msg);
-				return;
 			}
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -461,16 +533,88 @@ public class ChatActivity extends Activity implements OnClickListener,
 		if (modle == null) {
 			return;
 		}
+		if (modle.getUid().equals(SharedUtils.getString("uid", ""))) {
+			return;
+		}
 		listModle.add(modle);
 		adapter.notifyDataSetChanged();
 		listview.setSelection(listModle.size());// 将listview滑动到最低端
 	}
 
 	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			finish();
+			getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
+		}
+		return super.onKeyDown(keyCode, event);
+
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		String path = "";
+		if (resultCode != RESULT_OK) {
+			return;
+		}
+		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD) {
+			if (data == null) {
+				return;
+			}
+			SelectPicModle picmodle = BitmapUtils.getPickPic(this, data);
+			path = picmodle.getPicPath();
+		}
+		// 拍摄图片
+		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
+			path = pop.getTakePhotoPath();
+		}
+		refushAdapter(path, 1);
+		upLoadPic(path);
+	}
+
+	private void refushAdapter(String content, int type) {
+		MessageModle modle = new MessageModle();
+		modle.setContent(content);
+		modle.setSelf(true);
+		modle.setAvatar(avatarPath);
+		modle.setCid(cid);
+		modle.setType(type);
+		modle.setTime(DateUtils.getCurrDateStr());
+		listModle.add(modle);
+		adapter.notifyDataSetChanged();
+		listview.setSelection(listModle.size());// 每次发送之后将listview滑动到最低端
+		// 从而显示最新消息
+		editContent.setText("");
+		DBUtils.saveChatMessage(modle);// 保存到本地数据库
+
+	}
+
+	/**
+	 * 上传聊天图片
+	 */
+	private void upLoadPic(String path) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("cid", cid);
+		map.put("uid", SharedUtils.getString("uid", ""));
+		map.put("token", SharedUtils.getString("token", ""));
+		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
+				"/chats/isendImg", path, "image");
+		picTask.setCallBack(new UpLoadPic() {
+			@Override
+			public void upLoadFinish(boolean flag) {
+				if (!flag) {
+					Utils.showToast("图片发送失败");
+				}
+			}
+		});
+		picTask.execute();
+	}
+
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if (pd != null) {
-			pd.dismiss();
-		}
+		PushMessageReceiver.pushChat = null;
 	}
 }

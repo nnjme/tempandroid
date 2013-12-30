@@ -32,10 +32,6 @@ public class SetClientInfo extends AsyncTask<String, Integer, String> {
 		map.put("os", Utils.getOS());
 		map.put("channel_id", SharedUtils.getChannelID());
 		map.put("user_id", SharedUtils.getUserID());
-		System.out.println("uid:" + SharedUtils.getString("uid", "")
-				+ "  token:" + SharedUtils.getString("token:", "")
-				+ "  channelId:" + SharedUtils.getChannelID() + "  userID:"
-				+ SharedUtils.getUserID());
 		String result = HttpUrlHelper.postData(map, "/users/iclient");
 		return result;
 	}

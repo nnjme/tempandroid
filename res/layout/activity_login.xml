@@ -10,7 +10,7 @@
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dip"
+        android:layout_marginTop="55dip"
         android:src="@drawable/logo" />
 
     <LinearLayout
@@ -19,7 +19,7 @@
         android:layout_marginBottom="10dip"
         android:layout_marginLeft="10dip"
         android:layout_marginRight="10dip"
-        android:layout_marginTop="15dip"
+        android:layout_marginTop="10dip"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical" >
@@ -32,7 +32,11 @@
             android:gravity="center_vertical"
             android:hint="手机号码"
             android:maxLength="13"
-            android:padding="17dip"
+            android:paddingBottom="19dip"
+            android:paddingLeft="17dip"
+            android:paddingRight="17dip"
+            android:paddingTop="19dip"
+            android:singleLine="true"
             android:textSize="20sp" >
 
             <requestFocus />
@@ -53,8 +57,12 @@
             android:ems="10"
             android:gravity="center_vertical"
             android:hint="密码"
-            android:padding="17dip"
+            android:paddingBottom="19dip"
+            android:paddingLeft="17dip"
+            android:paddingRight="17dip"
+            android:paddingTop="19dip"
             android:password="true"
+            android:singleLine="true"
             android:textSize="20sp" >
         </EditText>
 
@@ -63,20 +71,23 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/gray_bottom_radius"
-            android:padding="15dip"
+            android:paddingBottom="19dip"
+            android:paddingLeft="17dip"
+            android:paddingRight="17dip"
+            android:paddingTop="19dip"
             android:text="登录"
             android:textColor="@color/white"
-            android:textSize="25dip" />
+            android:textSize="22dip" />
 
         <TextView
             android:id="@+id/findpd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dip"
+            android:layout_marginTop="25dip"
             android:gravity="center"
             android:text="忘记密码"
             android:textColor="@color/gray_b8"
-            android:textSize="25sp" />
+            android:textSize="19sp" />
     </LinearLayout>
 
     <RelativeLayout

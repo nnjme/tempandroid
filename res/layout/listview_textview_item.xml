@@ -9,8 +9,11 @@
         android:id="@+id/text"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dip"
+        android:layout_marginLeft="23dp"
+        android:paddingBottom="13dip"
+        android:paddingTop="13dip"
         android:text="TextView"
-        android:textSize="23sp" />
+        android:textColor="@color/f6f"
+        android:textSize="20sp" />
 
 </LinearLayout>

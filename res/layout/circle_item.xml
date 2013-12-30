@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical" >
 
     <RelativeLayout
@@ -11,16 +11,16 @@
 
         <ImageView
             android:id="@+id/circleBg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dip"
+            android:layout_height="100dip"
             android:layout_centerInParent="true"
             android:contentDescription="@null"
             android:src="@drawable/pic_bg" />
 
         <com.changlianxi.view.CircularImage
             android:id="@+id/circleImg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="86dip"
+            android:layout_height="86dip"
             android:layout_centerInParent="true" />
 
         <TextView
@@ -28,12 +28,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignRight="@+id/circleBg"
-            android:layout_marginTop="@dimen/margin20"
             android:background="@drawable/updates"
             android:gravity="center"
             android:text="new"
             android:textColor="@color/white"
-            android:textSize="@dimen/textsize26"
+            android:textSize="13sp"
             android:visibility="gone" />
     </RelativeLayout>
 
@@ -41,11 +40,11 @@
         android:id="@+id/circleName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin20"
+        android:layout_marginTop="8sp"
         android:gravity="center"
+        android:lineSpacingExtra="4dip"
         android:maxLines="2"
-        android:paddingBottom="@dimen/margin39"
-        android:textColor="#cc000000"
-        android:textSize="@dimen/textsize26" />
+        android:paddingBottom="15dip"
+        android:textSize="13sp" />
 
 </LinearLayout>

@@ -8,8 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,7 +18,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,14 +34,14 @@ import com.changlianxi.util.AsyncImageLoader;
 import com.changlianxi.util.AsyncImageLoader.ImageCallback;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
 
-public class CircleSettingActivity extends Activity implements OnClickListener,
-		UpLoadPic {
+public class CircleSettingActivity extends BaseActivity implements
+		OnClickListener, UpLoadPic {
 	private ImageView btnBack;
 	private ImageView editClean;
 	private EditText editCirName;
@@ -58,7 +56,7 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 	private EditText description;
 	private JSONArray jsonAry = new JSONArray();
 	private JSONObject jsonObj;
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 	private String cid = "";// 要修改圈子的id
 	private TextView cirName;
 	private AsyncImageLoader ImageLoader;
@@ -66,7 +64,6 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_circle_setting);
 		cid = getIntent().getStringExtra("cid");
 		ImageLoader = new AsyncImageLoader(this);
@@ -212,7 +209,6 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 			map.put("description", description.getText().toString());
 			map.put("roles", getValue());
 			String result = HttpUrlHelper.postData(map, "/circles/iedit");
-			Logger.debug(this, result);
 			return result;
 		}
 
@@ -226,12 +222,13 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 				if (rt == 1) {
 					cid = object.getString("cid");
 					roles = object.getString("roles");
-					Logger.debug(this, "cid:" + cid + "  roles:" + roles);
 					if (newCirIconPath.equals("")) {
 						Utils.showToast("圈子修改成功!");
 						editDB(cid);
 						progressDialog.dismiss();
 						finish();
+						Utils.rightOut(CircleSettingActivity.this);
+
 						return;
 					}
 					// 上传圈子logo
@@ -252,7 +249,8 @@ public class CircleSettingActivity extends Activity implements OnClickListener,
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(CircleSettingActivity.this);
+			progressDialog = DialogUtil.getWaitDialog(
+					CircleSettingActivity.this, "请稍后");
 			progressDialog.show();
 		}
 	}

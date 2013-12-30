@@ -6,8 +6,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -20,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,11 +29,14 @@ import com.changlianxi.popwindow.ListViewPopwindow;
 import com.changlianxi.popwindow.ListViewPopwindow.OnlistOnclick;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.EditWather;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.MD5;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyViewGroup;
 
@@ -45,7 +46,7 @@ import com.changlianxi.view.MyViewGroup;
  * @author teeker_bin
  * 
  */
-public class RegisterActivity extends Activity implements OnClickListener,
+public class RegisterActivity extends BaseActivity implements OnClickListener,
 		PostCallBack {
 	private EditText spinner;
 	private LinearLayout layLogin;
@@ -66,13 +67,12 @@ public class RegisterActivity extends Activity implements OnClickListener,
 	private EditText emailNum, emailEdit;// 邮箱注册界面的手机号码和邮箱控件
 	private TextView emailTxt;// 邮箱注册界面的email显示控件
 	private EditText code;// 注册界面的输入验证码edittext
-	// private EditText emailCode;// 邮箱注册界面的输入验证码edittext
 	private Button emBtFinish;// 邮箱注册界面的完成验证按钮
 	private TextView txtQh;// 注册界面显示区号的textveiw如显示+86等
 	private Button btGetCode;// 注册界面重新获取验证码按钮
 	private int second = 60;// 用于重新获取验证码时间倒计时
 	private TextView txtShowNum;// 注册界面显示用来注册的手机号
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 	private String type = "";// 1 验证码处理 2 设置密码处理3 重新获取验证码处理
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -99,7 +99,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_register);
 		initView();
 		getWindow()
@@ -128,14 +127,14 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		initReg2View();
 		initReg3View();
 		emailTxt = (TextView) emilReg2.findViewById(R.id.emailTxt);
- 		emBtFinish = (Button) emilReg2.findViewById(R.id.email_btfinish);
+		emBtFinish = (Button) emilReg2.findViewById(R.id.email_btfinish);
 		emBtFinish.setOnClickListener(this);
 		emailBtNext = (Button) emailReg1.findViewById(R.id.emailbtnext);
 		emailBtNext.setOnClickListener(this);
 		emailNum = (EditText) emailReg1.findViewById(R.id.emailnum);
 		emailEdit = (EditText) emailReg1.findViewById(R.id.emailEdit);
 		emailNum.setInputType(InputType.TYPE_CLASS_NUMBER);
- 	}
+	}
 
 	/**
 	 * 初始化注册界面1的控件
@@ -192,7 +191,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			break;
 		case R.id.next:
 			String txtNum = ediNum.getText().toString().replace("-", "");
-			Logger.debug(this, "txt:" + txtNum);
 			if (!Utils.isPhoneNum(txtNum)) {
 				Utils.showToast("请输入有效的手机号码！");
 				return;
@@ -200,7 +198,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			new RegisterTask().execute(txtNum, "", "1");
 			break;
 		case R.id.btfinish_yz:
-			// new CheckCodeTask().execute(code.getText().toString());
 			map = new HashMap<String, Object>();
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("auth_code", code.getText().toString());
@@ -208,7 +205,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			task = new PostAsyncTask(this, map, "/users/iverifyAuthCode");
 			task.setTaskCallBack(this);
 			task.execute();
-			progressDialog = new ProgressDialog(this);
+			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
 			progressDialog.show();
 			type = "1";
 			break;
@@ -222,7 +219,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			task = new PostAsyncTask(this, map, "/users/isetPasswd");
 			task.setTaskCallBack(this);
 			task.execute();
-			progressDialog = new ProgressDialog(this);
+			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
 			progressDialog.show();
 			type = "2";
 			break;
@@ -250,7 +247,7 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			task = new PostAsyncTask(this, map, "/users/isendAuthCode");
 			task.setTaskCallBack(this);
 			task.execute();
-			progressDialog = new ProgressDialog(this);
+			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
 			progressDialog.show();
 			type = "3";
 			break;
@@ -286,10 +283,13 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			emailtxt = params[1];
 			type = params[2];
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("cellphone", params[0]);
-			map.put("email", params[1]);
+			map.put("cellphone", txtnum);
+			map.put("email", emailtxt);
+			map.put("version", "v1.0");
+			map.put("tag",
+					MD5.MD5_32(StringUtils.reverseSort(txtnum) + "v1.0"
+							+ txtnum + "v1.0"));
 			String result = HttpUrlHelper.postData(map, "/users/iregister");
-			Logger.debug(this, "result:" + result);
 			return result;
 		}
 
@@ -314,7 +314,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 					emailTxt.setText(emailtxt);
 
 				} else {
-					// Utils.showToast("手机号码已被注册，请更换手机号码！");
 					String errorCoce = object.getString("err");
 					Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
 				}
@@ -328,7 +327,8 @@ public class RegisterActivity extends Activity implements OnClickListener,
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(RegisterActivity.this);
+			progressDialog = DialogUtil.getWaitDialog(RegisterActivity.this,
+					"请稍后");
 			progressDialog.show();
 		}
 	}
@@ -366,8 +366,9 @@ public class RegisterActivity extends Activity implements OnClickListener,
 			rt = object.getInt("rt");
 			if (rt == 1) {
 				token = object.getString("token");
+				uid = object.getString("uid");
 				SharedUtils.setString("token", token);
-				Logger.debug(this, "rt:" + rt + "  token:" + token);
+				SharedUtils.setString("uid", uid);
 				Intent intent = new Intent();
 				intent.setClass(RegisterActivity.this,
 						RegisterFinishActivity.class);
@@ -378,8 +379,6 @@ public class RegisterActivity extends Activity implements OnClickListener,
 				Utils.showToast(ErrorCodeUtil.convertToChines(errorCoce));
 			}
 		} catch (JSONException e) {
-			Logger.error(this, e);
-
 			e.printStackTrace();
 		}
 	}

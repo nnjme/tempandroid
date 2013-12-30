@@ -1,30 +1,30 @@
 package com.changlianxi.activity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.activity.GrowthCommentActivity.RecordOperation;
 import com.changlianxi.adapter.GrowthAdapter;
 import com.changlianxi.modle.GrowthModle;
-import com.changlianxi.popwindow.GrowthCommentsPopwindow;
-import com.changlianxi.popwindow.GrowthCommentsPopwindow.RecordOperation;
 import com.changlianxi.task.GetGrowthListTask;
 import com.changlianxi.task.GetGrowthListTask.GroGrowthList;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.PullDownView;
 import com.changlianxi.view.PullDownView.OnPullDownListener;
@@ -35,41 +35,48 @@ import com.changlianxi.view.PullDownView.OnPullDownListener;
  * @author teeker_bin
  * 
  */
-public class GrowthActivity extends Activity implements OnClickListener,
+public class GrowthActivity extends BaseActivity implements OnClickListener,
 		GroGrowthList, OnItemClickListener, OnPullDownListener {
 	private String cid = "";
 	private List<GrowthModle> listData = new ArrayList<GrowthModle>();
 	private PullDownView mPullDownView;
 	private ListView mListView;
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 	private GrowthAdapter adapter;
 	private ImageView btnRelease;// 发布成长按钮
 	private String circleName;
 	private TextView txtCirName;
 	private ImageView btback;
-	private String start = "0";
+	private String start = "";
 	private String end = "";
 	private boolean loadMore;// 是否加载更多
 	private boolean isRefresh;// 是否下拉刷新
-	private boolean isShowPd = true;// 是否显示进度框
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_czjl);
+		end = DateUtils.phpTime(System.currentTimeMillis());
 		cid = getIntent().getStringExtra("cirID");
 		circleName = getIntent().getStringExtra("cirName");
 		mPullDownView = (PullDownView) findViewById(R.id.PullDownlistView);
 		mListView = mPullDownView.getListView();
 		adapter = new GrowthAdapter(this, listData);
 		mListView.setAdapter(adapter);
-		mListView.setCacheColorHint(0);
+		// mListView.setCacheColorHint(0);
 		btnRelease = (ImageView) findViewById(R.id.btnRelease);
 		txtCirName = (TextView) findViewById(R.id.circleName);
 		txtCirName.setText(circleName);
 		btback = (ImageView) findViewById(R.id.back);
 		setListener();
+		getGrowthList();
+	}
+
+	@Override
+	protected void onRestart() {
+		end = DateUtils.phpTime(System.currentTimeMillis());
+		getGrowthList();
+		super.onRestart();
 	}
 
 	private void setListener() {
@@ -83,16 +90,6 @@ public class GrowthActivity extends Activity implements OnClickListener,
 
 	}
 
-	/**
-	 * 发布完记录 重新加载数据
-	 */
-	@Override
-	protected void onStart() {
-		listData.clear();
-		getGrowthList();
-		super.onStart();
-	}
-
 	private void getGrowthList() {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("cid", cid);
@@ -103,8 +100,8 @@ public class GrowthActivity extends Activity implements OnClickListener,
 		GetGrowthListTask task = new GetGrowthListTask(map);
 		task.setTaskCallBack(this);
 		task.execute();
-		if (isShowPd) {
-			progressDialog = new ProgressDialog(this);
+		if (listData.size() == 0) {
+			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
 			progressDialog.show();
 		}
 	}
@@ -117,10 +114,15 @@ public class GrowthActivity extends Activity implements OnClickListener,
 			it.setClass(this, ReleaseGrowthActivity.class);
 			it.putExtra("cid", cid);
 			it.putExtra("type", "add");
-			startActivity(it);
+			startActivityForResult(it, 2);
+			getParent().overridePendingTransition(R.anim.in_from_right,
+					R.anim.out_to_left);
+			// startActivity(it);
 			break;
 		case R.id.back:
 			finish();
+			this.getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
 			break;
 		default:
 			break;
@@ -153,10 +155,18 @@ public class GrowthActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
-		GrowthCommentsPopwindow pop = new GrowthCommentsPopwindow(this, v,
-				listData.get(position - 1), position - 1);
-		pop.setRecordOperation(new RecordOperation() {
+	public void onItemClick(AdapterView<?> arg0, View v, int arg2, long arg3) {
+		int position = arg2 - 1;
+		GrowthModle modle = listData.get(position);
+		Intent intent = new Intent(this, GrowthCommentActivity.class);
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("modle", (Serializable) modle);
+		intent.putExtras(bundle);
+		intent.putExtra("position", position);
+		startActivity(intent);
+		this.getParent().overridePendingTransition(R.anim.in_from_right,
+				R.anim.out_to_left);
+		GrowthCommentActivity.setRecordOperation(new RecordOperation() {
 			@Override
 			public void delRecord(int pisition) {
 				listData.remove(pisition);
@@ -170,16 +180,28 @@ public class GrowthActivity extends Activity implements OnClickListener,
 
 			}
 		});
-		pop.show();
-		pop.show();
 
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == 2 && data != null) {
+			boolean flag = data.getBooleanExtra("flag", false);
+			if (flag) {
+				end = DateUtils.phpTime(System.currentTimeMillis());
+				// 发布完记录 重新加载数据
+				getGrowthList();
+			}
+		} else if (requestCode == 3 && data != null) {
+
+		}
 	}
 
 	@Override
 	public void onRefresh() {
 		isRefresh = true;
 		loadMore = false;
-		isShowPd = false;
 		end = DateUtils.phpTime(System.currentTimeMillis());
 		getGrowthList();
 	}
@@ -187,7 +209,6 @@ public class GrowthActivity extends Activity implements OnClickListener,
 	@Override
 	public void onMore() {
 		loadMore = true;
-		isShowPd = false;
 		isRefresh = false;
 		start = "0";
 		end = DateUtils.phpTime(DateUtils.convertToDate(listData.get(
@@ -195,4 +216,14 @@ public class GrowthActivity extends Activity implements OnClickListener,
 		getGrowthList();
 	}
 
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			finish();
+			getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
+		}
+		return super.onKeyDown(keyCode, event);
+
+	}
 }

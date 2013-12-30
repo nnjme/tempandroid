@@ -97,8 +97,6 @@ public class HttpUtil {
 		String result = null;
 		try {
 			HttpResponse response = HttpUtil.getHttpResponse(request);
-			Logger.debug(HttpUrlHelper.class, "###:"
-					+ response.getStatusLine().getStatusCode());
 			if (response.getStatusLine().getStatusCode() == 200) {
 				result = EntityUtils.toString(response.getEntity());
 				return result;

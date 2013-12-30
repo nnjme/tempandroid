@@ -1,21 +1,19 @@
 package com.changlianxi.activity;
 
-import java.io.File;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.modle.SelectPicModle;
+import com.changlianxi.modle.Info;
 import com.changlianxi.task.GetMyDetailTask;
 import com.changlianxi.task.GetMyDetailTask.GetMyDetail;
-import com.changlianxi.util.BitmapUtils;
-import com.changlianxi.util.Constants;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
@@ -55,6 +53,7 @@ public class MainActivity extends Activity implements OnOpenListener {
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		CLXApplication.addActivity(this);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		/**
 		 * 创建容器,并设置全屏大小
@@ -89,33 +88,45 @@ public class MainActivity extends Activity implements OnOpenListener {
 	}
 
 	@Override
+	protected void onRestart() {
+		super.onRestart();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		Bitmap bitmap = null;
-		String avatarPath = "";
-		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
-				&& resultCode == RESULT_OK && data != null) {
-			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
-			avatarPath = modle.getPicPath();
-			BitmapUtils.startPhotoZoom(this, data.getData());
+		if (requestCode == 2 && data != null) {
+			Bundle bundle = data.getExtras();
+			List<Info> basicList = (List<Info>) bundle
+					.getSerializable("basicList");
+			List<Info> contactList = (List<Info>) bundle
+					.getSerializable("contactList");
+			List<Info> socialList = (List<Info>) bundle
+					.getSerializable("socialList");
+			List<Info> addressList = (List<Info>) bundle
+					.getSerializable("addressList");
+			List<Info> eduList = (List<Info>) bundle.getSerializable("eduList");
+			List<Info> workList = (List<Info>) bundle
+					.getSerializable("workList");
+			String name = data.getStringExtra("name");
+			mCard.cardShow.setName(name);
+			Bitmap bmp = bundle.getParcelable("avatar");
+			if (bmp != null) {
+				mCard.cardShow.setAvatar(bmp);
+				SetMenu.setEidtAvatar(bmp);
+			}
+			if (basicList != null && contactList != null && socialList != null
+					&& addressList != null && eduList != null
+					&& workList != null)
+				mCard.cardShow.notifyData(basicList, contactList, socialList,
+						addressList, eduList, workList);
 
-		}// 拍摄图片
-		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-			if (resultCode != RESULT_OK) {
-				return;
-			}
-			String fileName = mCard.pop.getTakePhotoPath();
-			avatarPath = fileName;
-			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
-			// cirImg.setImageBitmap(bitmap);
-		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
-			Bundle extras = data.getExtras();
-			if (extras != null) {
-				Bitmap photo = extras.getParcelable("data");
-				// cirImg.setImageBitmap(photo);
-				bitmap = photo;
-			}
-			mCard.setAvatarPath(avatarPath, bitmap);
 		}
 
 	}
@@ -130,17 +141,17 @@ public class MainActivity extends Activity implements OnOpenListener {
 			public void onChangeView(int arg0) {
 				switch (arg0) {
 				case 0:
-					if (mHome == null) {
-						mHome = new Home(MainActivity.this);
-						mHome.setOnOpenListener(MainActivity.this);
-					}
+					// if (mHome == null) {
+					mHome = new Home(MainActivity.this);
+					mHome.setOnOpenListener(MainActivity.this);
+					// }
 					mRoot.close(mHome.getView());
 					break;
 				case 1:
-					if (mCard == null) {
-						mCard = new MyCard(MainActivity.this);
-						mCard.setOnOpenListener(MainActivity.this);
-					}
+					// if (mCard == null) {
+					mCard = new MyCard(MainActivity.this);
+					mCard.setOnOpenListener(MainActivity.this);
+					// }
 					mRoot.close(mCard.getView());
 					break;
 				case 2:
@@ -165,20 +176,28 @@ public class MainActivity extends Activity implements OnOpenListener {
 
 	}
 
+	private long firstTime;
+
 	/**
 	 * 连续按两次返回键就退出
 	 */
-	private long firstTime;
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			// TODO Auto-generated method stub
+			if (System.currentTimeMillis() - firstTime < 3000) {
+				CLXApplication.exit();
+			} else {
+				firstTime = System.currentTimeMillis();
+				Utils.showToast("再按一次退出程序");
+			}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
 
 	@Override
 	public void onBackPressed() {
-		// TODO Auto-generated method stub
-		if (System.currentTimeMillis() - firstTime < 3000) {
-			finish();
-		} else {
-			firstTime = System.currentTimeMillis();
-			Utils.showToast("再按一次退出程序");
-		}
+
 	}
 
 	public void open() {

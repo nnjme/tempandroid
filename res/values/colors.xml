@@ -13,5 +13,13 @@
     <color name="d9">#D9D9D9</color>
     <color name="f6f">#6f6f6f</color>
     <color name="black">#000000</color>
+    <color name="line">#ffe0e0e0</color>
+    <color name="font81">#818181</color>
+    <color name="font6f">#6f6f6f</color>
+    <color name="yellow">#fd7a00</color>
+    <color name="blue">#3d8394</color>
+    <color name="dc">#dcdcdc</color>
+    <color name="versionbg">#d8d9d4</color>
+    <color name="red">#ff00ff</color>
 
 </resources>

@@ -28,6 +28,7 @@ public class IinviteUserTask extends AsyncTask<String, Integer, String> {
 	private JSONArray jsonAry = new JSONArray();
 	private JSONObject jsonObj;
 	private String details = "";
+	private String err = "";
 
 	public IinviteUserTask(String cid, List<SmsPrevieModle> contactsList) {
 		this.cid = cid;
@@ -57,6 +58,8 @@ public class IinviteUserTask extends AsyncTask<String, Integer, String> {
 			rt = object.getString("rt");
 			if (rt.equals("1")) {
 				details = object.getString("details");
+			} else {
+				err = object.getString("err");
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -66,7 +69,7 @@ public class IinviteUserTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected void onPostExecute(String result) {
-		callBack.inviteUser(rt, details);
+		callBack.inviteUser(rt, details, err);
 	}
 
 	@Override
@@ -75,7 +78,7 @@ public class IinviteUserTask extends AsyncTask<String, Integer, String> {
 	}
 
 	public interface IinviteUser {
-		void inviteUser(String rt, String details);
+		void inviteUser(String rt, String details, String err);
 	}
 
 	/**

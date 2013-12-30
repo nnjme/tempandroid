@@ -4,12 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,7 +15,7 @@ import android.widget.ListView;
 
 import com.changlianxi.adapter.SmsAdaprter;
 import com.changlianxi.modle.SmsPrevieModle;
-import com.changlianxi.util.Logger;
+import com.changlianxi.util.Utils;
 
 /**
  * ∂Ã–≈‘§¿¿ΩÁ√Ê
@@ -25,7 +23,7 @@ import com.changlianxi.util.Logger;
  * @author teeker_bin
  * 
  */
-public class SmsPreviewActivity extends Activity implements OnClickListener {
+public class SmsPreviewActivity extends BaseActivity implements OnClickListener {
 	private ImageView back;
 	private ListView listview;
 	private List<SmsPrevieModle> contactsList = new ArrayList<SmsPrevieModle>();
@@ -38,14 +36,13 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sms_preview);
+		CLXApplication.addInviteActivity(this);
 		Bundle bundle = getIntent().getExtras();
 		contactsList = (List<SmsPrevieModle>) bundle
 				.getSerializable("contactsList");
 		cid = getIntent().getStringExtra("cid");
-		Logger.debug(this, "contactsList:" + contactsList.size());
 		cmids = getIntent().getStringExtra("cmids");
 		back = (ImageView) findViewById(R.id.back);
 		back.setOnClickListener(this);
@@ -62,6 +59,7 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			Utils.rightOut(this);
 			break;
 		case R.id.btnsend:
 			Intent intent = new Intent();
@@ -72,7 +70,9 @@ public class SmsPreviewActivity extends Activity implements OnClickListener {
 			intent.putExtra("cid", cid);
 			intent.setClass(this, SmsInviteActivity.class);
 			startActivity(intent);
-			finish();
+			// finish();
+			// Utils.rightOut(this);
+			Utils.leftOutRightIn(this);
 			break;
 		default:
 			break;

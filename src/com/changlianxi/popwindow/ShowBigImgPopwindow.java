@@ -119,6 +119,7 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 	/**
 	 * 初始化popwindow
 	 */
+	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
 		popupWindow = new PopupWindow(view, LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT);
@@ -236,7 +237,6 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 			oimgw = bm.getWidth();
 			oimgh = bm.getHeight();
 			initmatrix(img);
-			Logger.debug(this, "大图加载完成！");
 			probar.close();
 			super.onPostExecute(result);
 		}
@@ -266,7 +266,6 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 
 			bm = getImage(params[0]);
 			if (bm != null) {
-				Logger.debug(this, "本地的");
 				return params[1];
 			}
 			try {
@@ -320,7 +319,6 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 			if (bmp == null) {
 				file.delete();
 			} else {
-				Logger.debug(this, "bmpmbmp");
 				return bmp;
 			}
 		}
@@ -352,7 +350,6 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 
 		public void porgress(int i) {
 			probar1.setProgress(i);
-			Logger.debug(this, "progress::" + i);
 		}
 
 		public void close() {
@@ -372,7 +369,6 @@ public class ShowBigImgPopwindow implements OnClickListener, OnTouchListener {
 		if (!destDir.exists()) {// 创建文件夹
 			destDir.mkdirs();
 		}
-		Logger.debug(this, "createPath");
 		File file = new File(sDir + File.separator + filename);
 		if (!file.exists()) {
 			try {

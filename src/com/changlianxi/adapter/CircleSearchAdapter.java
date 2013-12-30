@@ -1,7 +1,6 @@
 package com.changlianxi.adapter;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -9,22 +8,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
-import com.changlianxi.adapter.MyAdapter.ViewHolder;
 import com.changlianxi.modle.MemberModle;
-import com.changlianxi.util.ImageManager;
+import com.changlianxi.view.CircularImage;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class CircleSearchAdapter extends BaseAdapter {
 	Context mContext;
 	List<MemberModle> listModle;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 
 	public CircleSearchAdapter(Context context, List<MemberModle> listModle) {
 		this.mContext = context;
 		this.listModle = listModle;
+		options = CLXApplication.getOptions();
+		imageLoader = CLXApplication.getImageLoader();
 	}
 
 	public void setData(List<MemberModle> listModle) {
@@ -59,7 +63,7 @@ public class CircleSearchAdapter extends BaseAdapter {
 					.findViewById(R.id.circleName);
 			holder.mobileNum = (TextView) convertView
 					.findViewById(R.id.mobileNum);
-			holder.img = (ImageView) convertView.findViewById(R.id.userimg);
+			holder.img = (CircularImage) convertView.findViewById(R.id.userimg);
 			holder.changeBg = (LinearLayout) convertView
 					.findViewById(R.id.changebg);
 			convertView.setTag(holder);
@@ -71,10 +75,9 @@ public class CircleSearchAdapter extends BaseAdapter {
 		holder.circleName.setText(listModle.get(position).getCircleName());
 		String path = listModle.get(position).getImg();
 		if (path.equals("") || path == null) {
-			holder.img.setBackgroundResource(R.drawable.hand_pic);
+			holder.img.setBackgroundResource(R.drawable.head_bg);
 		} else {
-			ImageManager.from(mContext).displayImage(holder.img, path,
-					R.drawable.root_default, 100, 100);
+			imageLoader.displayImage(path, holder.img, options);
 		}
 		if (position % 2 == 0) {
 			holder.changeBg.setBackgroundColor(Color.WHITE);
@@ -87,7 +90,7 @@ public class CircleSearchAdapter extends BaseAdapter {
 
 	class ViewHolder {
 		TextView mobileNum;
-		ImageView img;
+		CircularImage img;
 		TextView name;
 		TextView circleName;
 		LinearLayout changeBg;

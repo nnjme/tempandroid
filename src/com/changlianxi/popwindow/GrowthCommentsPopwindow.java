@@ -9,10 +9,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -21,6 +23,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,25 +35,32 @@ import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
 import com.changlianxi.activity.ReleaseGrowthActivity;
+import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.adapter.GrowthImgAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CommentsModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.ImageManager;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.CircularImage;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * 成长记录详情界面
  */
-public class GrowthCommentsPopwindow implements OnClickListener {
+public class GrowthCommentsPopwindow implements OnClickListener,
+		OnItemClickListener {
 	private Context mContext;// 当前对象
 	private View parent;
 	private GrowthModle modle;
@@ -65,7 +76,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	private TextView name;// 显示發佈人姓名
 	private TextView content;// 显示记录内容
 	private TextView time;// 显示记录发布时间
-	private ImageView img;// 发布人头像
+	private CircularImage img;// 发布人头像
 	private TextView praise;// 点赞的数量
 	private TextView comment;// 评论数量
 	private GridView gridView;// 用来展示记录中的图片
@@ -80,6 +91,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	private RecordOperation callBack;
 	private TextView titleTxt;
 	private ScrollView scorll;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 
 	/**
 	 * 构造函数
@@ -96,6 +109,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		this.pisition = pisition;
 		flater = LayoutInflater.from(contxt);
 		view = flater.inflate(R.layout.growth_comments, null);
+		imageLoader = CLXApplication.getImageLoader();
+		options = CLXApplication.getOptions();
 		initView();
 		initPopwindow();
 		cid = modle.getCid();
@@ -131,6 +146,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		back = (ImageView) view.findViewById(R.id.back);
 		back.setOnClickListener(this);
 		gridView = (GridView) view.findViewById(R.id.gridView1);
+		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+		gridView.setOnItemClickListener(this);
 		int size = modle.getImgModle().size();
 		int average = 0;
 		if (size == 1) {
@@ -148,8 +165,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		name = (TextView) view.findViewById(R.id.name);
 		time = (TextView) view.findViewById(R.id.time);
 		content = (TextView) view.findViewById(R.id.content);
-		img = (ImageView) view.findViewById(R.id.img);
-		time.setText(modle.getPublish());
+		img = (CircularImage) view.findViewById(R.id.img);
+		time.setText(DateUtils.publishedTime(modle.getPublish()));
 		content.setText(modle.getContent());
 		comment.setText("评论(" + modle.getComment() + ")");
 		praise.setText("赞(" + modle.getPraise() + ")");
@@ -162,6 +179,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	/**
 	 * 初始化popwindow
 	 */
+	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
 
 		popupWindow = new PopupWindow(view, LayoutParams.MATCH_PARENT,
@@ -219,7 +237,6 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("gid", gid);
 			String result = HttpUrlHelper.postData(map, "/growth/icomments");
-			Logger.debug(this, "result:" + result);
 			try {
 				JSONObject jsonobject = new JSONObject(result);
 				String cid = jsonobject.getString("cid");
@@ -271,7 +288,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	class PublishCommentsTask extends AsyncTask<String, Integer, String> {
 		String count;
 		String rt = "";
-		ProgressDialog pd;
+		Dialog pd;
 
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
@@ -283,7 +300,6 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("content", params[0]);
 			String result = HttpUrlHelper.postData(map, "/growth/imyComment");
-			Logger.debug(this, "result:" + result);
 			try {
 				JSONObject jsonobject = new JSONObject(result);
 				rt = jsonobject.getString("rt");
@@ -312,6 +328,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 				modle.setTime(DateUtils.getCurrDateStr());
 				cModle.add(0, modle);
 				adapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(listview);
 				scorll.scrollTo(0, 0);
 				edtContent.setText("");
 				edtContent.clearFocus();
@@ -325,7 +342,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			pd = new ProgressDialog(mContext);
+			pd = DialogUtil.getWaitDialog(mContext, "请稍后");
 			pd.show();
 		}
 	}
@@ -336,7 +353,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 	 */
 	class DelCommentsTask extends AsyncTask<String, Integer, String> {
 		String rt = "";
-		ProgressDialog pd;
+		Dialog pd;
 		String errCode;
 
 		// 可变长的输入参数，与AsyncTask.exucute()对应
@@ -349,7 +366,6 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 			map.put("token", SharedUtils.getString("token", ""));
 			String result = HttpUrlHelper
 					.postData(map, "/growth/iremoveGrowth");
-			Logger.debug(this, "result:" + result);
 			try {
 				JSONObject jsonobject = new JSONObject(result);
 				rt = jsonobject.getString("rt");
@@ -379,7 +395,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			pd = new ProgressDialog(mContext);
+			pd = DialogUtil.getWaitDialog(mContext, "请稍后");
 			pd.show();
 		}
 	}
@@ -418,7 +434,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 						.findViewById(R.id.content);
 				holder.name = (TextView) convertView.findViewById(R.id.name);
 				holder.time = (TextView) convertView.findViewById(R.id.time);
-				holder.img = (ImageView) convertView.findViewById(R.id.img);
+				holder.img = (CircularImage) convertView.findViewById(R.id.img);
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
@@ -426,7 +442,8 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 			setNameAndImg("circle" + cModle.get(position).getCid(),
 					cModle.get(position).getUid(), holder);
 			holder.content.setText(cModle.get(position).getContent());
-			holder.time.setText(cModle.get(position).getTime());
+			holder.time.setText(DateUtils.publishedTime(cModle.get(position)
+					.getTime()));
 			return convertView;
 		}
 	}
@@ -445,16 +462,34 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		String name = modle.getName();
 		String path = modle.getAvator();
 		holder.name.setText(name);
-		ImageManager.from(mContext).displayImage(holder.img, path,
-				R.drawable.hand_pic, 60, 60);
-
+		if (path == null || path.equals("")) {
+			holder.img.setImageResource(R.drawable.hand_pic);
+		} else {
+			imageLoader.displayImage(path, holder.img, options);
+			// ImageManager.from(mContext).displayImage(holder.img, path,
+			// R.drawable.hand_pic, 60, 60);
+		}
 	}
 
 	class ViewHolder {
-		ImageView img;
+		CircularImage img;
 		TextView name;
 		TextView time;
 		TextView content;
+	}
+
+	/**
+	 * 浏览大图
+	 * 
+	 * @param position
+	 * @param imageUrls
+	 */
+	private void imageBrower(int position, String imageUrls[]) {
+		Intent intent = new Intent(mContext, ImagePagerActivity.class);
+		// 图片url,为了演示这里使用常量，一般从数据库中或网络中获取
+		intent.putExtra(ImagePagerActivity.EXTRA_IMAGE_URLS, imageUrls);
+		intent.putExtra(ImagePagerActivity.EXTRA_IMAGE_INDEX, position);
+		mContext.startActivity(intent);
 	}
 
 	/**
@@ -478,7 +513,7 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		case R.id.edit:
 			if (isPermission(modle.getUid())) {
 				for (int i = 0; i < modle.getImgModle().size(); i++) {
-					urlPath.add(modle.getImgModle().get(i).getSamllImg());
+					urlPath.add(modle.getImgModle().get(i).getImg_100());
 					imgID.add(modle.getImgModle().get(i).getId());
 				}
 				Intent intent = new Intent();
@@ -530,5 +565,14 @@ public class GrowthCommentsPopwindow implements OnClickListener {
 		 * @return
 		 */
 		public void setComment(int position, String count);
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		List<String> imgUrl = new ArrayList<String>();
+		for (int i = 0; i < modle.getImgModle().size(); i++) {
+			imgUrl.add(modle.getImgModle().get(i).getImg());
+		}
+		imageBrower(arg2, imgUrl.toArray(new String[imgUrl.size()]));
 	}
 }

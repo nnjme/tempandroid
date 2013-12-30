@@ -2,9 +2,12 @@ package com.changlianxi.util;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 /* 
@@ -149,9 +152,9 @@ public class WigdtContorl {
 	 * @param avatarBg
 	 */
 	public static void setAvatarWidth(Context context, ImageView avatar,
-			ImageView avatarBg) {
-		int width = Utils.getSecreenWidth(context) / 4;
-		int bgwidth = width + width / 5;
+			ImageView avatarBg, int wh, int bgwh) {
+		int width = Utils.getSecreenWidth(context) / wh;
+		int bgwidth = width + width / bgwh;
 		RelativeLayout.LayoutParams avataParams = new RelativeLayout.LayoutParams(
 				width, width);
 		avataParams.addRule(RelativeLayout.CENTER_IN_PARENT,
@@ -176,5 +179,32 @@ public class WigdtContorl {
 				width, width);
 		img.setLayoutParams(avataParams);
 
+	}
+
+	/**
+	 * 设置listview的高度
+	 * 
+	 * @param listView
+	 */
+	public static void setListViewHeight(ListView listView) {
+		// 获取ListView对应的Adapter
+		ListAdapter listAdapter = listView.getAdapter();
+		if (listAdapter == null) {
+			return;
+		}
+		int count = listAdapter.getCount();
+		if (count == 0) {
+			return;
+		}
+		int totalHeight = 0;
+		View listItem = listAdapter.getView(0, null, listView);
+		listItem.measure(0, 0); // 计算子项View 的宽高
+		totalHeight = listItem.getMeasuredHeight(); // 统计所有子项的总高度
+
+		ViewGroup.LayoutParams params = listView.getLayoutParams();
+		params.height = count > 3 ? totalHeight * 4 : totalHeight * count;
+		// listView.getDividerHeight()获取子项间分隔符占用的高度
+		// params.height最后得到整个ListView完整显示需要的高度
+		listView.setLayoutParams(params);
 	}
 }

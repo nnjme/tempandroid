@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 
 import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Utils;
@@ -35,7 +36,6 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 	}
 
 	// 可变长的输入参数，与AsyncTask.exucute()对应
-
 	@Override
 	protected void onPreExecute() {
 		// 任务启动，可以在这里显示一个对话框，这里简单处理
@@ -43,7 +43,11 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
-		File file = new File(picPath);
+		// File file = new File(picPath);
+		File file = BitmapUtils.getImageFile(picPath);
+		if (file == null) {
+			return "error";
+		}
 		String result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl + url,
 				map, file, avatar);
 
@@ -64,7 +68,10 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 		if (result.equals("1")) {
 			upload.upLoadFinish(true);
 		} else {
-			Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
+			String content = ErrorCodeUtil.convertToChines(errCode);
+			if (content != null) {
+				Utils.showToast(content);
+			}
 			upload.upLoadFinish(false);
 		}
 	}

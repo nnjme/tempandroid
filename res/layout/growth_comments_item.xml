@@ -6,21 +6,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
+        android:layout_marginLeft="@dimen/scale20dip"
+        android:layout_marginRight="@dimen/scale20dip"
         android:gravity="center" >
 
-        <ImageView
+        <com.changlianxi.view.CircularImage
             android:id="@+id/img"
-            android:layout_width="30dip"
-            android:layout_height="30dip"
-            android:src="@drawable/hand_pic" />
+            android:layout_width="29dip"
+            android:layout_height="29dip" />
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dip"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:paddingBottom="8dip"
+            android:paddingTop="8dip" >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -31,7 +32,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="徐呆呆"
-                    android:textColor="@color/default_font_color" />
+                    android:textColor="#737373"
+                    android:textSize="@dimen/scale26sp" />
 
                 <LinearLayout
                     android:layout_width="fill_parent"
@@ -44,7 +46,8 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="right"
                         android:text="5分钟前"
-                        android:textColor="@color/default_font_color" />
+                        android:textColor="#a3a3a3"
+                        android:textSize="@dimen/scale26sp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -53,7 +56,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="阿斯顿发送到"
-                android:textColor="@color/default_font_color" />
+                android:textColor="#a3a3a3"
+                android:textSize="@dimen/scale26sp" />
         </LinearLayout>
     </LinearLayout>
 

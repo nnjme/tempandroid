@@ -13,6 +13,7 @@ import android.view.View;
 import com.baidu.android.pushservice.PushConstants;
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.CircleActivity;
+import com.changlianxi.activity.MessageActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.PushChat;
@@ -39,7 +40,6 @@ public class PushMessageReceiver extends BroadcastReceiver {
 	 */
 	@Override
 	public void onReceive(final Context context, Intent intent) {
-
 		if (intent.getAction().equals(PushConstants.ACTION_MESSAGE)) {
 			// 获取消息内容
 			String message = intent.getExtras().getString(
@@ -66,12 +66,10 @@ public class PushMessageReceiver extends BroadcastReceiver {
 				content = new String(
 						intent.getByteArrayExtra(PushConstants.EXTRA_CONTENT));
 			}
-			System.out.println("content:" + content);
 			pushBind.onBind(errorCode, content);
 			// 可选。通知用户点击事件处理
 		} else if (intent.getAction().equals(// 通知
 				PushConstants.ACTION_RECEIVER_NOTIFICATION_CLICK)) {
-			System.out.println("通知");
 			// 自定义内容的json串
 
 		}
@@ -87,19 +85,41 @@ public class PushMessageReceiver extends BroadcastReceiver {
 			JSONObject json = new JSONObject(strJson);
 			String type = json.getString("t");
 			if (type.equals("CHAT")) {
-				if (SharedUtils.getBoolean("isBackHome", false)) {
-					showNotify(strJson);// 后台运行时提醒
+
+				// CLXApplication.saveChatModle(strJson);
+				MessageModle modle = Utils.getChatModle(strJson);
+				if (modle != null) {
+					DBUtils.saveChatMessage(modle);
 				}
-				if (pushChat == null) {
-					CLXApplication.saveChatModle(strJson);
+				if (pushChat != null) {
+					pushChat.getPushChat(strJson);
 					return;
 				}
-				pushChat.getPushChat(strJson);
+				if (SharedUtils.getBoolean("isBackHome", false)) {
+					showNotify(strJson, "chat");// 后台运行时提醒
+				}
 			} else if (type.equals("MESSAGE")) {
+				MessageModle modle = Utils.getChatModle(strJson);
+				if (modle != null) {
+					DBUtils.saveMessage(modle, modle.getUid());
+				}
+				if (pushMessage == null) {
+					showNotify(strJson, "message");
+				}
 				if (pushMessage != null) {
 					pushMessage.getPushMessages(strJson);
 					Home.imgPromte.setVisibility(View.VISIBLE);
 				}
+			} else if (type.equals("NEW_CIRCLE")) {
+				// Utils.showToast("新的圈子邀请");
+			} else if (type.equals("MY_EDIT")) {
+				// Utils.showToast("有人修改了您的资料");
+			} else if (type.equals("NEW_GROWTH")) {
+				// Utils.showToast("圈子中有新的成长发布");
+			} else if (type.equals("NEW_NEWS")) {
+				// Utils.showToast("圈子中有新的动态");
+			} else if (type.equals("GROWTH_COMMENT")) {
+				// Utils.showToast("成长中有跟你相关的评论");
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -107,7 +127,8 @@ public class PushMessageReceiver extends BroadcastReceiver {
 		}
 	}
 
-	private void showNotify(String message) {
+	@SuppressWarnings("deprecation")
+	private void showNotify(String message, String type) {
 		MessageModle modle = Utils.getChatModle(message);
 		if (modle == null) {// 自己发送的消息不谈
 			return;
@@ -126,10 +147,19 @@ public class PushMessageReceiver extends BroadcastReceiver {
 		// 设定震动(需加VIBRATE权限)
 		// notification.defaults |= Notification.DEFAULT_VIBRATE;
 		notification.contentView = null;
-		Intent intent = new Intent(application, CircleActivity.class);
-		intent.putExtra("cirID", modle.getCid());
-		intent.putExtra("name", circleName);
-		intent.putExtra("type", "push");// 从推送跳转
+		Intent intent = null;
+		if (type.equals("chat")) {
+			intent = new Intent(application, CircleActivity.class);
+			intent.putExtra("cirID", modle.getCid());
+			intent.putExtra("name", circleName);
+			intent.putExtra("type", "push");// 从推送跳转
+		} else {
+			intent = new Intent(application, MessageActivity.class);
+			intent.putExtra("ruid", modle.getUid());
+			intent.putExtra("cid", modle.getCid());
+			intent.putExtra("name", modle.getName());
+			intent.putExtra("type", "push");
+		}
 		PendingIntent contentIntent = PendingIntent.getActivity(application, 0,
 				intent, 0);
 		notification.setLatestEventInfo(CLXApplication.getInstance(),

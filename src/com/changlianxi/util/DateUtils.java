@@ -130,32 +130,84 @@ public class DateUtils {
 		}
 	}
 
+	/**
+	 * 计算成长记录发布时间
+	 * 
+	 * @param strTime
+	 * @return
+	 */
 	public static String publishedTime(String strTime) {
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		long day = getDay(interceptDateStr(strTime, "yyyy-MM-dd"));
+		if (day == 0) {
+			return getHour(interceptDateStr(strTime, "yyyy-MM-dd HH:mm"));
+		} else if (day == 1) {
+			return "昨天";
+		}
+		return interceptDateStr(strTime, "yyyy-MM-dd");
+
+	}
+
+	public static long getDay(String time) {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		long day = 0;
 		try {
 			Date now = df.parse(getCurrDateStr());
-			Date date = df.parse(strTime);
+			Date date = df.parse(time);
 			long l = now.getTime() - date.getTime();
-			long day = l / (24 * 60 * 60 * 1000);
-			long hour = (l / (60 * 60 * 1000) - day * 24);
-			long min = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
-			if (day < 1) {
-				if (hour < 1) {
-					return min + "分钟前";
-				}
-				return hour + "小时前";
-			} else if (day == 1) {
-				return "昨天";
-			} else if (day == 2) {
-				return "前天";
-			} else {
-				return interceptDateStr(strTime, "yyyy-MM-dd");
-			}
+			day = l / (24 * 60 * 60 * 1000);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return strTime;
+		return day;
+	}
+
+	public static String getHour(String time) {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		long hour = 0;
+		try {
+			Date now = df.parse(getCurrDateStr("yyyy-MM-dd HH:mm"));
+			Date date = df.parse(time);
+			long l = now.getTime() - date.getTime();
+			long day = l / (24 * 60 * 60 * 1000);
+			hour = (l / (60 * 60 * 1000) - day * 24);
+			long min = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
+			if (hour < 1) {
+				if (min == 0) {
+					return "刚刚";
+				}
+				return min + "分钟前";
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return hour + "小时前";
+
+	}
+
+	/**
+	 * 两个日期比较 聊天时使用
+	 * 
+	 * @param starTime
+	 * @param endTime
+	 * @return
+	 */
+	public static boolean compareDate(String starTime, String endTime,
+			int timeInterval) {
+		SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			Date begin = dfs.parse(starTime);
+			Date end = dfs.parse(endTime);
+			long between = (end.getTime() - begin.getTime()) / 1000;// 除以1000是为了转换成秒
+			long minute = between % 3600 / 60;
+			if (minute >= timeInterval) {
+				return true;
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 
 	}
 }

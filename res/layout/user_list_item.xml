@@ -12,9 +12,12 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@color/d9"
-        android:paddingLeft="10dip"
+        android:gravity="center_vertical"
+        android:paddingBottom="3dip"
+        android:paddingLeft="13dip"
+        android:paddingTop="3dip"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="14sp"
         android:visibility="gone" />
 
     <!-- 联系人信息 -->
@@ -25,29 +28,38 @@
         android:layout_height="fill_parent"
         android:gravity="center" >
 
-        <ImageView
+        <com.changlianxi.view.CircularImage
             android:id="@+id/userimg"
-            android:layout_width="80dip"
-            android:layout_height="80dip"
+            android:layout_width="60dip"
+            android:layout_height="60dip"
             android:layout_margin="10dip" />
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical" >
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" >
 
                 <TextView
                     android:id="@+id/username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:text="撒发生的"
+                    android:textColor="#333333"
+                    android:textSize="17sp" />
+
+                <ImageView
+                    android:id="@+id/imgAuth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dip"
+                    android:src="@drawable/icon_auth" />
             </LinearLayout>
 
             <LinearLayout
@@ -60,16 +72,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="优米科技设计总监"
-                    android:textColor="@color/default_font_color"
-                    android:textSize="15sp" />
+                    android:textColor="@color/a3"
+                    android:textSize="13sp" />
 
                 <TextView
                     android:id="@+id/userdt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="在欧美大厦9分钟前"
-                    android:textColor="@color/default_font_color"
-                    android:textSize="15sp" />
+                    android:textColor="@color/a3"
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

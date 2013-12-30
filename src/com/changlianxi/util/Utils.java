@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -22,14 +23,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
@@ -102,13 +101,14 @@ public class Utils {
 	}
 
 	/**
-	 * 隐藏软键盘如果输入法在窗口上已经显示，则隐藏，反之则显示)
+	 * 隐藏软键盘
 	 */
 	public static void hideSoftInput(Context context) {
-		InputMethodManager imm = (InputMethodManager) context
-				.getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 
+		((InputMethodManager) context
+				.getSystemService(Context.INPUT_METHOD_SERVICE))
+				.hideSoftInputFromWindow(((Activity) context).getCurrentFocus()
+						.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 	}
 
 	/***
@@ -324,16 +324,22 @@ public class Utils {
 		String cid = "";
 		String name = "";
 		String avatarPath = "";
+		int type = 0;
 		try {
 			JSONObject json = new JSONObject(content);
 			contetn = json.getString("c");
 			time = json.getString("m");
 			uid = json.getString("uid");
-			cid = json.getString("cid");
 			if (uid.equals(SharedUtils.getString("uid", ""))) {
 				return null;
 			}
-
+			cid = json.getString("cid");
+			String ct = json.getString("ct");
+			if (ct.equals("TYPE_TEXT")) {
+				type = 0;
+			} else if (ct.equals("TYPE_IMAGE")) {
+				type = 1;
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -352,6 +358,51 @@ public class Utils {
 		modle.setAvatar(avatarPath);
 		modle.setName(name);
 		modle.setCid(cid);
+		modle.setType(type);
+		modle.setUid(uid);
 		return modle;
+	}
+
+	/**
+	 * 将px值转换为sp值，保证文字大小不变
+	 * 
+	 * @param pxValue
+	 * @param fontScale
+	 *            （DisplayMetrics类中属性scaledDensity）
+	 * @return
+	 */
+	public static int px2sp(Context context, float pxValue) {
+		final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
+		return (int) (pxValue / fontScale + 0.5f);
+	}
+
+	/**
+	 * 将px值转换为dip或dp值，保证尺寸大小不变
+	 * 
+	 * @param pxValue
+	 * @param scale
+	 *            （DisplayMetrics类中属性density）
+	 * @return
+	 */
+	public static int px2dip(Context context, float pxValue) {
+		final float scale = context.getResources().getDisplayMetrics().density;
+		return (int) (pxValue / scale + 0.5f);
+	}
+
+	// 设置切换动画，从右边进入，左边退出
+	public static void leftOutRightIn(Context context) {
+		((Activity) context).overridePendingTransition(R.anim.in_from_right,
+				R.anim.out_to_left);
+	}
+
+	/**
+	 * 右侧退出
+	 * 
+	 * @param context
+	 */
+	public static void rightOut(Context context) {
+		((Activity) context).overridePendingTransition(R.anim.right_in,
+				R.anim.right_out);
+
 	}
 }

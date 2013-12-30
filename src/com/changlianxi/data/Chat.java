@@ -100,7 +100,6 @@ public class Chat extends AbstractData {
 	@Override
 	public void read(SQLiteDatabase db) {
 		super.read(db);
-
 		Cursor cursor = db.query(Const.CHAT_TABLE_NAME, new String[] {
 				"chatId", "circleId", "senderUid", "type", "content", "time" },
 				"chatId=?", new String[] { this.id }, null, null, null);

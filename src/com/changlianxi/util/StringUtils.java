@@ -103,4 +103,55 @@ public class StringUtils {
 
 		return str.substring(idx + separator.length());
 	}
+
+	/***
+	 * 半角转换为全角
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public static String ToDBC(String input) {
+		char[] c = input.toCharArray();
+		for (int i = 0; i < c.length; i++) {
+			if (c[i] == 12288) {
+				c[i] = (char) 32;
+				continue;
+			}
+			if (c[i] > 65280 && c[i] < 65375)
+				c[i] = (char) (c[i] - 65248);
+		}
+		return new String(c);
+	}
+
+	/**
+	 * 倒叙输出一个字符串
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static String reverseSort(String str) {
+		String str2 = "";
+		for (int i = str.length() - 1; i > -1; i--) {
+			str2 += String.valueOf(str.charAt(i));
+		}
+
+		return str2;
+	}
+
+	/**
+	 * 表情删除时使用 获取标签"："的位置
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static int getPositionEmoj(String str) {
+		String[] arr = new String[str.length()];
+		for (int i = str.length() - 2; i >= 0; i--) {
+			arr[i] = str.substring(i, (i + 1));
+			if (":".equals(arr[i])) {
+				return i;
+			}
+		}
+		return 0;
+	}
 }

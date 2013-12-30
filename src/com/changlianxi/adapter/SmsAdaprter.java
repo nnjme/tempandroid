@@ -16,6 +16,7 @@ import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.DialogPopWindow;
 import com.changlianxi.popwindow.DialogPopWindow.OnButtonOnclick;
 import com.changlianxi.popwindow.SmsSetNickNamePopWindow;
+import com.changlianxi.util.WigdtContorl;
 
 /**
  * 短信预览界面
@@ -70,7 +71,8 @@ public class SmsAdaprter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		holder.setNickName.setOnClickListener(new OnClick(position));
+		holder.setNickName.setOnClickListener(new OnClick(position,
+				WigdtContorl.getWidth(holder.setNickName)));
 		holder.name.setText(contactsList.get(position).getName());
 		holder.content.setText(contactsList.get(position).getContent());
 		return convertView;
@@ -78,15 +80,17 @@ public class SmsAdaprter extends BaseAdapter {
 
 	class OnClick implements OnClickListener {
 		int position;
+		int width;
 
-		public OnClick(int position) {
+		public OnClick(int position, int width) {
 			this.position = position;
+			this.width = width;
 		}
 
 		@Override
 		public void onClick(View v) {
 			pop = new SmsSetNickNamePopWindow(mContext, v, new PopClick(
-					position));
+					position), width);
 			pop.show();
 		}
 	}
@@ -97,7 +101,7 @@ public class SmsAdaprter extends BaseAdapter {
 	 * @author teeker_bin
 	 * 
 	 */
-	class PopClick implements OnClickListener {
+	class PopClick implements OnClickListener, OnButtonOnclick {
 		int position;
 
 		public PopClick(int position) {
@@ -107,17 +111,19 @@ public class SmsAdaprter extends BaseAdapter {
 		@Override
 		public void onClick(View v) {
 			DialogPopWindow diaPop = new DialogPopWindow(mContext, vtitle);
-			diaPop.setOnlistOnclick(new OnButtonOnclick() {
-
-				@Override
-				public void onclick(String str) {
-					contactsList.get(position).setName(str);
-					notifyDataSetChanged();
-				}
-			});
+			diaPop.setOnlistOnclick(this);
 			diaPop.show();
 			pop.dismiss();
 
+		}
+
+		@Override
+		public void onclick(String str) {
+			String content = contactsList.get(position).getContent()
+					.replace(contactsList.get(position).getName(), str);
+			contactsList.get(position).setContent(content);
+			contactsList.get(position).setName(str);
+			notifyDataSetChanged();
 		}
 	}
 
@@ -125,5 +131,6 @@ public class SmsAdaprter extends BaseAdapter {
 		TextView name;
 		TextView content;
 		LinearLayout setNickName;
+
 	}
 }

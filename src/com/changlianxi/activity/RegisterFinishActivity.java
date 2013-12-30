@@ -6,32 +6,30 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
-public class RegisterFinishActivity extends Activity implements
+public class RegisterFinishActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
 	private Button btStartUse;
 	private EditText editNC;
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_register_finish);
 		btStartUse = (Button) findViewById(R.id.startUse);
 		btStartUse.setOnClickListener(this);
@@ -51,7 +49,7 @@ public class RegisterFinishActivity extends Activity implements
 					"/users/isetUserInfo");
 			task.setTaskCallBack(this);
 			task.execute();
-			progressDialog = new ProgressDialog(this);
+			progressDialog = DialogUtil.getWaitDialog(this, "«Î…‘∫Û");
 			progressDialog.show();
 			break;
 

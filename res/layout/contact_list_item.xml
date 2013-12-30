@@ -15,7 +15,7 @@
         android:background="@color/d9"
         android:paddingLeft="10dip"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="17sp"
         android:visibility="gone" />
 
     <LinearLayout
@@ -23,14 +23,13 @@
         android:layout_height="wrap_content"
         android:gravity="center" >
 
-        <ImageView
-            android:id="@+id/img"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/hand_pic" />
+        <include
+            android:id="@+id/lastname"
+            android:layout_width="fill_parent"
+            layout="@layout/select_contacts_last_name" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_margin="10dip"
             android:layout_weight="1"

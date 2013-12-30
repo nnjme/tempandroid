@@ -2,55 +2,74 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/laybg"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:gravity="center" >
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="20dip"
-        android:gravity="center" >
+    <RelativeLayout
+        android:id="@+id/calendar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/scale32dip"
+        android:layout_marginRight="@dimen/scale20dip" >
+
+        <ImageView
+            android:id="@+id/timeline_line1"
+            android:layout_width="1dip"
+            android:layout_height="8dip"
+            android:layout_marginLeft="20dip  "
+            android:scaleType="fitXY"
+            android:src="@drawable/news_line" />
 
         <RelativeLayout
+            android:id="@+id/layAvatar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/timeline_line1"
             android:gravity="center" >
 
             <ImageView
-                android:id="@+id/imageView1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dip"
-                android:src="@drawable/table_vertical_line" />
-
-            <ImageView
-                android:id="@+id/imageView2"
+                android:id="@+id/imgBg"
                 android:layout_width="40dip"
                 android:layout_height="40dip"
-                android:layout_marginTop="5dip"
-                android:src="@drawable/hand_pic" />
+                android:src="@drawable/pic_bg" />
+
+            <com.changlianxi.view.CircularImage
+                android:id="@+id/avatar"
+                android:layout_width="33dip"
+                android:layout_height="33dip"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true" />
         </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="1dip"
+            android:layout_height="8dip"
+            android:layout_below="@+id/layAvatar"
+            android:layout_marginLeft="20dip  "
+            android:scaleType="fitXY"
+            android:src="@drawable/news_line" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:orientation="vertical" >
+            android:text="aa"
+            android:textColor="#7f737373"
+            android:textSize="@dimen/scale20sp" />
 
-            <TextView
-                android:id="@+id/time"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="TextView"
-                android:textColor="@color/default_font_color"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/content"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TextView"
-                android:textSize="15sp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="aa"
+            android:textColor="#7f737373"
+            android:textSize="@dimen/scale26sp" />
     </LinearLayout>
 
 </LinearLayout>

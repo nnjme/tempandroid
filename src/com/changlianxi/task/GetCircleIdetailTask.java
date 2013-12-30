@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import android.os.AsyncTask;
 
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleIdetailModle;
 import com.changlianxi.modle.CircleRoles;
 import com.changlianxi.util.ErrorCodeUtil;
@@ -49,6 +50,7 @@ public class GetCircleIdetailTask extends AsyncTask<String, Integer, String> {
 				errorCode = jsonobject.getString("err");
 				return null;
 			}
+			DBUtils.delCiecleDetails(cid);
 			String cid = jsonobject.getString("cid");
 			JSONObject json = jsonobject.getJSONObject("circle");
 			modle = new CircleIdetailModle();
@@ -63,6 +65,15 @@ public class GetCircleIdetailTask extends AsyncTask<String, Integer, String> {
 			modle.setCreator(creator);
 			modle.setLogo(logo);
 			modle.setDescription(description);
+			JSONObject jsonCount = jsonobject.getJSONObject("membersCount");
+			int total = jsonCount.getInt("total");
+			int inviting = jsonCount.getInt("inviting");
+			int verified = jsonCount.getInt("verified");
+			int unverified = jsonCount.getInt("unverified");
+			modle.setMembersTotal(total);
+			modle.setMembersInviting(inviting);
+			modle.setMembersUnverified(unverified);
+			modle.setMembersVerified(verified);
 			JSONArray jsonroles = jsonobject.getJSONArray("roles");
 			List<CircleRoles> circleRoles = new ArrayList<CircleRoles>();
 			for (int j = 0; j < jsonroles.length(); j++) {
@@ -75,6 +86,8 @@ public class GetCircleIdetailTask extends AsyncTask<String, Integer, String> {
 				circleRoles.add(rolesModle);
 			}
 			modle.setRolesModle(circleRoles);
+			DBUtils.saveCircleDetail(cid, name, logo, description, total + "",
+					verified + "", creator);
 		} catch (JSONException e) {
 			e.printStackTrace();
 			return null;

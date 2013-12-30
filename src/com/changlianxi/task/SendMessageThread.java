@@ -6,7 +6,6 @@ import java.util.Queue;
 
 import com.changlianxi.inteface.SendMessageAndChatCallBack;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
 
 /**
  * 私信和聊天线程
@@ -41,7 +40,6 @@ public class SendMessageThread extends Thread {
 			if (queueMap.size() > 0) {
 				HashMap<String, Object> map = queueMap.poll();
 				String result = HttpUrlHelper.postData(map, url);
-				Logger.debug(this, result);
 				callBack.getReturnStrAndMid(result);
 			}
 		}

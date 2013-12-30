@@ -2,137 +2,139 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical" >
 
     <include
-        android:id="@+id/titlebar"
+        android:id="@+id/title"
         android:layout_width="fill_parent"
         layout="@layout/title_bar" />
 
     <ScrollView
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dip"
+        android:layout_below="@+id/title"
         android:scrollbars="none" >
 
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_marginBottom="10dip" >
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/top"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical" >
+                android:layout_height="match_parent"
+                android:layout_marginLeft="25dip"
+                android:layout_marginTop="20dip" >
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:id="@+id/layCirName"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content" >
 
                     <TextView
                         android:id="@+id/textView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dip"
                         android:text="圈子名称"
-                        android:textSize="15sp" />
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
+
+                    <View
+                        android:id="@+id/line1"
+                        android:layout_width="0.2dp"
+                        android:layout_height="fill_parent"
+                        android:layout_marginLeft="10dip"
+                        android:layout_marginRight="10dip"
+                        android:background="#ffe0e0e0" />
 
                     <EditText
                         android:id="@+id/circleName"
-                        android:layout_width="wrap_content"
+                        android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dip"
-                        android:layout_marginRight="5dip"
-                        android:layout_weight="1"
+                        android:layout_marginBottom="10dip"
                         android:background="@null"
                         android:hint="输入圈子名称"
-                        android:maxLength="12"
-                        android:textSize="15sp" >
+                        android:textColor="@color/font6f"
+                        android:textSize="17sp" />
+                </LinearLayout>
 
-                        <requestFocus />
-                    </EditText>
+                <View
+                    android:id="@+id/line1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0.2dp"
+                    android:layout_below="@+id/layCirName"
+                    android:background="#ffe0e0e0" />
 
-                    <ImageView
-                        android:id="@+id/editClean"
+                <LinearLayout
+                    android:id="@+id/layCirIcon"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/line1"
+                    android:layout_marginBottom="@dimen/dip30"
+                    android:layout_marginTop="@dimen/dip30"
+                    android:gravity="center_vertical" >
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:src="@drawable/del" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dip"
-                android:gravity="center_vertical" >
-
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="圈子图标" />
-
-                <!-- <ImageView -->
-                <!-- android:id="@+id/circleIcon" -->
-                <!-- android:layout_width="wrap_content" -->
-                <!-- android:layout_height="wrap_content" -->
-                <!-- android:layout_marginLeft="25dip" -->
-                <!-- android:src="@drawable/home_image" /> -->
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:layout_width="90.0dip"
-                        android:layout_height="90.0dip"
-                        android:layout_centerInParent="true"
-                        android:contentDescription="@null"
-                        android:src="@drawable/pic_bg" />
+                        android:paddingRight="10dip"
+                        android:text="圈子图标"
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
 
                     <com.changlianxi.view.CircularImage
                         android:id="@+id/circleIcon"
-                        android:layout_width="74.0dip"
-                        android:layout_height="74.0dip"
-                        android:layout_centerInParent="true" />
-                </RelativeLayout>
-            </LinearLayout>
+                        android:layout_width="77dip"
+                        android:layout_height="77dip" />
+                </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dip" >
-
-                <TextView
-                    android:id="@+id/textView3"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/layCirDis"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="圈子描述"
-                    android:textSize="15sp" />
+                    android:layout_below="@+id/layCirIcon"
+                    android:layout_marginBottom="@dimen/dip30" >
 
-                <EditText
-                    android:id="@+id/description"
-                    android:layout_width="wrap_content"
-                    android:layout_height="100dip"
-                    android:layout_marginLeft="5dip"
-                    android:layout_marginRight="5dip"
-                    android:layout_weight="1"
-                    android:hint="输入圈子名称"
-                    android:textSize="15sp" >
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:layout_gravity="top"
+                        android:paddingRight="10dip"
+                        android:text="圈子描述"
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
 
-                    <requestFocus />
-                </EditText>
-            </LinearLayout>
+                    <EditText
+                        android:id="@+id/description"
+                        android:layout_width="fill_parent"
+                        android:layout_height="@dimen/dip180"
+                        android:layout_marginRight="11dip"
+                        android:background="@drawable/input_bg"
+                        android:ems="10"
+                        android:gravity="top"
+                        android:hint="输入圈子描述"
+                        android:textColor="@color/font6f"
+                        android:textSize="17sp" >
+                    </EditText>
+                </LinearLayout>
+            </RelativeLayout>
 
             <Button
                 android:id="@+id/createCircle"
-                android:layout_width="match_parent"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dip"
-                android:layout_marginRight="15dip"
-                android:text="发送首批邀请" />
-        </LinearLayout>
+                android:layout_below="@+id/top"
+                android:layout_marginLeft="11dip"
+                android:layout_marginRight="11dip"
+                android:layout_marginTop="15dip"
+                android:background="@drawable/btn_orang"
+                android:text="发送首批邀请"
+                android:textColor="@color/white"
+                android:textSize="19sp" />
+        </RelativeLayout>
     </ScrollView>
 
 </LinearLayout>

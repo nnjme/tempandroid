@@ -29,6 +29,7 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 	private GetCircleList callBack;
 	private String errorCode;
 	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
+	private String rt = "";
 
 	public void setTaskCallBack(GetCircleList callBack) {
 		this.callBack = callBack;
@@ -46,6 +47,11 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 		// 你要执行的方法
 		try {
 			JSONObject jsonobject = new JSONObject(result);
+			rt = jsonobject.getString("rt");
+			if (!rt.equals("1")) {
+				errorCode = jsonobject.getString("err");
+				return null;
+			}
 			JSONArray jsonarray = jsonobject.getJSONArray("circles");
 			if (jsonarray != null) {
 				DBUtils.clearTableData("circlelist");// 清空本地表 保存最新数据
@@ -56,12 +62,14 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 				String id = object.getString("id");
 				String logo = object.getString("logo");
 				String name = object.getString("name");
+				String inviter = object.getString("inviter");
 				String isNew = object.getString("is_new");
 				if (isNew.equals("1")) {
 					modle.setNew(true);
 				} else {
 					modle.setNew(false);
 				}
+				modle.setInviterID(inviter);
 				modle.setCirImg(1);
 				modle.setCirID(id);
 				modle.setCirIcon(StringUtils.JoinString(logo, "_200x200"));

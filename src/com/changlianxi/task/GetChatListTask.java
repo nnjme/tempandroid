@@ -13,7 +13,6 @@ import android.os.AsyncTask;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
-import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
 
@@ -45,7 +44,7 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("cid", cid);
-		map.put("start", DateUtils.phpTime(DateUtils.convertToDate(start)));
+		map.put("start", start);
 		map.put("end", end);
 		String result = HttpUrlHelper.postData(map, "/chats/ilist");
 		try {
@@ -75,11 +74,18 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 				} else {
 					modle.setSelf(false);
 				}
+				if (type.equals("TYPE_TEXT")) {
+					modle.setType(0);
+				} else if (type.equals("TYPE_IMAGE")) {
+					modle.setType(1);
+				}
+				modle.setCid(cid);
 				modle.setContent(content);
 				modle.setTime(time);
 				modle.setAvatar(avatarPath);
 				modle.setName(name);
 				listModle.add(modle);
+				DBUtils.saveChatMessage(modle);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

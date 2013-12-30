@@ -49,9 +49,10 @@ public class MyViewGroup extends ViewGroup {
 	public void setInfoEditView(View view) {
 		addView(view, getLayoutParams());
 	}
-/**
- * 删除信息修改界面
- */
+
+	/**
+	 * 删除信息修改界面
+	 */
 	public void delView() {
 		removeViewAt(1);
 	}

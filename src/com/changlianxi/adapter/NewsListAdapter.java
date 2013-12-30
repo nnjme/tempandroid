@@ -1,26 +1,59 @@
 package com.changlianxi.adapter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Dialog;
 import android.content.Context;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.NewsModle;
+import com.changlianxi.task.PostAsyncTask;
+import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.ErrorCodeUtil;
+import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
+/**
+ * 动态展示
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class NewsListAdapter extends BaseAdapter {
 	private Context mCotext;
 	private List<NewsModle> listModle;
+	private LayoutInflater inflater;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
+	private final int TYPE_1 = 1;
+	private final int TYPE_2 = 2;
 
 	public NewsListAdapter(Context context, List<NewsModle> listModle) {
 		this.mCotext = context;
 		this.listModle = listModle;
+		inflater = LayoutInflater.from(mCotext);
+		imageLoader = CLXApplication.getImageLoader();
+		options = CLXApplication.getOptions();
 	}
 
 	@Override
@@ -28,9 +61,22 @@ public class NewsListAdapter extends BaseAdapter {
 		return listModle.size();
 	}
 
+	private void notifyData() {
+		notifyDataSetChanged();
+	}
+
 	public void setData(List<NewsModle> listModle) {
 		this.listModle = listModle;
 		notifyDataSetChanged();
+	}
+
+	@Override
+	public int getItemViewType(int position) {
+		String need = listModle.get(position).getNeed_approve();
+		if (need.equals("1")) {
+			return TYPE_1;
+		}
+		return TYPE_2;
 	}
 
 	@Override
@@ -45,69 +91,202 @@ public class NewsListAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		ViewHolder holder = null;
-		if (convertView == null) {
-			convertView = LayoutInflater.from(mCotext).inflate(
-					R.layout.news_list_item, null);
-			holder = new ViewHolder();
-			holder.content = (TextView) convertView.findViewById(R.id.content);
-			holder.time = (TextView) convertView.findViewById(R.id.time);
-			convertView.setTag(holder);
-		} else {
-			holder = (ViewHolder) convertView.getTag();
-
-		}
-		String type = listModle.get(position).getType();
+		// 获取到当前位置所对应的Type
 		String content = listModle.get(position).getContent();
 		String user1Name = listModle.get(position).getUser1Name();
 		String user2Name = listModle.get(position).getUser2Name();
-		if (type.equals("TYPE_NEW_CIRCLE")) {
-			holder.content.setText(Html.fromHtml(replaceUser(content,
-					user1Name, user2Name)));
-			holder.time.setText(DateUtils.interceptDateStr(
-					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
-		} else if (type.equals("TYPE_INVINTING")) {
-			holder.content.setText(Html.fromHtml(replaceUser(content,
-					user1Name, user2Name)));
-			holder.time.setText(DateUtils.interceptDateStr(
-					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
-		} else if (type.equals("TYPE_REFUSE_INVITE")) {
-			holder.content.setText(Html.fromHtml(replaceUser(content,
-					user1Name, user2Name)));
-			holder.time.setText(DateUtils.interceptDateStr(
-					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
-		} else if (type.equals("TYPE_ENTERING")) {
-			holder.content.setText(Html.fromHtml(replaceUser(content,
-					user1Name, user2Name)));
-			holder.time.setText(DateUtils.interceptDateStr(
-					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
-		} else if (type.equals("TYPE_PASS_APPROVE")) {
-			holder.content.setText(Html.fromHtml(replaceUser(content,
-					user1Name, user2Name)));
-			holder.time.setText(DateUtils.interceptDateStr(
-					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
-		} else {
-			holder.content.setText(Html.fromHtml(replaceUser(content,
-					user1Name, user2Name)));
-			holder.time.setText(DateUtils.interceptDateStr(
-					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
+		String avatarUrl = listModle.get(position).getAvatarUrl();
+		String detail = listModle.get(position).getDetail();
+		ViewHolderInvite holderInvite = null;
+		ViewHolderOther holderOther = null;
+		int type = getItemViewType(position);
+		switch (type) {
+		case TYPE_1:
+			convertView = inflater.inflate(R.layout.news_invitate1, parent,
+					false);
+			holderInvite = new ViewHolderInvite();
+			holderInvite.avatarInvite = (ImageView) convertView
+					.findViewById(R.id.avatarInvite);
+			holderInvite.contentInvite = (TextView) convertView
+					.findViewById(R.id.contentInvite);
+			holderInvite.timeInvite = (TextView) convertView
+					.findViewById(R.id.timeInvite);
+			holderInvite.btnAgree = (Button) convertView
+					.findViewById(R.id.btnAgree);
+			holderInvite.btnNotAgree = (Button) convertView
+					.findViewById(R.id.btnNotAgree);
+			convertView.setTag(holderInvite);
+			break;
+		case TYPE_2:
+			convertView = inflater.inflate(R.layout.news_list_item, parent,
+					false);
+			holderOther = new ViewHolderOther();
+			holderOther.avatar = (ImageView) convertView
+					.findViewById(R.id.avatar);
+			holderOther.content = (TextView) convertView
+					.findViewById(R.id.content);
+			holderOther.time = (TextView) convertView.findViewById(R.id.time);
+			convertView.setTag(holderOther);
+			break;
+		default:
+			break;
 		}
+
+		switch (type) {
+		case TYPE_1:
+			holderInvite.contentInvite.setText(Html.fromHtml(replaceUser(
+					content, user1Name, user2Name) + "。" + getDetail(detail)));
+			holderInvite.timeInvite.setText(DateUtils.interceptDateStr(
+					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
+			if (avatarUrl.equals("") || avatarUrl == null) {
+				holderInvite.avatarInvite.setImageResource(R.drawable.hand_pic);
+			} else {
+				imageLoader.displayImage(avatarUrl, holderInvite.avatarInvite,
+						options);
+
+			}
+			String pid = listModle.get(position).getPerson2();
+			holderInvite.btnAgree.setOnClickListener(new BtnClick(pid
+					.equals("0") ? listModle.get(position).getUser1() : pid,
+					listModle.get(position).getCid(), position));
+			holderInvite.btnNotAgree.setOnClickListener(new BtnClick(pid
+					.equals("0") ? listModle.get(position).getUser1() : pid,
+					listModle.get(position).getCid(), position));
+			break;
+		case TYPE_2:
+			if (listModle.get(position).getType().equals("TYPE_ENTERING")) {
+				detail = getDetail(detail);
+				holderOther.content.setText(Html.fromHtml(replaceUser(content,
+						user1Name, user2Name) + "。" + detail));
+			} else {
+				holderOther.content.setText(Html.fromHtml(replaceUser(content,
+						user1Name, user2Name) + "。" + detail));
+
+			}
+			holderOther.time.setText(DateUtils.interceptDateStr(
+					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
+			if (avatarUrl.equals("") || avatarUrl == null) {
+				holderOther.avatar.setImageResource(R.drawable.head_bg);
+			} else {
+				imageLoader
+						.displayImage(avatarUrl, holderOther.avatar, options);
+			}
+			break;
+		default:
+			break;
+		}
+
 		return convertView;
+
+	}
+
+	private String getDetail(String detail) {
+		if (detail.equals("")) {
+			return detail;
+		}
+		return "<font color=\"#fd7a00\">(" + detail + ")</font>";
+
 	}
 
 	private String replaceUser(String content, String user1, String user2) {
 		String userName1 = "";
-		userName1 = "<font color=\"#ff00ff\">" + user1 + "</font>";
-		if (user2.equals("")) {
+		userName1 = "<font color=\"#000000\">" + user1 + "</font>";
+		if (user2 == null || user2.equals("")) {
 			return content.replace("[X]", userName1);
 		}
-		String userName2 = "<font color=\"#ff00ff\">" + user2 + "</font>";
+		String userName2 = "<font color=\"#000000\">" + user2 + "</font>";
 		return content.replace("[X]", userName1).replace("[Y]", userName2);
 	}
 
-	class ViewHolder {
+	class ViewHolderOther {
 		TextView content;
 		TextView time;
+		ImageView avatar;
 	}
 
+	class ViewHolderInvite {
+		TextView contentInvite;
+		TextView timeInvite;
+		ImageView avatarInvite;
+		Button btnAgree;
+		Button btnNotAgree;
+
+	}
+
+	class BtnClick implements OnClickListener {
+		String pid = "";
+		String cid = "";
+		String type = "";
+		int position;
+		Map<String, Object> map = null;
+		Dialog pd;
+		String url = "";
+
+		public BtnClick(String pid, String cid, int position) {
+			this.pid = pid;
+			this.cid = cid;
+			this.position = position;
+			if (listModle.get(position).getType().equals("TYPE_ENTERING")) {
+				url = "/news/ienterApprove";
+			} else if (listModle.get(position).getType().equals("TYPE_KICKOUT")) {
+				url = "/news/ikickoutApprove";
+			}
+			map = new HashMap<String, Object>();
+			map.put("uid", SharedUtils.getString("uid", ""));
+			map.put("token", SharedUtils.getString("token", ""));
+			map.put("cid", cid);
+			map.put("pid", DBUtils.getPidByUid("circle" + cid, pid));
+		}
+
+		@Override
+		public void onClick(View v) {
+			switch (v.getId()) {
+			case R.id.btnAgree:
+				if (listModle.get(position).getType().equals("TYPE_ENTERING")) {
+					map.put("attitude", "1");
+				}
+				this.type = "agree";
+				break;
+			case R.id.btnNotAgree:
+				if (listModle.get(position).getType().equals("TYPE_ENTERING")) {
+					map.put("attitude", "0");
+				}
+				break;
+			default:
+				break;
+			}
+			pd = DialogUtil.getWaitDialog(mCotext, "请稍后");
+			pd.show();
+			PostAsyncTask task = new PostAsyncTask(mCotext, map, url);
+			task.setTaskCallBack(new PostCallBack() {
+				@Override
+				public void taskFinish(String result) {
+					pd.dismiss();
+					try {
+						JSONObject object = new JSONObject(result);
+						int rt = object.getInt("rt");
+						if (rt == 1) {
+							String detail = object.getString("detail");
+							listModle.get(position).setNeed_approve("0");
+							listModle.get(position).setDetail(detail);
+							notifyData();
+							if (type.equals("agree")) {
+								Utils.showToast("已同意");
+							} else {
+								Utils.showToast("已忽略");
+							}
+						} else {
+							String err = object.getString("err");
+							Utils.showToast(ErrorCodeUtil.convertToChines(err));
+						}
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+
+				}
+			});
+			task.execute();
+
+		}
+	}
 }

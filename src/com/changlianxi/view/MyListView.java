@@ -229,20 +229,20 @@ public class MyListView extends ListView implements OnScrollListener {
 	private void changeHeaderViewByState() {
 		switch (state) {
 		case RELEASE_To_REFRESH:
-			arrowImageView.setVisibility(View.VISIBLE);
+			arrowImageView.setVisibility(View.GONE);
 			progressBar.setVisibility(View.GONE);
-			tipsTextview.setVisibility(View.VISIBLE);
-			lastUpdatedTextView.setVisibility(View.VISIBLE);
+			tipsTextview.setVisibility(View.GONE);
+			lastUpdatedTextView.setVisibility(View.GONE);
 			arrowImageView.clearAnimation();
 			arrowImageView.startAnimation(animation);
 			tipsTextview.setText("松开刷新");
 			break;
 		case PULL_To_REFRESH:
 			progressBar.setVisibility(View.GONE);
-			tipsTextview.setVisibility(View.VISIBLE);
-			lastUpdatedTextView.setVisibility(View.VISIBLE);
+			tipsTextview.setVisibility(View.GONE);
+			lastUpdatedTextView.setVisibility(View.GONE);
 			arrowImageView.clearAnimation();
-			arrowImageView.setVisibility(View.VISIBLE);
+			arrowImageView.setVisibility(View.GONE);
 			// 是由RELEASE_To_REFRESH状态转变来的
 
 			if (isBack) {

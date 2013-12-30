@@ -8,19 +8,21 @@
         android:id="@+id/bgLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dip"
+        android:layout_marginBottom="@dimen/scale58dip"
+        android:layout_marginLeft="@dimen/scale20dip"
+        android:layout_marginRight="@dimen/scale20dip"
+        android:layout_marginTop="@dimen/scale41dip"
         android:gravity="center" >
 
-        <ImageView
+        <com.changlianxi.view.CircularImage
             android:id="@+id/avatar"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:src="@drawable/home_image" />
+            android:layout_width="35dip"
+            android:layout_height="35dip" />
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
+            android:layout_marginLeft="@dimen/scale31dip"
             android:orientation="vertical" >
 
             <LinearLayout
@@ -41,23 +43,25 @@
                     android:layout_marginLeft="5dip"
                     android:layout_marginRight="5dip"
                     android:text="-"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/scale34sp" />
 
                 <TextView
                     android:id="@+id/cirName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="朋友圈"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/scale34sp" />
 
                 <TextView
                     android:id="@+id/count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/scale12dip"
                     android:background="@drawable/icon_news_number"
                     android:gravity="center"
                     android:text="5"
                     android:textColor="@color/white"
+                    android:textSize="@dimen/scale26sp"
                     android:visibility="gone" />
 
                 <TextView
@@ -71,8 +75,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="09-14"
-                    android:textColor="@color/default_font_color"
-                    android:textSize="15sp" />
+                    android:textColor="#7f737373"
+                    android:textSize="@dimen/scale28sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -82,15 +86,16 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/scale19dip" >
 
                 <TextView
                     android:id="@+id/content"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="43454343543643543"
-                    android:textColor="@color/default_font_color"
-                    android:textSize="15sp" />
+                    android:textColor="#737373"
+                    android:textSize="@dimen/scale28sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

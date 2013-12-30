@@ -5,32 +5,30 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.util.TypedValue;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.changlianxi.activity.LoginActivity;
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
-import com.changlianxi.util.ImageManager;
-import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * 菜单界面
  * 
  */
-public class SetMenu implements OnClickListener, OnItemClickListener {
+public class SetMenu implements OnItemClickListener {
 	/**
 	 * 当前界面的View
 	 */
@@ -40,10 +38,9 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 	private Context mcontext;
 	private ListView listview;
 	private MyAdapter adapter;
-	private Button btn;
-	private Activity mactivity;
-	private CircularImage avatar;
-	private ImageView avatarBg;
+	private static CircularImage avatar;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 	/**
 	 * 接口对象,用来修改显示的View
 	 */
@@ -52,19 +49,16 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 	public SetMenu(Context context, Activity activity) {
 		// 绑定布局到当前View
 		this.mcontext = context;
-		this.mactivity = activity;
 		mDesktop = LayoutInflater.from(context).inflate(R.layout.desktop, null);
 		getMenu();
 		listview = (ListView) mDesktop.findViewById(R.id.menulist);
 		adapter = new MyAdapter();
 		listview.setAdapter(adapter);
 		listview.setOnItemClickListener(this);
-		btn = (Button) mDesktop.findViewById(R.id.menuback);
-		btn.setOnClickListener(this);
 		avatar = (CircularImage) mDesktop.findViewById(R.id.avatar);
 		avatar.setBackgroundResource(R.drawable.menu_pic);
-		avatarBg = (ImageView) mDesktop.findViewById(R.id.avatarBg);
-		WigdtContorl.setAvatarWidth(mcontext, avatar, avatarBg);
+		options = CLXApplication.getOptions();
+		imageLoader = CLXApplication.getImageLoader();
 	}
 
 	public View getView() {
@@ -77,8 +71,11 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 	 * @param avatarUrl
 	 */
 	public void setAvatar(String avatarUrl) {
-		ImageManager.from(mcontext).displayImage(avatar, avatarUrl, -1,
-				avatar.getWidth(), avatar.getWidth());
+		imageLoader.displayImage(avatarUrl, avatar, options);
+	}
+
+	public static void setEidtAvatar(Bitmap bmp) {
+		avatar.setImageBitmap(bmp);
 	}
 
 	private void getMenu() {
@@ -129,14 +126,12 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 				holder = new ViewHolder();
 				holder.txt = (TextView) convertView.findViewById(R.id.menutxt);
 				holder.angle = (ImageView) convertView.findViewById(R.id.angle);
-				int mWidth = (int) TypedValue.applyDimension(
-						TypedValue.COMPLEX_UNIT_DIP,
+				WigdtContorl.setLayoutX(
+						holder.angle,
 						Utils.getSecreenWidth(mcontext)
-								- mcontext.getResources().getDimension(
-										R.dimen.width) + 12, mcontext
-								.getResources().getDisplayMetrics());
-				WigdtContorl.setLayoutX(holder.angle,
-						Utils.getSecreenWidth(mcontext) - mWidth);
+								/ 2
+								- (int) mcontext.getResources().getDimension(
+										R.dimen.menu));
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
@@ -144,8 +139,11 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 			}
 			if (menulist.get(position).isAngle()) {
 				holder.angle.setVisibility(View.VISIBLE);
+				holder.txt.setTextColor(Color.WHITE);
 			} else {
 				holder.angle.setVisibility(View.GONE);
+				holder.txt.setTextColor(mcontext.getResources().getColor(
+						R.color.default_font_color));
 
 			}
 			holder.txt.setText(menulist.get(position).getMenu());
@@ -197,22 +195,6 @@ public class SetMenu implements OnClickListener, OnItemClickListener {
 	 */
 	public interface onChangeViewListener {
 		public abstract void onChangeView(int arg0);
-	}
-
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.menuback:
-			mactivity.finish();
-			SharedUtils.setString("uid", "");
-			SharedUtils.setString("token", "");
-			Intent intent = new Intent();
-			intent.setClass(mcontext, LoginActivity.class);
-			mcontext.startActivity(intent);
-			break;
-		default:
-			break;
-		}
 	}
 
 	@Override

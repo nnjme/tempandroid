@@ -33,6 +33,7 @@ public class ExpressionUtil {
 			if (resId != 0) {
 				Bitmap bitmap = BitmapFactory.decodeResource(
 						context.getResources(), resId);
+				@SuppressWarnings("deprecation")
 				ImageSpan imageSpan = new ImageSpan(bitmap);
 				int end = matcher.start() + key.length();
 				spannableString.setSpan(imageSpan, matcher.start(), end,

@@ -10,29 +10,28 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dip"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
-        android:layout_marginTop="5dip"
+        android:layout_marginLeft="@dimen/scale20dip"
+        android:layout_marginRight="@dimen/scale20dip"
+        android:layout_marginTop="@dimen/scale17dip"
         android:background="@drawable/record_bg"
         android:orientation="vertical" >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginTop="10dip" >
+            android:layout_marginLeft="@dimen/scale20dip"
+            android:layout_marginTop="@dimen/scale30dip" >
 
-            <ImageView
-                android:id="@+id/imageView1"
-                android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:src="@drawable/pic" />
+            <com.changlianxi.view.CircularImage
+                android:id="@+id/avatar"
+                android:layout_width="37dip"
+                android:layout_height="37dip" />
 
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dip"
+                android:layout_marginLeft="@dimen/scale28dip"
+                android:layout_marginRight="@dimen/scale20dip"
                 android:orientation="vertical" >
 
                 <TextView
@@ -41,87 +40,139 @@
                     android:layout_height="wrap_content"
                     android:gravity="bottom"
                     android:text="徐呆呆"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/scale42sp" />
 
                 <TextView
                     android:id="@+id/content"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dip"
+                    android:layout_marginBottom="@dimen/scale20dip"
                     android:layout_marginTop="10dip"
-                    android:text="据 软件服务、动漫等多个领域。" />
+                    android:lineSpacingExtra="4dip"
+                    android:text="据 软件服务、动漫等多个领域。"
+                    android:textColor="#737373"
+                    android:textSize="@dimen/scale26sp" />
+
+                <ImageView
+                    android:id="@+id/img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
 
                 <com.changlianxi.view.GrowthImgGridView
                     android:id="@+id/imgGridview"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:scrollbars="none" >
+                    android:layout_marginRight="@dimen/scale20dip"
+                    android:scrollbars="none"
+                    android:visibility="gone" >
                 </com.changlianxi.view.GrowthImgGridView>
 
-                <TextView
-                    android:id="@+id/time"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dip"
-                    android:layout_marginTop="5dip"
-                    android:gravity="right"
-                    android:text="20分钟前" />
+                    android:layout_marginBottom="@dimen/scale20dip"
+                    android:layout_marginTop="@dimen/scale20dip"
+                    android:gravity="center_vertical" >
+
+                    <TextView
+                        android:id="@+id/time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="left"
+                        android:text="20分钟前"
+                        android:textColor="#a3a3a3"
+                        android:textSize="@dimen/scale20sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="7dip"
+                        android:gravity="center" >
+
+                        <ImageView
+                            android:id="@+id/imageView1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="5dip"
+                            android:src="@drawable/icon_locate" />
+
+                        <TextView
+                            android:id="@+id/location"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textColor="#a3a3a3"
+                            android:textSize="@dimen/scale20sp" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/scale81dip"
             android:background="@drawable/record_com_bg" >
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true" >
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="@dimen/scale19dip" >
 
                 <LinearLayout
                     android:id="@+id/layParise"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dip"
                     android:gravity="center" >
 
                     <ImageView
                         android:id="@+id/imageView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="5dip"
                         android:src="@drawable/praise" />
 
                     <TextView
                         android:id="@+id/praise"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="赞（22）"
+                        android:textColor="@color/font81"
+                        android:textSize="@dimen/scale26sp" />
+
+                    <View
+                        android:layout_width="0.3dip"
+                        android:layout_height="13dip"
                         android:layout_gravity="bottom"
-                        android:text="33"
-                        android:textSize="20sp" />
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginRight="@dimen/scale25dip"
+                        android:background="#b2b2b2" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/layComment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dip"
                     android:gravity="center" >
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="2dip"
                         android:src="@drawable/comment" />
 
                     <TextView
                         android:id="@+id/comment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dip"
-                        android:text="55"
-                        android:textSize="20sp" />
+                        android:layout_marginLeft="8dip"
+                        android:text="评论（22）"
+                        android:textColor="@color/font81"
+                        android:textSize="@dimen/scale26sp" />
                 </LinearLayout>
             </LinearLayout>
         </RelativeLayout>

@@ -6,12 +6,10 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -19,6 +17,7 @@ import android.widget.TextView;
 
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
@@ -29,19 +28,19 @@ import com.changlianxi.util.Utils;
  * @author teeker_bin
  * 
  */
-public class ChangePassswordActivity extends Activity implements
+public class ChangePassswordActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
 	private Button ok;
 	private EditText nowPasswrod;
 	private EditText newPassword;
 	private TextView titleTxt;
 	private ImageView back;
-	private ProgressDialog pd;
+	private Dialog pd;
 
+	// startActivity
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_change_passsword);
 		findViewByID();
 		setListener();
@@ -81,7 +80,7 @@ public class ChangePassswordActivity extends Activity implements
 				"/users/ichangePasswd");
 		task.setTaskCallBack(this);
 		task.execute();
-		pd = new ProgressDialog(this);
+		pd = DialogUtil.getWaitDialog(this, "请稍后");
 		pd.show();
 	}
 
@@ -90,6 +89,8 @@ public class ChangePassswordActivity extends Activity implements
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			Utils.rightOut(this);
+
 			break;
 		case R.id.ok:
 			changePassword();
@@ -109,6 +110,8 @@ public class ChangePassswordActivity extends Activity implements
 			if (rt == 1) {
 				Utils.showToast("密码修改成功");
 				finish();
+				Utils.rightOut(this);
+
 			} else {
 				String err = object.getString("err");
 				Utils.showToast(ErrorCodeUtil.convertToChines(err));

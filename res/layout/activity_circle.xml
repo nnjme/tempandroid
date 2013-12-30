@@ -1,14 +1,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="#FFFFFF"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical" >
 
     <TabHost
         android:id="@+id/tabhost"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dip"
         android:layout_weight="1" >
 
         <TabWidget
@@ -26,11 +25,12 @@
 
     <LinearLayout
         android:id="@+id/btParent"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/f6"
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:layout_gravity="bottom"
+        android:background="@drawable/footer_nav_bg"
         android:gravity="center"
-        android:orientation="horizontal" >
+        android:padding="3dip" >
 
         <Button
             android:id="@+id/cy"
@@ -40,18 +40,7 @@
             android:background="@null"
             android:padding="10dip"
             android:text="成员"
-            android:textSize="20dip" />
-
-        <Button
-            android:id="@+id/lt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@null"
-            android:padding="10dip"
-            android:text="聊天"
-            android:textColor="@color/default_font_color"
-            android:textSize="20dip" />
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/cz"
@@ -62,7 +51,18 @@
             android:padding="10dip"
             android:text="成长"
             android:textColor="@color/default_font_color"
-            android:textSize="20dip" />
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/lt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:padding="10dip"
+            android:text="聊天"
+            android:textColor="@color/default_font_color"
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/dt"
@@ -73,7 +73,13 @@
             android:padding="10dip"
             android:text="动态"
             android:textColor="@color/default_font_color"
-            android:textSize="20dip" />
+            android:textSize="16sp" />
+
+        <View
+            android:id="@+id/imageView1"
+            android:layout_width="0.2dip"
+            android:layout_height="fill_parent"
+            android:background="#d7d7d7" />
 
         <LinearLayout
             android:id="@+id/more"
@@ -85,8 +91,8 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dip"
-                android:layout_marginRight="5dip"
+                android:layout_marginLeft="15dip"
+                android:layout_marginRight="15dip"
                 android:background="@drawable/footer_nav_more" />
         </LinearLayout>
     </LinearLayout>

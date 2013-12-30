@@ -66,22 +66,26 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 				String sortkey = PinyinUtils.getPinyin(name).toUpperCase();
 				String pinyin = PinyinUtils.getPinyinFrt(name).toLowerCase();
 				String mobileNum = "";
+				String auth = object.getString("auth");
+				String location = object.getString("location");
 				JSONArray newsarray = object.getJSONArray("news");
 				if (newsarray.length() > 0) {
 					mobileNum = newsarray.get(0).toString();
 				}
 				modle.setId(id);
 				modle.setName(name);
-				modle.setEmployer(employer);
+				modle.setEmployer(employer == null ? employer : "");
 				modle.setImg(StringUtils.JoinString(logo, "_100x100"));
 				modle.setSort_key(sortkey);
 				modle.setUid(uid);
 				modle.setMobileNum(mobileNum);
 				modle.setKey_pinyin_fir(pinyin);
+				modle.setAuth(auth.equals("1") ? true : false);
+				modle.setLocation(location);
 				listModles.add(modle);
 				DBUtils.insertCircleUser(cid, circleName, id, uid, name,
 						StringUtils.JoinString(logo, "_100x100"), employer,
-						mobileNum, sortkey, pinyin);
+						mobileNum, auth, location, sortkey, pinyin);
 			}
 			MyComparator compartor = new MyComparator();
 			Collections.sort(listModles, compartor);

@@ -333,7 +333,6 @@ public class ImageManager {
 									mMemoryCache.put(url, bitmap);
 							}
 						} else {
-							Logger.debug(this, "网络下载");
 							try {
 								byte[] data = loadByteArrayFromNetwork(url);
 								if (data != null) {

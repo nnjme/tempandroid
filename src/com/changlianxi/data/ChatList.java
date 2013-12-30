@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.changlianxi.db.Const;
+import com.changlianxi.db.DBUtils;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -73,7 +74,6 @@ public class ChatList extends AbstractData {
 	@Override
 	public void read(SQLiteDatabase db) {
 		super.read(db);
-
 		if (this.chats == null) {
 			this.chats = new ArrayList<Chat>();
 		} else {

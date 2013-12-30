@@ -1,5 +1,6 @@
 package com.changlianxi.modle;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -8,7 +9,11 @@ import java.util.List;
  * @author teeker_bin
  * 
  */
-public class GrowthModle {
+public class GrowthModle implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String personImg = "";// 发布成长记录人的头像地址
 	private String name = "";// 发布成长记录人的姓名
 	private String cid = "";// 圈子id

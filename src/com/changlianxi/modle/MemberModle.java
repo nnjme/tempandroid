@@ -21,6 +21,24 @@ public class MemberModle implements Serializable {
 	private String circleName = "";
 	private String cid = "";// 所属圈子id
 	private String mobileNum = "";
+	private boolean auth;// 成员认证状态，
+	private String location;
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public boolean isAuth() {
+		return auth;
+	}
+
+	public void setAuth(boolean auth) {
+		this.auth = auth;
+	}
 
 	public String getMobileNum() {
 		return mobileNum;

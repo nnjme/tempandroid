@@ -16,11 +16,10 @@
             android:layout_gravity="left"
             android:orientation="horizontal" >
 
-            <ImageView
+            <com.changlianxi.view.CircularImage
                 android:id="@+id/otherAvatar"
                 android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:src="@drawable/hand_pic" />
+                android:layout_height="50dip" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -33,7 +32,7 @@
                     android:layout_height="wrap_content"
                     android:text="TextView" />
 
-                <TextView
+                <com.changlianxi.view.EmojiEditText
                     android:id="@+id/otherContent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -67,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
 
-                <TextView
+                <com.changlianxi.view.EmojiEditText
                     android:id="@+id/selfContent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -80,6 +79,7 @@
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     android:paddingTop="10dp"
+                    android:text="aa"
                     android:textColor="#000000"
                     android:textSize="20dp" />
 
@@ -90,11 +90,10 @@
                     android:text="TextView" />
             </LinearLayout>
 
-            <ImageView
+            <com.changlianxi.view.CircularImage
                 android:id="@+id/selfAvatar"
                 android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:src="@drawable/home_image" />
+                android:layout_height="50dip" />
         </LinearLayout>
     </LinearLayout>
 

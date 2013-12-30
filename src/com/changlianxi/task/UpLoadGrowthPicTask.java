@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 
 import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
@@ -41,7 +42,9 @@ public class UpLoadGrowthPicTask extends AsyncTask<String, Integer, String> {
 	protected String doInBackground(String... params) {
 		String result = "";
 		for (int i = 0; i < picPath.size(); i++) {
-			File file = new File(picPath.get(i));
+			String path = picPath.get(i);
+			File file = BitmapUtils.getImageFile(path);
+			// File file = new File(picPath.get(i));
 			if (file != null) {
 				result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl
 						+ "/growth/iuploadImage", map, file, "img");

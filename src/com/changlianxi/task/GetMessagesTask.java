@@ -15,8 +15,10 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.GetMessagesCallBack;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 
 /**
  * 获取私信内容 线程
@@ -29,10 +31,14 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 	private Map<String, Object> map;
 	private String url;
 	private List<MessageModle> listModle = new ArrayList<MessageModle>();
+	private String err;
+	private String ruid;// 保存时使用
 
-	public GetMessagesTask(Context context, Map<String, Object> map, String url) {
+	public GetMessagesTask(Context context, Map<String, Object> map,
+			String url, String ruid) {
 		this.map = map;
 		this.url = url;
+		this.ruid = ruid;
 	}
 
 	public void setTaskCallBack(GetMessagesCallBack callBack) {
@@ -46,6 +52,7 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 			JSONObject jsonobject = new JSONObject(result);
 			String rt = jsonobject.getString("rt");
 			if (!rt.equals("1")) {
+				err = jsonobject.getString("err");
 				return null;
 			}
 			JSONArray jsonarray = jsonobject.getJSONArray("messages");
@@ -58,6 +65,7 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 				String content = object.getString("content");
 				String time = object.getString("time");
 				String cid = object.getString("cid");
+				String type = object.getString("type");
 				MemberInfoModle info = DBUtils.selectNameAndImgByID("circle"
 						+ cid, uid);
 				if (info != null) {
@@ -69,15 +77,22 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 				} else {
 					modle.setSelf(false);
 				}
+				if (type.equals("TYPE_TEXT")) {
+					modle.setType(0);
+				} else if (type.equals("TYPE_IMAGE")) {
+					modle.setType(1);
+				}
+				modle.setUid(uid);
 				modle.setAvatar(avatarPath);
 				modle.setName(name);
 				modle.setContent(content);
 				modle.setTime(time);
 				listModle.add(modle);
+				DBUtils.saveMessage(modle, ruid);
+
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return null;
 		}
 		return result;
 	}
@@ -85,11 +100,11 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 	@Override
 	protected void onPostExecute(String result) {
 		// 任务结束
-		if (result != null) {
-			callBack.getMessages(listModle);
-			return;
+		if (result == null) {
+			Utils.showToast(ErrorCodeUtil.convertToChines(err));
 		}
-		callBack.getMessages(null);
+		callBack.getMessages(listModle);
+
 	}
 
 	@Override

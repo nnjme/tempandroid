@@ -3,25 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:paddingBottom="10dip"
-    android:paddingTop="10dip" >
+    android:paddingBottom="13dip"
+    android:paddingTop="13dip" >
 
     <TextView
         android:id="@+id/menutxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="40dip"
+        android:layout_marginLeft="20sp"
         android:text="55"
         android:textColor="@color/default_font_color"
-        android:textSize="25sp" />
+        android:textSize="19sp" />
 
     <ImageView
         android:id="@+id/angle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/menutxt"
+        android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/menutxt"
-        android:src="@drawable/angle_left"
-        android:visibility="gone" />
+        android:src="@drawable/angle_left" />
 
 </RelativeLayout>

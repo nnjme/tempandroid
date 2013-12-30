@@ -16,7 +16,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dip"
             android:text="圈子职务"
-            android:textSize="20sp" />
+            android:textColor="#333333"
+            android:textSize="17sp" />
 
         <View
             android:id="@+id/line1"
@@ -30,9 +31,10 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dip"
-            android:layout_marginLeft="5dip"
+            android:layout_marginLeft="10dip"
             android:background="@null"
-            android:textSize="20sp" />
+            android:textColor="@color/font6f"
+            android:textSize="17sp" />
     </LinearLayout>
 
     <View

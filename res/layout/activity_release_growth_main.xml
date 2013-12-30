@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@color/white"
     android:orientation="vertical" >
 
     <include
@@ -12,111 +13,110 @@
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:scrollbars="vertical" >
+        android:layout_margin="@dimen/dip20"
+        android:scrollbars="none" >
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical" >
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dip"
-                android:layout_marginRight="20dip"
-                android:orientation="vertical" >
-
-                <EditText
-                    android:id="@+id/content"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dip"
-                    android:hint="请输入成长内容" >
-
-                    <requestFocus />
-                </EditText>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dip" >
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/add_pic_bg"
-                        android:gravity="center"
-                        android:orientation="vertical" >
-
-                        <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="添加" />
-
-                        <TextView
-                            android:id="@+id/textView2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="照片" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:id="@+id/addPicture"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dip"
-                        android:src="@drawable/add_pic_bg1" />
-                </LinearLayout>
+                android:layout_height="wrap_content" >
 
                 <com.changlianxi.view.GrowthImgGridView
                     android:id="@+id/imgGridview"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:numColumns="4" >
+                    android:layout_height="wrap_content"
+                    android:numColumns="4"
+                    android:scrollbars="none" >
                 </com.changlianxi.view.GrowthImgGridView>
-
-                <LinearLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dip" >
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="发生时间：" />
-
-                    <TextView
-                        android:id="@+id/time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="发生地点：" />
-
-                    <EditText
-                        android:id="@+id/location"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnUpload"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="30dip"
-                    android:layout_marginTop="10dip"
-                    android:background="@drawable/share_button_bg"
-                    android:text="发布"
-                    android:textColor="@color/white"
-                    android:textSize="23sp" />
             </LinearLayout>
+
+            <EditText
+                android:id="@+id/content"
+                android:layout_width="fill_parent"
+                android:layout_height="100dip"
+                android:background="@drawable/input_bg"
+                android:gravity="top"
+                android:hint="输入圈子内容"
+                android:padding="10dip"
+                android:textColor="@color/font81"
+                android:textSize="15sp" >
+            </EditText>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dip20"
+                android:background="@drawable/input_bg"
+                android:paddingBottom="12dip"
+                android:paddingLeft="15dip"
+                android:paddingTop="12dip" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="发生时间："
+                    android:textColor="@color/font81"
+                    android:textSize="15sp" />
+
+                <EditText
+                    android:id="@+id/time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:textColor="@color/font81"
+                    android:textSize="15sp" >
+                </EditText>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dip20"
+                android:background="@drawable/input_bg"
+                android:gravity="center"
+                android:paddingBottom="12dip"
+                android:paddingLeft="15dip"
+                android:paddingTop="12dip" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="发生地点："
+                    android:textColor="@color/font81"
+                    android:textSize="15sp" />
+
+                <EditText
+                    android:id="@+id/location"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:textColor="@color/font81"
+                    android:textSize="15sp" >
+                </EditText>
+
+                <ImageView
+                    android:id="@+id/imgLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dip"
+                    android:src="@drawable/icon_locate1" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnUpload"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dip"
+                android:layout_marginTop="@dimen/dip40"
+                android:background="@drawable/btn_bg"
+                android:text="发布"
+                android:textColor="@color/white"
+                android:textSize="21sp" />
         </LinearLayout>
     </ScrollView>
 

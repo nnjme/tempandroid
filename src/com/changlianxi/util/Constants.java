@@ -10,7 +10,12 @@ import android.provider.ContactsContract.Contacts.Photo;
  * 
  */
 public class Constants {
-	public static final String STARTTIME = "2008-08-08 12:10:12";// 第一次访问的时间戳
+	public static final String NEWS_TABLE = "newslist";// 动态列表
+	public static final String CIRCLEDETAIL = "circledetail";// 圈子资料表
+	public static final String USERDETAIL = "userdetail";// 成员资料表
+	public static final String MYDETAIL = "mydetail";// 个人资料表
+	public static final String CHATLIST_TABLE_NAME = "chatlist";// 聊天记录表
+	public static final String MESSAGELIST_TABLE_NAME = "messagelist";// 私信记录表
 	public static final int REQUEST_CODE_GETIMAGE_BYSDCARD = 0;// 选择图片
 	public static final int REQUEST_CODE_GETIMAGE_BYCAMERA = 1;// 拍照
 	public static final int REQUEST_CODE_GETIMAGE_DROP = 2;// 拍照

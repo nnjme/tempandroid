@@ -7,10 +7,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -26,6 +27,7 @@ import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.SetClientInfo;
 import com.changlianxi.task.SetClientInfo.ClientCallBack;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.EditWather;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Logger;
@@ -48,7 +50,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 	private String uid = "";// 成功后才有，代表用户ID
 	private String token = "";
 	private TextView btFindWd;// 找回密码按钮
-	private ProgressDialog progressDialog;
+	private Dialog dialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -98,8 +100,6 @@ public class LoginActivity extends Activity implements OnClickListener,
 				uid = object.getString("uid");
 				SharedUtils.setString("uid", uid);
 				SharedUtils.setString("token", token);
-				Logger.debug(this, "rt:" + rt + "  uid:" + uid + "  token:"
-						+ token);
 				return true;
 			} else {
 				String errorCoce = object.getString("err");
@@ -128,6 +128,10 @@ public class LoginActivity extends Activity implements OnClickListener,
 					R.anim.slide_down_out);
 			break;
 		case R.id.btlogin:
+			if (!Utils.isNetworkAvailable()) {
+				Utils.showToast("请检查网络");
+				return;
+			}
 			String num = ediNum.getText().toString().replace("-", "");
 			if (!Utils.isPhoneNum(num)) {
 				Utils.showToast("请输入有效的手机号码！");
@@ -140,8 +144,8 @@ public class LoginActivity extends Activity implements OnClickListener,
 			// 以apikey的方式登录，一般放在主Activity的onCreate中
 			PushManager.startWork(this, PushConstants.LOGIN_TYPE_API_KEY,
 					Utils.getMetaValue(this, "api_key"));
-			progressDialog = new ProgressDialog(this);
-			progressDialog.show();
+			dialog = DialogUtil.getWaitDialog(this, "登陆中");
+			dialog.show();
 			break;
 		case R.id.findpd:
 			Intent find = new Intent();
@@ -159,7 +163,6 @@ public class LoginActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void onBind(int errorCode, String content) {
-		System.out.println("errorCode:::" + errorCode);
 		if (errorCode == 0) {// 0 标示成功 非0失败
 			String channelid = "";
 			String userid = "";
@@ -175,7 +178,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 			} catch (JSONException e) {
 			}
 		} else {
-			progressDialog.dismiss();
+			dialog.dismiss();
 			Utils.showToast("推送服务绑定错误" + errorCode);
 		}
 	}
@@ -196,7 +199,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 				String err = json.getString("err");
 				String errorString = ErrorCodeUtil.convertToChines(err);
 				Utils.showToast(errorString);
-				progressDialog.dismiss();
+				dialog.dismiss();
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -222,9 +225,10 @@ public class LoginActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void taskFinish(String result) {
-		System.out.println("result:::" + result);
 		if (!isUserExist(result)) {
-			progressDialog.dismiss();
+			if (dialog != null) {
+				dialog.dismiss();
+			}
 			return;
 		}
 		SetClientInfo task = new SetClientInfo(new ClientCallBack() {// 设置属性接口回调
@@ -236,9 +240,18 @@ public class LoginActivity extends Activity implements OnClickListener,
 	}
 
 	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			finish();
+		}
+		return super.onKeyDown(keyCode, event);
+
+	}
+
+	@Override
 	protected void onDestroy() {
-		if (progressDialog != null) {
-			progressDialog.dismiss();
+		if (dialog != null) {
+			dialog.dismiss();
 		}
 		super.onDestroy();
 	}

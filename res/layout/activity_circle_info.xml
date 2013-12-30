@@ -1,12 +1,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@color/white" >
 
     <LinearLayout
         android:id="@+id/title"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/scale110dip"
         android:background="@drawable/top_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
@@ -15,14 +16,14 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dip"
+            android:paddingLeft="@dimen/scale30dip"
+            android:paddingRight="@dimen/scale29dip"
             android:src="@drawable/icon_return" />
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginRight="10dip"
+            android:layout_height="fill_parent"
+            android:layout_marginRight="@dimen/scale28dip"
             android:src="@drawable/top_line" />
 
         <TextView
@@ -33,20 +34,22 @@
             android:gravity="left"
             android:singleLine="true"
             android:textColor="#FFFFFF"
-            android:textSize="@dimen/titleSize" />
+            android:textSize="@dimen/sp42" />
 
         <ImageView
             android:id="@+id/edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dip"
-            android:src="@drawable/icon_add" />
+            android:src="@drawable/icon_add"
+            android:visibility="gone" />
     </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/title" >
+        android:layout_below="@+id/title"
+        android:scrollbars="none" >
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -56,28 +59,31 @@
                 android:id="@+id/top"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dip" >
+                android:layout_marginLeft="25dip" >
 
                 <LinearLayout
                     android:id="@+id/layCirName"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dip"
-                    android:layout_marginTop="10dip" >
+                    android:layout_marginBottom="15dip"
+                    android:layout_marginRight="11dip"
+                    android:layout_marginTop="20dip" >
 
                     <TextView
                         android:id="@+id/textView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="圈子名称："
-                        android:textSize="20sp" />
+                        android:text="圈子名称:"
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/circleName"
-                        android:layout_width="wrap_content"
+                        android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dip"
-                        android:textSize="20sp" />
+                        android:layout_marginLeft="10dip"
+                        android:textColor="@color/font6f"
+                        android:textSize="17sp" />
                 </LinearLayout>
 
                 <View
@@ -85,7 +91,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
                     android:layout_below="@+id/layCirName"
-                    android:background="#ffe0e0e0" />
+                    android:background="#D1D1D1" />
 
                 <LinearLayout
                     android:id="@+id/layCirIcon"
@@ -99,14 +105,15 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="圈子图标："
-                        android:textSize="20sp" />
+                        android:paddingRight="10dip"
+                        android:text="圈子图标:"
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
 
-                    <ImageView
+                    <com.changlianxi.view.CircularImage
                         android:id="@+id/circleLogo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/pic" />
+                        android:layout_width="80dip"
+                        android:layout_height="80dip" />
                 </LinearLayout>
 
                 <View
@@ -114,28 +121,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
                     android:layout_below="@+id/layCirIcon"
-                    android:background="#ffe0e0e0" />
+                    android:background="#D1D1D1" />
 
                 <LinearLayout
                     android:id="@+id/layCirDis"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/line2"
-                    android:layout_marginBottom="10dip"
-                    android:layout_marginTop="10dip" >
+                    android:layout_marginRight="11dip"
+                    android:paddingBottom="15dip"
+                    android:paddingTop="15dip" >
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="圈子描述："
-                        android:textSize="20sp" />
+                        android:text="圈子描述:"
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/circleDis"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dip"
-                        android:textSize="20sp" />
+                        android:layout_marginLeft="10dip"
+                        android:textColor="@color/font6f"
+                        android:textSize="17sp" />
                 </LinearLayout>
 
                 <View
@@ -143,57 +153,63 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
                     android:layout_below="@+id/layCirDis"
-                    android:background="#ffe0e0e0" />
+                    android:background="#D1D1D1" />
 
-                <LinearLayout
-                    android:id="@+id/layCirZhiWu"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/line3"
-                    android:layout_marginBottom="10dip"
-                    android:layout_marginTop="10dip" >
+                <!-- <LinearLayout -->
+                <!-- android:id="@+id/layCirZhiWu" -->
+                <!-- android:layout_width="fill_parent" -->
+                <!-- android:layout_height="wrap_content" -->
+                <!-- android:layout_below="@+id/line3" -->
+                <!-- android:paddingBottom="15dip" -->
+                <!-- android:paddingTop="15dip" > -->
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="圈子职务："
-                        android:textSize="20sp" />
 
-                    <TextView
-                        android:id="@+id/circleZhiWu"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dip"
-                        android:textSize="20sp" />
-                </LinearLayout>
+                <!-- <TextView -->
+                <!-- android:layout_width="wrap_content" -->
+                <!-- android:layout_height="wrap_content" -->
+                <!-- android:text="圈子职务:" -->
+                <!-- android:textColor="#333333" -->
+                <!-- android:textSize="17sp" /> -->
+
+
+                <!-- <TextView -->
+                <!-- android:id="@+id/circleZhiWu" -->
+                <!-- android:layout_width="wrap_content" -->
+                <!-- android:layout_height="wrap_content" -->
+                <!-- android:layout_marginLeft="10dip" -->
+                <!-- android:textColor="@color/font6f" -->
+                <!-- android:textSize="17sp" /> -->
+                <!-- </LinearLayout> -->
 
                 <View
                     android:id="@+id/line4"
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:layout_below="@+id/layCirZhiWu"
-                    android:background="#ffe0e0e0" />
+                    android:layout_below="@+id/layCirDis"
+                    android:background="#D1D1D1" />
 
                 <LinearLayout
                     android:id="@+id/layCirCY"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/line4"
-                    android:layout_marginBottom="10dip"
-                    android:layout_marginTop="10dip" >
+                    android:paddingBottom="15dip"
+                    android:paddingTop="15dip" >
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="圈子成员："
-                        android:textSize="20sp" />
+                        android:text="圈子成员:"
+                        android:textColor="#333333"
+                        android:textSize="17sp" />
 
                     <TextView
-                        android:id="@+id/circleCY"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/circleMemberCount"
+                        android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dip"
-                        android:textSize="20sp" />
+                        android:layout_marginLeft="10dip"
+                        android:textColor="@color/font6f"
+                        android:textSize="17sp" />
                 </LinearLayout>
             </RelativeLayout>
 
@@ -201,27 +217,34 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/top"
-                android:layout_margin="10dip"
+                android:layout_marginLeft="11dip"
+                android:layout_marginRight="11dip"
+                android:layout_marginTop="8dip"
                 android:orientation="vertical" >
 
                 <Button
                     android:id="@+id/btnExit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_gray"
                     android:gravity="center"
                     android:text="退出圈子"
-                    android:textSize="23sp" />
+                    android:textColor="#000000"
+                    android:textSize="19sp"
+                    android:visibility="gone" />
 
                 <Button
                     android:id="@+id/btnDissolve "
-                    android:layout_width="wrap_content"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dip"
+                    android:layout_marginBottom="20dip"
+                    android:layout_marginTop="15dip"
                     android:background="@drawable/btn_orang"
                     android:gravity="center"
                     android:text="解散圈子"
-                    android:textSize="23sp" />
+                    android:textColor="@color/white"
+                    android:textSize="19sp"
+                    android:visibility="gone" />
             </LinearLayout>
         </RelativeLayout>
     </ScrollView>

@@ -10,17 +10,17 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -36,6 +36,7 @@ import com.changlianxi.task.GetCircleUserTask;
 import com.changlianxi.task.GetCircleUserTask.GetCircleUserList;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.MyComparator;
 import com.changlianxi.util.SharedUtils;
@@ -54,7 +55,7 @@ import com.changlianxi.view.SearchEditText;
  * @author teeker_bin
  * 
  */
-public class CircleUserActivity extends Activity implements
+public class CircleUserActivity extends BaseActivity implements
 		OnTouchingLetterChangedListener, touchUp, OnItemClickListener,
 		OnClickListener, PostCallBack, GetCircleUserList {
 	private QuickAlphabeticBar indexBar;// 右侧字母拦
@@ -67,27 +68,26 @@ public class CircleUserActivity extends Activity implements
 	private int position;// 当前字母子listview中所对应的位置
 	private String cid;// 圈子ID
 	private String circleName;// 圈子名称
-	private String circleUser;// 圈子成员表名称
 	private ImageView btadd;
 	private ImageView btback;
 	private TextView txtciecleName;
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 	private boolean isnew;// 是否是新邀请的圈子
 	private LinearLayout layInvitate;
 	private Button btnAccecpt;// 接受邀请按钮
 	private Button btnFefuse;// 拒绝邀请按钮
-	// private ImageView px;// 排序
 	private int status;// 0 拒绝 1 接受
+	private SearchEditText editSearch;
+	private String inviterID = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 		cid = getIntent().getStringExtra("cirID");
 		isnew = getIntent().getBooleanExtra("is_New", false);
+		inviterID = getIntent().getStringExtra("inviterID");
 		circleName = "circle" + cid;
-		circleUser = circleName + "userlist";
 		creatDir();
 		listModles = DBUtils.getUserList(circleName);
 		initView();
@@ -99,7 +99,7 @@ public class CircleUserActivity extends Activity implements
 	private void getServerList() {
 		if (Utils.isNetworkAvailable()) {
 			if (listModles.size() == 0) {
-				progressDialog = new ProgressDialog(this);
+				progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
 				progressDialog.show();
 			}
 			GetCircleUserTask task = new GetCircleUserTask(cid, circleName);
@@ -127,19 +127,8 @@ public class CircleUserActivity extends Activity implements
 	@Override
 	protected void onRestart() {
 		super.onRestart();
-		MemberModle modle = CLXApplication.getModle();
-		if (modle == null) {
-			return;
-		}
-		listModles.add(modle);
-		MyComparator compartor = new MyComparator();
-		Collections.sort(listModles, compartor);
-		adapter.setData(listModles);
-		DBUtils.insertCircleUser(cid, circleName, modle.getId(),
-				modle.getUid(), modle.getName(), modle.getImg(),
-				modle.getEmployer(), modle.getMobileNum(), modle.getSort_key(),
-				modle.getKey_pinyin_fir());
-		CLXApplication.setModleNull();
+		getServerList();
+
 	}
 
 	@Override
@@ -160,6 +149,9 @@ public class CircleUserActivity extends Activity implements
 		btnFefuse.setOnClickListener(this);
 		layInvitate = (LinearLayout) findViewById(R.id.layInvitate);
 		if (isnew) {
+			TextView inviteName = (TextView) findViewById(R.id.inviterName);
+			String iName = DBUtils.getUserNameByUid(circleName, inviterID);
+			inviteName.setText(iName + "邀请你加入圈子");
 			layInvitate.setVisibility(View.VISIBLE);
 		}
 		btback = (ImageView) findViewById(R.id.back);
@@ -175,24 +167,20 @@ public class CircleUserActivity extends Activity implements
 		MyComparator compartor = new MyComparator();
 		Collections.sort(listModles, compartor);
 		View view = LayoutInflater.from(this).inflate(R.layout.header, null);
-		SearchEditText editSearch = (SearchEditText) view
-				.findViewById(R.id.search);
+		editSearch = (SearchEditText) view.findViewById(R.id.search);
 		editSearch.addTextChangedListener(new EditWather());
 		listView.addHeaderView(view);
 		indexBar = (QuickAlphabeticBar) findViewById(R.id.indexBar);
 		indexBar.setOnTouchingLetterChangedListener(this);
-		indexBar.getBackground().setAlpha(125);
+		indexBar.getBackground().setAlpha(0);
 		indexBar.setOnTouchUp(this);
 		selectedChar = (TextView) findViewById(R.id.selected_tv);
 		selectedChar.setVisibility(View.INVISIBLE);
-//		selectedChar.getBackground().setAlpha(255);
-		listView.setonRefreshListener(new OnRefreshListener() {    
+		listView.setonRefreshListener(new OnRefreshListener() {
 			public void onRefresh() {
 				listView.onRefreshComplete();
 			}
 		});
-		// px = (ImageView) findViewById(R.id.px);
-		// px.setOnClickListener(this);
 	}
 
 	class EditWather implements TextWatcher {
@@ -203,8 +191,12 @@ public class CircleUserActivity extends Activity implements
 				Utils.hideSoftInput(CircleUserActivity.this);
 				adapter.setData(listModles);
 				indexBar.setVisibility(View.VISIBLE);
+				editSearch.setCompoundDrawables(null, null, null, null);
 				return;
 			}
+			Drawable del = getResources().getDrawable(R.drawable.del);
+			del.setBounds(0, 0, del.getMinimumWidth(), del.getMinimumHeight());
+			editSearch.setCompoundDrawables(null, null, del, null);
 			indexBar.setVisibility(View.GONE);
 			searchListModles.clear();
 			for (int i = 0; i < listModles.size(); i++) {
@@ -256,6 +248,7 @@ public class CircleUserActivity extends Activity implements
 
 	@Override
 	public void onTouchingLetterChanged(String s) {
+		indexBar.getBackground().setAlpha(200);
 		selectedChar.setText(s);
 		selectedChar.setVisibility(View.VISIBLE);
 		position = (findIndexer(s)) + 2;
@@ -264,6 +257,7 @@ public class CircleUserActivity extends Activity implements
 
 	@Override
 	public void onTouchUp() {
+		indexBar.getBackground().setAlpha(0);
 		selectedChar.setVisibility(View.GONE);
 		listView.setSelection(position);
 
@@ -272,15 +266,43 @@ public class CircleUserActivity extends Activity implements
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		int position = arg2 - 2;
-		String pid = listModles.get(position).getId();
+		String pid = "";
+		String uid = "";
+		String iconImg = "";
+		String username = "";
+		if (searchListModles.size() > 0) {
+			uid = searchListModles.get(position).getUid();
+			iconImg = searchListModles.get(position).getImg();
+			username = searchListModles.get(position).getName();
+			pid = searchListModles.get(position).getId();
+
+		} else {
+			uid = listModles.get(position).getUid();
+			iconImg = listModles.get(position).getImg();
+			username = listModles.get(position).getName();
+			pid = listModles.get(position).getId();
+		}
 		Intent it = new Intent();
 		it.setClass(this, UserInfoActivity.class);
 		it.putExtra("cid", cid);
 		it.putExtra("pid", pid);
-		it.putExtra("username", listModles.get(position).getName());
-		it.putExtra("userlistname", circleUser);
-		it.putExtra("iconImg", listModles.get(position).getImg());
+		it.putExtra("uid", uid);
+		it.putExtra("username", username);
+		it.putExtra("iconImg", iconImg);
 		startActivity(it);
+		this.getParent().overridePendingTransition(R.anim.in_from_right,
+				R.anim.out_to_left);
+
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			finish();
+			getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
+		}
+		return super.onKeyDown(keyCode, event);
 
 	}
 
@@ -289,6 +311,8 @@ public class CircleUserActivity extends Activity implements
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			this.getParent().overridePendingTransition(R.anim.right_in,
+					R.anim.right_out);
 			break;
 		case R.id.btadd:
 			Intent it = new Intent();
@@ -297,6 +321,9 @@ public class CircleUserActivity extends Activity implements
 			it.putExtra("type", "add");// 添加成员
 			it.putExtra("cirName", txtciecleName.getText().toString());
 			startActivity(it);
+			this.getParent().overridePendingTransition(R.anim.in_from_right,
+					R.anim.out_to_left);
+
 			break;
 		case R.id.btnAccetpt:
 			acceptOrRefuse("/circles/iacceptInvitation");
@@ -306,10 +333,7 @@ public class CircleUserActivity extends Activity implements
 			acceptOrRefuse("/circles/irefuseInvitation");
 			status = 0;
 			break;
-		// case R.id.px:
-		// UserSortPopwindow pop = new UserSortPopwindow(this, v);
-		// pop.show();
-		// break;
+
 		default:
 			break;
 		}
@@ -328,8 +352,8 @@ public class CircleUserActivity extends Activity implements
 		PostAsyncTask task = new PostAsyncTask(this, map, url);
 		task.setTaskCallBack(this);
 		task.execute();
-		progressDialog = new ProgressDialog(this);
-		progressDialog.dismiss();
+		progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
+		progressDialog.show();
 	}
 
 	@Override
@@ -337,7 +361,6 @@ public class CircleUserActivity extends Activity implements
 		if (progressDialog != null) {
 			progressDialog.dismiss();
 		}
-		DBUtils.close();
 		super.onDestroy();
 	}
 
@@ -356,7 +379,11 @@ public class CircleUserActivity extends Activity implements
 			}
 			if (status == 1) {
 				Home.acceptOrRefuseInvite(cid, false);
-
+			} else {
+				Home.exitCircle(cid);
+				finish();
+				this.getParent().overridePendingTransition(R.anim.right_in,
+						R.anim.right_out);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

@@ -8,16 +8,34 @@ package com.changlianxi.modle;
  */
 public class NewsModle {
 	private String cid = "";
-	private String id;// 动态ID
-	private String type;// 动态类型
-	private String user1;// 第一关联用户ID
-	private String user2;// 第二关联用户ID
-	private String person2;// 第二关联成员ID
-	private String createdTime;// 动态创建时间
-	private String content;// 动态内容
-	private String detail;// 动态详情
+	private String id = "";// 动态ID
+	private String type = "";// 动态类型
+	private String user1 = "";// 第一关联用户ID
+	private String user2 = "";// 第二关联用户ID
+	private String person2 = "";// 第二关联成员ID
+	private String createdTime = "";// 动态创建时间
+	private String content = "";// 动态内容
+	private String detail = "";// 动态详情
 	private String user1Name = "";
 	private String user2Name = "";
+	private String avatarUrl = "";
+	private String need_approve = "";// 是否需要同意/忽略，1-YES，0-NO
+
+	public String getNeed_approve() {
+		return need_approve;
+	}
+
+	public void setNeed_approve(String need_approve) {
+		this.need_approve = need_approve;
+	}
+
+	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+
+	public void setAvatarUrl(String avatarUrl) {
+		this.avatarUrl = avatarUrl;
+	}
 
 	public String getUser1Name() {
 		return user1Name;

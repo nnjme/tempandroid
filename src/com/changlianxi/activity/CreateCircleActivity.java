@@ -10,8 +10,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,7 +19,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -41,26 +39,26 @@ import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
 import com.changlianxi.view.Home;
 
-public class CreateCircleActivity extends Activity implements OnClickListener,
-		UpLoadPic, PostCallBack {
+public class CreateCircleActivity extends BaseActivity implements
+		OnClickListener, UpLoadPic, PostCallBack {
 	private List<SmsPrevieModle> contactsList = new ArrayList<SmsPrevieModle>();
 	private List<SmsPrevieModle> smsList = new ArrayList<SmsPrevieModle>();// 展示使用
 	private ImageView btnBack;
-	private ImageView editClean;
 	private EditText editCirName;
 	private CircularImage cirImg;
 	private SelectPicPopwindow popWindow;
 	private String cirIconPath = "";
 	private Button createCir;
 	private EditText description;
-	private ProgressDialog progressDialog;
+	private Dialog progressDialog;
 	private String cid = "";// 创建圈子返回的uid 邀请成员和上传 logo用
 	private String type;// more 标示 邀请多个成员；one标示 添加一个成员
 	private MemberInfoModle infoModle;
@@ -72,18 +70,16 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_create_ciecle);
+		CLXApplication.addInviteActivity(this);
 		getActivityValue();
 		btnBack = (ImageView) findViewById(R.id.back);
 		btnBack.setOnClickListener(this);
-		editClean = (ImageView) findViewById(R.id.editClean);
-		editClean.setOnClickListener(this);
 		editCirName = (EditText) findViewById(R.id.circleName);
 		description = (EditText) findViewById(R.id.description);
 		cirImg = (CircularImage) findViewById(R.id.circleIcon);
+		cirImg.setImageResource(R.drawable.pic);
 		cirImg.setOnClickListener(this);
-		// WigdtContorl.setViewWidth(cirImg, this, 4, 5, 15, 0, 5);
 		createCir = (Button) findViewById(R.id.createCircle);
 		createCir.setOnClickListener(this);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
@@ -179,6 +175,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		intent.setClass(CreateCircleActivity.this, SmsPreviewActivity.class);
 		startActivity(intent);
 		finish();
+		Utils.rightOut(this);
+
 	}
 
 	/**
@@ -192,21 +190,22 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	 */
 	private void getDetails(String details) {
 		String detail[] = details.split(";");
+		String name = DBUtils.getMyName(SharedUtils.getString("uid", ""));
 		for (int i = 0; i < detail.length; i++) {
 			String str[] = detail[i].split(",");
 			if (str[0].equals("1")) {
-				System.out.println("name:" + contactsList.get(i).getName()
-						+ "  code:" + str[2]);
 				if (str[2].equals("") || str[2] == null) {
 					str[2] = "null";
+					code += str[2];
+					continue;
 				}
 				code += str[2];
 				cmids += str[3] + ",";
 				SmsPrevieModle modle = new SmsPrevieModle();
-				modle.setContent("亲爱的" + contactsList.get(i).getName()
-						+ ",邀请您加入" + editCirName.getText().toString()
-						+ "圈子.您可以访问http://clx.teeker.com/a/b/" + str[2]
-						+ "查看详情");
+				String data = getResources().getString(R.string.sms_content);
+				data = String.format(data, contactsList.get(i).getName(), name,
+						editCirName.getText().toString(), str[2]);
+				modle.setContent(data);
 				modle.setName(contactsList.get(i).getName());
 				modle.setNum(contactsList.get(i).getNum());
 				smsList.add(modle);
@@ -232,7 +231,6 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			map.put("description", description.getText().toString());
 			map.put("roles", "");
 			String result = HttpUrlHelper.postData(map, "/circles/iadd");
-			Logger.debug(this, "CreateCirTask:" + result);
 			return result;
 		}
 
@@ -250,7 +248,8 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(CreateCircleActivity.this);
+			progressDialog = DialogUtil.getWaitDialog(
+					CreateCircleActivity.this, "请稍后");
 			progressDialog.show();
 		}
 	}
@@ -267,7 +266,6 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			int rt = object.getInt("rt");
 			if (rt == 1) {
 				cid = object.getString("cid");
-				insertDB(cid);
 				return true;
 			} else {
 				Utils.showToast("圈子创建失败!");
@@ -305,11 +303,10 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
-			break;
-		case R.id.editClean:
-			editCirName.setText("");
+			Utils.rightOut(this);
 			break;
 		case R.id.circleIcon:
+			Utils.hideSoftInput(this);
 			popWindow = new SelectPicPopwindow(this, v);
 			popWindow.show();
 			break;
@@ -330,6 +327,7 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void upLoadFinish(boolean flag) {
+		insertDB(cid);// logo上传后更新本地圈子列表
 		if (flag) {
 			if (type.equals("one")) {// 上传单个成员
 				IiviteOneMember();
@@ -340,17 +338,18 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 			task.setTaskCallBack(new IinviteUser() {
 
 				@Override
-				public void inviteUser(String rt, String details) {
+				public void inviteUser(String rt, String details, String err) {
 					if (rt.equals("1")) {
 						getDetails(details);
-						Utils.showToast("邀请成功！");
-						if (code.contains("null")) {
+						if (code.contains("null") && smsList.size() == 0) {
 							finish();
+							CLXApplication.exitSmsInvite();
+							Utils.rightOut(CreateCircleActivity.this);
 							return;
 						}
 						intentSmsPreviewActivity();
 					} else {
-						Utils.showToast("邀请失败！");
+						Utils.showToast(ErrorCodeUtil.convertToChines(err));
 					}
 				}
 			});
@@ -366,19 +365,14 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void taskFinish(String result) {
-		// String rep = ""; // 该成员是否已经存在1-YES,0-NO
 		try {
 			JSONObject object = new JSONObject(result);
 			int rt = object.getInt("rt");
+			String rep = "";
 			if (rt == 1) {
+				rep = object.getString("rep");
 				pid = object.getString("pid");
-				// rep = object.getString("rep");
 				cmids = object.getString("cmid");
-				// if (rep.equals("1")) {
-				// Utils.showToast("该用户已存在");
-				// // finish();// 已经注册直接返回
-				// return;
-				// }
 				if (!infoModle.getAvator().equals("")) {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("cid", cid);
@@ -404,7 +398,14 @@ public class CreateCircleActivity extends Activity implements OnClickListener,
 					return;
 				}
 				Utils.showToast("添加成功");
+				if (rep.equals("1")) {
+					finish();
+					CLXApplication.exitSmsInvite();
+					Utils.rightOut(this);
+					return;
+				}
 				intentSmsPreviewActivity();
+
 			} else {
 				Utils.showToast("添加失败");
 				progressDialog.dismiss();

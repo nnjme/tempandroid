@@ -6,7 +6,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/dip110"
         android:background="@drawable/top_bg"
         android:gravity="center_vertical" >
 
@@ -33,17 +33,25 @@
                 android:visibility="gone" />
         </LinearLayout>
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:scaleType="fitXY"
+            android:src="@drawable/top_line" />
+
         <TextView
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dip"
             android:text="设置"
             android:textColor="@color/white"
-            android:textSize="@dimen/titleSize" />
+            android:textSize="@dimen/sp42" />
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/parent"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:background="@color/white" >
@@ -52,7 +60,7 @@
             android:id="@+id/scrollView1"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
-            android:layout_margin="10dip" >
+            android:scrollbars="none" >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -60,219 +68,193 @@
                 android:orientation="vertical" >
 
                 <LinearLayout
-                    android:id="@+id/setNickName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input_top_radius"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
-
-                    <TextView
-                        android:id="@+id/textView2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="设置用户称呼"
-                        android:textColor="@color/black"
-                        android:textSize="20sp" />
-
-                    <ImageView
-                        android:id="@+id/imageView1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/angle_right" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
-
-                <LinearLayout
                     android:id="@+id/revisePasswordWord"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
+                    android:layout_height="@dimen/scale119dip"
+                    android:gravity="center_vertical" >
 
                     <TextView
                         android:id="@+id/textView2"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dip"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/scale40dip"
                         android:layout_weight="1"
                         android:text="修改密码"
                         android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:textSize="@dimen/scale34sp" />
 
                     <ImageView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/scale20dip"
                         android:src="@drawable/angle_right" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
+                    android:background="#d1d1d1" />
 
                 <LinearLayout
                     android:id="@+id/adviceFeedBack"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
+                    android:layout_height="@dimen/scale119dip"
+                    android:background="@color/f6"
+                    android:gravity="center_vertical" >
 
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/scale40dip"
                         android:layout_weight="1"
                         android:text="意见反馈"
                         android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:textSize="@dimen/scale34sp" />
 
                     <ImageView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/scale20dip"
                         android:src="@drawable/angle_right" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
+                    android:background="#d1d1d1" />
 
                 <LinearLayout
                     android:id="@+id/newVersion"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
+                    android:layout_height="@dimen/scale119dip"
+                    android:gravity="center_vertical" >
 
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/scale40dip"
                         android:layout_weight="1"
                         android:text="版本更新"
                         android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:textSize="@dimen/scale34sp" />
 
                     <ImageView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/scale20dip"
                         android:src="@drawable/angle_right" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
+                    android:background="#d1d1d1" />
 
                 <LinearLayout
                     android:id="@+id/aboutCLX"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
+                    android:layout_height="@dimen/scale119dip"
+                    android:background="@color/f6"
+                    android:gravity="center_vertical" >
 
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/scale40dip"
                         android:layout_weight="1"
                         android:text="关于常联系"
                         android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:textSize="@dimen/scale34sp" />
 
                     <ImageView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/scale20dip"
                         android:src="@drawable/angle_right" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
+                    android:background="#d1d1d1" />
 
                 <LinearLayout
                     android:id="@+id/problem"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
+                    android:layout_height="@dimen/scale119dip"
+                    android:gravity="center_vertical" >
 
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/scale40dip"
                         android:layout_weight="1"
                         android:text="常见问题"
                         android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:textSize="@dimen/scale34sp" />
 
                     <ImageView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/scale20dip"
                         android:src="@drawable/angle_right" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
+                    android:background="#d1d1d1" />
 
                 <LinearLayout
                     android:id="@+id/notices"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/input"
-                    android:gravity="center_vertical"
-                    android:padding="20dip" >
+                    android:layout_height="@dimen/scale119dip"
+                    android:background="@color/f6"
+                    android:gravity="center_vertical" >
 
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/scale40dip"
                         android:layout_weight="1"
                         android:text="使用条款和隐私说明"
                         android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:textSize="@dimen/scale34sp" />
 
                     <ImageView
                         android:id="@+id/imageView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/scale20dip"
                         android:src="@drawable/angle_right" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
-                    android:background="#ffe0e0e0" />
+                    android:background="#d1d1d1" />
 
                 <Button
                     android:id="@+id/exitLogin"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dip"
+                    android:layout_height="@dimen/scale128dip"
+                    android:layout_marginLeft="@dimen/scale20dip"
+                    android:layout_marginRight="@dimen/scale20dip"
+                    android:layout_marginTop="@dimen/scale30dip"
                     android:background="@drawable/btn"
-                    android:paddingBottom="10dip"
-                    android:paddingTop="10dip"
                     android:text="退出登录"
                     android:textColor="@color/white"
-                    android:textSize="23sp" />
+                    android:textSize="@dimen/scale43sp" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

@@ -2,7 +2,6 @@ package com.changlianxi.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -10,7 +9,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
-import com.changlianxi.activity.R;
 import com.changlianxi.util.Utils;
 
 /**
@@ -42,11 +40,10 @@ public class FlipperLayout extends ViewGroup {
 	public FlipperLayout(Context context) {
 		super(context);
 		mScroller = new Scroller(context);
-		mWidth = (int) TypedValue.applyDimension(
-				TypedValue.COMPLEX_UNIT_DIP,
-				Utils.getSecreenWidth(context)
-						- getResources().getDimension(R.dimen.width),
-				getResources().getDisplayMetrics());
+		// mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+		// Utils.getSecreenWidth(context) / 3, getResources()
+		// .getDisplayMetrics());
+		mWidth = Utils.getSecreenWidth(context) / 2;
 
 	}
 
@@ -77,6 +74,7 @@ public class FlipperLayout extends ViewGroup {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public boolean dispatchTouchEvent(MotionEvent ev) {
 		obtainVelocityTracker(ev);
 		switch (ev.getAction()) {
@@ -125,6 +123,7 @@ public class FlipperLayout extends ViewGroup {
 		return super.dispatchTouchEvent(ev);
 	}
 
+	@SuppressWarnings("deprecation")
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 		obtainVelocityTracker(ev);
 		switch (ev.getAction()) {
@@ -157,6 +156,7 @@ public class FlipperLayout extends ViewGroup {
 		return super.onInterceptTouchEvent(ev);
 	}
 
+	@SuppressWarnings("deprecation")
 	public boolean onTouchEvent(MotionEvent event) {
 		obtainVelocityTracker(event);
 		switch (event.getAction()) {

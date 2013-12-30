@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import android.app.Activity;
+import android.app.Dialog;
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -16,6 +16,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -25,28 +26,36 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.ContactModle;
+import com.changlianxi.modle.MemberModle;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.task.IinviteUserTask;
 import com.changlianxi.task.IinviteUserTask.IinviteUser;
+import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.PinyinUtils;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.CircularImage;
 import com.changlianxi.view.QuickAlphabeticBar;
-import com.changlianxi.view.SearchEditText;
 import com.changlianxi.view.QuickAlphabeticBar.OnTouchingLetterChangedListener;
 import com.changlianxi.view.QuickAlphabeticBar.touchUp;
+import com.changlianxi.view.SearchEditText;
 
 /**
  * 从通讯录导入圈子程序界面
@@ -54,7 +63,7 @@ import com.changlianxi.view.QuickAlphabeticBar.touchUp;
  * @author teeker_bin
  * 
  */
-public class SelectContactsActivity extends Activity implements
+public class SelectContactsActivity extends BaseActivity implements
 		OnClickListener, OnItemClickListener, OnTouchingLetterChangedListener,
 		touchUp {
 	private ListView listview;// 显示联系人的列表
@@ -76,12 +85,14 @@ public class SelectContactsActivity extends Activity implements
 	private QuickAlphabeticBar indexBar;// 右侧字母拦
 	private TextView selectedChar;// 显示选择字母
 	private int position;// 当前字母子listview中所对应的位置
+	private SearchEditText editSearch;
+	private HorizontalScrollView hScroll;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_select_contacts);
+		CLXApplication.addInviteActivity(this);
 		type = getIntent().getStringExtra("type");
 		if (type.equals("add")) {
 			cid = getIntent().getStringExtra("cid");
@@ -95,7 +106,8 @@ public class SelectContactsActivity extends Activity implements
 	}
 
 	private void init() {
-		Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // 联系人的Uri
+		Uri uri = Uri.parse("content://com.android.contacts/data/phones"); // 联系人的Uri
+		// 联系人的Uri
 		String[] projection = {
 				ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
 				ContactsContract.CommonDataKinds.Phone.NUMBER, "sort_key",
@@ -112,7 +124,6 @@ public class SelectContactsActivity extends Activity implements
 	 * 
 	 */
 	private class MyAsyncQueryHandler extends AsyncQueryHandler {
-
 		public MyAsyncQueryHandler(ContentResolver cr) {
 			super(cr);
 		}
@@ -128,7 +139,7 @@ public class SelectContactsActivity extends Activity implements
 				for (int i = 0; i < cursor.getCount(); i++) {
 					cursor.moveToPosition(i);
 					String name = cursor.getString(0);
-					String number = cursor.getString(1);
+					String number = cursor.getString(1).replace(" ", "");
 					if (!Utils.isPhoneNum(StringUtils.cutHead(number, "+86"))) {
 						continue;
 					}
@@ -142,13 +153,10 @@ public class SelectContactsActivity extends Activity implements
 					modle.setPhotoid(photoId);
 					modle.setKey_pinyin_fir(PinyinUtils.getPinyinFrt(name));
 					modle.setContactid((long) contactId);
-					// listModle.add(modle);
 					adapter.add(modle);
 
 				}
-				// if (listModle.size() > 0) {
-				// adapter.setData(listModle);
-				// }
+
 			}
 		}
 
@@ -169,18 +177,32 @@ public class SelectContactsActivity extends Activity implements
 		listview.setOnItemClickListener(this);
 		listview.setCacheColorHint(0);
 		View view = LayoutInflater.from(this).inflate(R.layout.header, null);
-		SearchEditText editSearch = (SearchEditText) view
-				.findViewById(R.id.search);
+		editSearch = (SearchEditText) view.findViewById(R.id.search);
 		editSearch.addTextChangedListener(new EditWather());
 		listview.addHeaderView(view);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("添加第一批成员");
 		indexBar = (QuickAlphabeticBar) findViewById(R.id.indexBar);
 		indexBar.setOnTouchingLetterChangedListener(this);
-		indexBar.getBackground().setAlpha(125);
+		indexBar.getBackground().setAlpha(0);
 		indexBar.setOnTouchUp(this);
 		selectedChar = (TextView) findViewById(R.id.selected_tv);
 		selectedChar.setVisibility(View.INVISIBLE);
+		hScroll = (HorizontalScrollView) findViewById(R.id.horizontalScrollView1);
+		listview.setOnScrollListener(new OnScrollListener() {
+
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				Utils.hideSoftInput(SelectContactsActivity.this);
+			}
+
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem,
+					int visibleItemCount, int totalItemCount) {
+
+			}
+		});
+
 	}
 
 	class EditWather implements TextWatcher {
@@ -192,8 +214,12 @@ public class SelectContactsActivity extends Activity implements
 				searchListModles.clear();
 				indexBar.setVisibility(View.VISIBLE);
 				Utils.hideSoftInput(SelectContactsActivity.this);
+				editSearch.setCompoundDrawables(null, null, null, null);
 				return;
 			}
+			Drawable del = getResources().getDrawable(R.drawable.del);
+			del.setBounds(0, 0, del.getMinimumWidth(), del.getMinimumHeight());
+			editSearch.setCompoundDrawables(null, null, del, null);
 			indexBar.setVisibility(View.GONE);
 			layBot.setVisibility(View.GONE);
 			searchListModles.clear();
@@ -203,6 +229,7 @@ public class SelectContactsActivity extends Activity implements
 				String pinyinFir = listModle.get(i).getKey_pinyin_fir()
 						.toLowerCase();
 				String mobileNum = listModle.get(i).getNum();
+
 				if (name.contains(key) || pinyin.contains(key)
 						|| pinyinFir.contains(key) || mobileNum.contains(key)) {
 					ContactModle modle = listModle.get(i);
@@ -241,20 +268,24 @@ public class SelectContactsActivity extends Activity implements
 
 	}
 
-	private void addImg(Bitmap bmp, String tag) {
-		ImageView img = new ImageView(this);
-		int width = Utils.getSecreenWidth(this);
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width / 7,
-				width / 7);
-		lp.setMargins(3, 3, 3, 3);
-		img.setLayoutParams(lp);
-		img.setTag(tag);
+	private void addImg(Bitmap bmp, String tag, String name) {
+		View view = LayoutInflater.from(this).inflate(
+				R.layout.select_contact_buttom, null);
+		CircularImage img = (CircularImage) view.findViewById(R.id.img);
+		TextView lastName = (TextView) view.findViewById(R.id.lastName);
+		lastName.setText(name.substring(name.length() - 1));
+		view.setTag(tag);
 		if (bmp == null) {
-			img.setImageResource(R.drawable.pic);
+			lastName.setVisibility(View.VISIBLE);
+			img.setVisibility(View.GONE);
 		} else {
 			img.setImageBitmap(bmp);
+			lastName.setVisibility(View.GONE);
+			img.setVisibility(View.VISIBLE);
 		}
-		addicon.addView(img);
+		addicon.addView(view);
+
+		// hScroll.scrollBy(hScroll.getRight(), 0);
 	}
 
 	@Override
@@ -268,7 +299,8 @@ public class SelectContactsActivity extends Activity implements
 			adapter.notifyDataSetChanged();
 			if (holder.check.isChecked()) {
 				Bitmap bmp = searchListModles.get(position).getBmp();
-				addImg(bmp, position + "");
+				addImg(bmp, position + "", searchListModles.get(position)
+						.getName());
 			} else {
 				delicon(position + "");
 			}
@@ -279,7 +311,7 @@ public class SelectContactsActivity extends Activity implements
 		adapter.notifyDataSetChanged();
 		if (holder.check.isChecked()) {
 			Bitmap bmp = listModle.get(position).getBmp();
-			addImg(bmp, position + "");
+			addImg(bmp, position + "", listModle.get(position).getName());
 		} else {
 			delicon(position + "");
 		}
@@ -292,6 +324,8 @@ public class SelectContactsActivity extends Activity implements
 		switch (v.getId()) {
 		case R.id.back:
 			finish();
+			Utils.rightOut(this);
+
 			break;
 		case R.id.btnfinish:
 			List<SmsPrevieModle> Modles = new ArrayList<SmsPrevieModle>();
@@ -323,6 +357,7 @@ public class SelectContactsActivity extends Activity implements
 			intent.putExtra("type", "more");
 			startActivity(intent);
 			finish();
+			Utils.rightOut(this);
 			break;
 		default:
 			break;
@@ -337,25 +372,51 @@ public class SelectContactsActivity extends Activity implements
 	 */
 	private void addContacts(final List<SmsPrevieModle> contactsList) {
 		// 添加从通讯录选择的联系人
+		final Dialog dialog = DialogUtil.getWaitDialog(this, "请稍后");
+		dialog.show();
 		IinviteUserTask task = new IinviteUserTask(cid, contactsList);
 		task.setTaskCallBack(new IinviteUser() {
 
 			@Override
-			public void inviteUser(String rt, String details) {
+			public void inviteUser(String rt, String details, String err) {
+				dialog.dismiss();
 				if (rt.equals("1")) {
 					getDetails(details, contactsList);
-					Utils.showToast("添加成功！");
-					if (code.contains("null")) {
+					setModle(contactsList);
+					if (code.contains("null") && smsList.size() == 0) {
+						Utils.showToast("邀请成员已存在圈子中");
 						finish();
+						CLXApplication.exitSmsInvite();
+						Utils.rightOut(SelectContactsActivity.this);
 						return;
 					}
 					intentSmsPreviewActivity();
 				} else {
-					Utils.showToast("邀请失败！");
+					Utils.showToast(ErrorCodeUtil.convertToChines(err));
 				}
 			}
 		});
 		task.execute();
+	}
+
+	/**
+	 * 添加完成之后的返回值 供列表界面刷新使用
+	 * 
+	 * @return
+	 */
+	private void setModle(List<SmsPrevieModle> contactsList) {
+		List<MemberModle> listModles = new ArrayList<MemberModle>();
+		for (int i = 0; i < contactsList.size(); i++) {
+			MemberModle modle = new MemberModle();
+			String name = contactsList.get(i).getName();
+			modle.setName(name);
+			modle.setImg("");
+			modle.setSort_key(PinyinUtils.getPinyin(name));
+			listModles.add(modle);
+		}
+		finish();
+		Utils.rightOut(this);
+
 	}
 
 	/**
@@ -370,7 +431,10 @@ public class SelectContactsActivity extends Activity implements
 		intent.putExtra("cid", cid);
 		intent.setClass(this, SmsPreviewActivity.class);
 		startActivity(intent);
-		finish();
+		// finish();
+		// Utils.rightOut(this);
+		Utils.leftOutRightIn(this);
+
 	}
 
 	/**
@@ -384,21 +448,22 @@ public class SelectContactsActivity extends Activity implements
 	 */
 	private void getDetails(String details, List<SmsPrevieModle> contactsList) {
 		String detail[] = details.split(";");
+		String name = DBUtils.getMyName(SharedUtils.getString("uid", ""));
 		for (int i = 0; i < detail.length; i++) {
 			String str[] = detail[i].split(",");
 			if (str[0].equals("1")) {
-				System.out.println("name:" + contactsList.get(i).getName()
-						+ "  code:" + str[2]);
 				if (str[2].equals("") || str[2] == null) {
 					str[2] = "null";
+					code += str[2];
+					continue;
 				}
 				code += str[2];
 				cmids += str[3] + ",";
 				SmsPrevieModle modle = new SmsPrevieModle();
-				modle.setContent("亲爱的" + contactsList.get(i).getName()
-						+ ",邀请您加入" + cirName
-						+ "圈子.您可以访问http://clx.teeker.com/a/b/" + str[2]
-						+ "查看详情");
+				String data = getResources().getString(R.string.sms_content);
+				data = String.format(data, contactsList.get(i).getName(), name,
+						cirName, str[2]);
+				modle.setContent(data);
 				modle.setName(contactsList.get(i).getName());
 				modle.setNum(contactsList.get(i).getNum());
 				smsList.add(modle);
@@ -406,14 +471,6 @@ public class SelectContactsActivity extends Activity implements
 
 		}
 
-	}
-
-	private void setViewWidth(ImageView img) {
-		int width = Utils.getSecreenWidth(this);
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width / 7,
-				width / 7);
-		lp.setMargins(5, 5, 5, 5);
-		img.setLayoutParams(lp);
 	}
 
 	class ContactsAdapter extends BaseAdapter {
@@ -433,22 +490,28 @@ public class SelectContactsActivity extends Activity implements
 				holder.laybg = (LinearLayout) convertView
 						.findViewById(R.id.laybg);
 				holder.name = (TextView) convertView.findViewById(R.id.name);
-				holder.img = (ImageView) convertView.findViewById(R.id.img);
+				holder.img = (CircularImage) convertView.findViewById(R.id.img);
 				holder.check = (CheckBox) convertView
 						.findViewById(R.id.checkBox1);
 				holder.num = (TextView) convertView.findViewById(R.id.num);
+				holder.lastName = (TextView) convertView
+						.findViewById(R.id.lastName);
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
-			setViewWidth(holder.img);
+			// setViewWidth(holder.img);
+			String name = listData.get(position).getName();
 			// 绘制联系人名称
-			holder.name.setText(listData.get(position).getName());
+			holder.name.setText(name);
+			holder.lastName.setText(name.substring(name.length() - 1));
 			// 绘制联系人号码
 			holder.num.setText(listData.get(position).getNum());
 			// 绘制联系人头像
 			if (0 == listModle.get(position).getPhotoid()) {
-				holder.img.setImageResource(R.drawable.pic);
+				// holder.img.setImageResource(R.drawable.pic_bg);
+				holder.img.setVisibility(View.GONE);
+				holder.lastName.setVisibility(View.VISIBLE);
 			} else {
 				Uri uri = ContentUris.withAppendedId(
 						ContactsContract.Contacts.CONTENT_URI,
@@ -458,7 +521,11 @@ public class SelectContactsActivity extends Activity implements
 								SelectContactsActivity.this
 										.getContentResolver(), uri);
 				Bitmap contactPhoto = BitmapFactory.decodeStream(input);
+				// Bitmap roundPhoto = BitmapUtils.toRoundBitmap(contactPhoto);
+				listModle.get(position).setBmp(contactPhoto);
 				holder.img.setImageBitmap(contactPhoto);
+				holder.lastName.setVisibility(View.GONE);
+				holder.img.setVisibility(View.VISIBLE);
 			}
 			holder.check.setChecked(listData.get(position).isChecked());
 			if (position % 2 == 0) {
@@ -548,7 +615,8 @@ public class SelectContactsActivity extends Activity implements
 		TextView name;
 		CheckBox check;
 		TextView num;
-		ImageView img;
+		CircularImage img;
+		TextView lastName;
 	}
 
 	/**
@@ -571,6 +639,7 @@ public class SelectContactsActivity extends Activity implements
 
 	@Override
 	public void onTouchingLetterChanged(String s) {
+		indexBar.getBackground().setAlpha(200);
 		selectedChar.setText(s);
 		selectedChar.setVisibility(View.VISIBLE);
 		position = (findIndexer(s)) + 1;
@@ -579,6 +648,7 @@ public class SelectContactsActivity extends Activity implements
 
 	@Override
 	public void onTouchUp() {
+		indexBar.getBackground().setAlpha(0);
 		selectedChar.setVisibility(View.GONE);
 		listview.setSelection(position);
 

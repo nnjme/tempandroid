@@ -14,7 +14,6 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
-import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.StringUtils;
@@ -68,15 +67,17 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 					String img = imgObj.getString("img");
 					im.setId(imgId);
 					im.setImg(img);
-					im.setSamllImg(StringUtils.JoinString(img, "_200x200"));
+					im.setImg_200(StringUtils.JoinString(img, "_200x200"));
+					im.setImg_100(StringUtils.JoinString(img, "_100x100"));
+					im.setImg_60(StringUtils.JoinString(img, "_60x60"));
+					im.setImg_500(StringUtils.JoinString(img, "_500x500"));
+
 					imgModle.add(im);
 				}
 				MemberInfoModle md = DBUtils.selectNameAndImgByID("circle"
 						+ cid, uid);
-				if (md != null) {
-					modle.setName(md.getName());
-					modle.setPersonImg(md.getAvator());
-				}
+				modle.setName(md.getName());
+				modle.setPersonImg(md.getAvator());
 				if (isPraise.equals("1")) {
 					modle.setIspraise(true);
 				} else {

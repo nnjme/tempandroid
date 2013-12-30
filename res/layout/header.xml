@@ -7,14 +7,14 @@
     <com.changlianxi.view.SearchEditText
         android:id="@+id/search"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dip"
-        android:layout_marginLeft="7dip"
-        android:layout_marginRight="7dip"
-        android:layout_marginTop="10dip"
+        android:layout_height="50dip"
+        android:layout_marginBottom="14dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_marginTop="13dip"
         android:background="@drawable/search"
-        android:drawableRight="@drawable/del"
         android:hint="搜索成员"
+        android:paddingLeft="48dip"
         android:singleLine="true"
         android:textColor="@color/a3" >
     </com.changlianxi.view.SearchEditText>

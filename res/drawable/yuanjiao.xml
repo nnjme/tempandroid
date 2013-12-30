@@ -4,10 +4,10 @@
     <solid android:color="#DBDBDB" />
 
     <corners
-        android:bottomLeftRadius="6dp"
-        android:bottomRightRadius="6dp"
-        android:topLeftRadius="6dp"
-        android:topRightRadius="6dp" >
+        android:bottomLeftRadius="9dp"
+        android:bottomRightRadius="9dp"
+        android:topLeftRadius="9dp"
+        android:topRightRadius="9dp" >
     </corners>
 
 </shape>

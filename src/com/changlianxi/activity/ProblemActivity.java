@@ -1,10 +1,10 @@
 package com.changlianxi.activity;
 
-import android.app.Activity;
+import com.changlianxi.util.Utils;
+
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,7 +15,7 @@ import android.widget.TextView;
  * @author teeker_bin
  * 
  */
-public class ProblemActivity extends Activity {
+public class ProblemActivity extends BaseActivity {
 	private ImageView back;
 	private TextView titleTxt;
 	private WebView wb;
@@ -23,7 +23,6 @@ public class ProblemActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_problem);
 		back = (ImageView) findViewById(R.id.back);
 		back.setOnClickListener(new OnClickListener() {
@@ -31,6 +30,8 @@ public class ProblemActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				finish();
+				Utils.rightOut(ProblemActivity.this);
+
 			}
 		});
 		titleTxt = (TextView) findViewById(R.id.titleTxt);

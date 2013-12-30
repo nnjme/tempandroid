@@ -28,10 +28,13 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 	private Map<String, Object> map;
 	private String url;
 	private List<NewsModle> listModle = new ArrayList<NewsModle>();
+	private String cid = "";
 
-	public GetNewsListTask(Context context, Map<String, Object> map, String url) {
+	public GetNewsListTask(Context context, Map<String, Object> map,
+			String url, String cid) {
 		this.map = map;
 		this.url = url;
+		this.cid = cid;
 	}
 
 	public void setTaskCallBack(GetNewsList callBack) {
@@ -43,7 +46,7 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 		String result = HttpUrlHelper.postData(map, url);
 		try {
 			JSONObject jsonobject = new JSONObject(result);
-			String cid = jsonobject.getString("cid");
+			String usercid = jsonobject.getString("cid");
 			JSONArray jsonarray = jsonobject.getJSONArray("news");
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject object = (JSONObject) jsonarray.opt(i);
@@ -56,14 +59,23 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 				String createdTime = object.getString("created");
 				String content = object.getString("content");
 				String detail = object.getString("detail");
+				String need_approve = object.getString("need_approve");
+				String user1Name = "";
+				String user2Name = "";
+				String avatarURL = "";
 				MemberInfoModle infomodle = DBUtils.findMemberInfo("circle"
-						+ cid, user1, person2, user2, cid);
-				modle.setUser1Name(infomodle.getName());
-				if (!user2.equals("0")) {
+						+ usercid, user1, person2, user2, usercid);
+				user1Name = infomodle.getName();
+				avatarURL = infomodle.getAvator();
+				modle.setUser1Name(user1Name);
+				modle.setAvatarUrl(avatarURL);
+				if (!user2.equals("0") || !person2.equals("0")) {
 					MemberInfoModle user2modle = DBUtils.findMemberInfo(
-							"circle" + cid, user2, person2, user2, cid);
-					modle.setUser2Name(user2modle.getName());
+							"circle" + usercid, user2, person2, user2, usercid);
+					user2Name = user2modle.getName();
+					modle.setUser2Name(user2Name);
 				}
+				modle.setNeed_approve(need_approve);
 				modle.setCid(cid);
 				modle.setContent(content);
 				modle.setCreatedTime(createdTime);
@@ -74,10 +86,10 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 				modle.setUser1(user1);
 				modle.setUser2(user2);
 				listModle.add(modle);
+
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return null;
 		}
 		return result;
 	}

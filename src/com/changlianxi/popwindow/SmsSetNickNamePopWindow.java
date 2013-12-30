@@ -23,13 +23,15 @@ public class SmsSetNickNamePopWindow {
 	private View view;
 	private View v;
 	private Button btnSetNickName;
+	private int width;
 
 	public SmsSetNickNamePopWindow(Context context, View v,
-			OnClickListener lister) {
+			OnClickListener lister, int width) {
 		this.mContext = context;
 		view = LayoutInflater.from(mContext).inflate(
 				R.layout.sms_nickname_popwindow, null);
 		this.v = v;
+		this.width = width;
 		btnSetNickName = (Button) view.findViewById(R.id.btnSetNickName);
 		btnSetNickName.setOnClickListener(lister);
 		initPopwindow();
@@ -38,9 +40,9 @@ public class SmsSetNickNamePopWindow {
 	/**
 	 * 初始化popwindow
 	 */
+	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
-		popupWindow = new PopupWindow(view, LayoutParams.WRAP_CONTENT,
-				LayoutParams.WRAP_CONTENT);
+		popupWindow = new PopupWindow(view, width, LayoutParams.WRAP_CONTENT);
 		// 这个是为了点击“返回Back”也能使其消失，并且并不会影响你的背景（很神奇的）
 		popupWindow.setBackgroundDrawable(new BitmapDrawable());
 		// popupWindow.setAnimationStyle(R.style.AnimBottom);

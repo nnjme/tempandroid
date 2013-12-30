@@ -53,6 +53,7 @@ public class ListViewPopwindow implements OnItemClickListener {
 	/**
 	 * 初始化popwindow
 	 */
+	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
 		popupWindow = new PopupWindow(view, v.getWidth() - 20,
 				v.getHeight() * 4);

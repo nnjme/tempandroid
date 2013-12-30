@@ -6,7 +6,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/dip110"
         android:background="@drawable/top_bg"
         android:gravity="center_vertical" >
 
@@ -34,11 +34,21 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:scaleType="fitXY"
+            android:src="@drawable/top_line" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dip"
-            android:src="@drawable/title_circle" />
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="圈子"
+            android:textColor="#FFFFFF"
+            android:textSize="25sp" />
     </LinearLayout>
 
     <com.changlianxi.view.BounceScrollView
@@ -46,7 +56,8 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:background="@color/white"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:scrollbars="none" >
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -56,12 +67,13 @@
             <com.changlianxi.view.SearchEditText
                 android:id="@+id/search"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/margin20"
-                android:layout_marginRight="@dimen/margin20"
-                android:layout_marginTop="@dimen/margin30"
+                android:layout_height="50dip"
+                android:layout_marginLeft="10dip"
+                android:layout_marginRight="10dip"
+                android:layout_marginTop="13dip"
                 android:background="@drawable/search"
-                android:drawableRight="@drawable/del"
+                android:hint="搜索成员"
+                android:paddingLeft="48dip"
                 android:singleLine="true"
                 android:textColor="@color/a3"
                 android:visibility="gone" >
@@ -71,8 +83,9 @@
                 android:id="@+id/gridView1"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin42"
-                android:numColumns="3" >
+                android:layout_marginTop="14dip"
+                android:numColumns="3"
+                android:scrollbars="none" >
             </com.changlianxi.view.GrowthImgGridView>
 
             <ListView

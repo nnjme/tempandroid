@@ -54,9 +54,10 @@ public class DialogPopWindow implements OnClickListener {
 	/**
 	 * 初始化popwindow
 	 */
+	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
-		popupWindow = new PopupWindow(view, LayoutParams.FILL_PARENT,
-				LayoutParams.FILL_PARENT);
+		popupWindow = new PopupWindow(view, LayoutParams.MATCH_PARENT,
+				LayoutParams.MATCH_PARENT);
 		// 这个是为了点击�?返回Back”也能使其消失，并且并不会影响你的背景（很神奇的�?
 		popupWindow.setBackgroundDrawable(new BitmapDrawable());
 	}
@@ -94,7 +95,7 @@ public class DialogPopWindow implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		switch (view.getId()) {
+		switch (v.getId()) {
 		case R.id.ok:
 			String nickname = editNickName.getText().toString();
 			if (nickname.length() == 0) {

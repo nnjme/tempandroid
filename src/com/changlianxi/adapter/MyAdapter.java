@@ -17,9 +17,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.MemberModle;
-import com.changlianxi.util.ImageManager;
+import com.changlianxi.view.CircularImage;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * 用来显示圈子成员的自定义adapter
@@ -32,6 +35,8 @@ public class MyAdapter extends BaseAdapter {
 	private Context context;
 	private HashMap<String, Integer> alphaIndexer;// 保存每个索引在list中的位置�?-0，A-4，B-10�?
 	private String[] sections;// 每个分组的索引表【A,B,C,F...�?
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 
 	public MyAdapter(Context context, List<MemberModle> list) {
 		this.context = context;
@@ -49,11 +54,12 @@ public class MyAdapter extends BaseAdapter {
 		Collections.sort(sectionList);
 		sections = new String[sectionList.size()];
 		sectionList.toArray(sections);
+		options = CLXApplication.getOptions();
+		imageLoader = CLXApplication.getImageLoader();
 	}
 
 	@Override
 	public int getCount() {
-
 		return list.size();
 	}
 
@@ -81,7 +87,8 @@ public class MyAdapter extends BaseAdapter {
 			holder = new ViewHolder();
 			convertView = LayoutInflater.from(context).inflate(
 					R.layout.user_list_item, null);
-			holder.img = (ImageView) convertView.findViewById(R.id.userimg);
+			holder.imgAuth = (ImageView) convertView.findViewById(R.id.imgAuth);
+			holder.img = (CircularImage) convertView.findViewById(R.id.userimg);
 			holder.info = (TextView) convertView.findViewById(R.id.userinfo);
 			holder.name = (TextView) convertView.findViewById(R.id.username);
 			holder.alpha = (TextView) convertView.findViewById(R.id.alpha);
@@ -92,7 +99,12 @@ public class MyAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		holder.info.setText(list.get(position).getEmployer());
+		if (list.get(position).isAuth()) {
+			holder.imgAuth.setVisibility(View.VISIBLE);
+		} else {
+			holder.imgAuth.setVisibility(View.GONE);
+		}
+		holder.info.setText(list.get(position).getLocation());
 		holder.name.setText(list.get(position).getName());
 		holder.news.setText(list.get(position).getMobileNum());
 		showAlpha(position, holder);
@@ -104,10 +116,9 @@ public class MyAdapter extends BaseAdapter {
 		}
 		String path = list.get(position).getImg();
 		if (path.equals("") || path == null) {
-			holder.img.setBackgroundResource(R.drawable.hand_pic);
+			holder.img.setImageResource(R.drawable.head_bg);
 		} else {
-			ImageManager.from(context).displayImage(holder.img, path,
-					R.drawable.root_default, 100, 100);
+			imageLoader.displayImage(path, holder.img, options);
 		}
 		return convertView;
 	}
@@ -156,7 +167,8 @@ public class MyAdapter extends BaseAdapter {
 	}
 
 	class ViewHolder {
-		ImageView img;
+		ImageView imgAuth;
+		CircularImage img;
 		TextView info;
 		TextView news;
 		TextView name;

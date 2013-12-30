@@ -10,6 +10,24 @@
         android:layout_width="fill_parent"
         layout="@layout/title_bar" />
 
+    <LinearLayout
+        android:id="@+id/newsWarn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/scale83dip"
+        android:layout_below="@+id/top"
+        android:background="@drawable/yellow_bg"
+        android:gravity="center"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/newsCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="24条新动态"
+            android:textColor="#ff7800"
+            android:textSize="@dimen/scale28sp" />
+    </LinearLayout>
+
     <com.changlianxi.view.PullDownView
         android:id="@+id/PullDownlistView"
         android:layout_width="fill_parent"

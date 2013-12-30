@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TabHost;
 
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 
 /**
  * 点击圈子之后进入的界面
@@ -21,6 +22,7 @@ import com.changlianxi.util.SharedUtils;
  * @author teeker_bin
  * 
  */
+@SuppressWarnings("deprecation")
 public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private Button cy, lt, dt, cz;
 	private TabHost mTabHost;// 用来承载activity的TabHost
@@ -35,6 +37,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private boolean isNew;
 	private String type = "";// push 推送跳转
 	private static Activity context;
+	private String inviterID = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -42,11 +45,13 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_circle);
 		context = this;
+		CLXApplication.addActivity(this);
 		setInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 		id = getIntent().getStringExtra("cirID");
 		type = getIntent().getStringExtra("type");
 		ciecleName = getIntent().getStringExtra("name");
 		isNew = getIntent().getBooleanExtra("is_New", false);
+		inviterID = getIntent().getStringExtra("inviterID");
 		initIntent();
 		initview();
 		if (type.equals("push")) {
@@ -86,6 +91,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		intent.setClass(this, CircleUserActivity.class);
 		intent.putExtra("cirID", id);
 		intent.putExtra("is_New", isNew);
+		intent.putExtra("inviterID", inviterID);
 		intent.putExtra("cirName", ciecleName);
 		gintent = new Intent();
 		gintent.setClass(this, GrowthActivity.class);
@@ -102,7 +108,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	}
 
 	private void setSelectColor(View v) {
-		for (int i = 0; i < btParent.getChildCount() - 1; i++) {
+		for (int i = 0; i < btParent.getChildCount() - 2; i++) {
 			Button bt = (Button) btParent.getChildAt(i);
 			if (bt.getId() == v.getId()) {
 				bt.setTextColor(Color.BLACK);
@@ -111,6 +117,12 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 						R.color.default_font_color));
 			}
 		}
+
+	}
+
+	public void finishExit() {
+		finish();
+		Utils.rightOut(context);
 
 	}
 
@@ -138,7 +150,8 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 			intent.setClass(this, CircleInfoActivity.class);
 			intent.putExtra("cid", id);
 			startActivityForResult(intent, 1);
-			// startActivity(intent);
+			overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
+
 			break;
 		default:
 			break;
@@ -164,8 +177,13 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == 1) {
-			finish();
+		if (requestCode == 1 && data != null) {
+			boolean flag = data.getBooleanExtra("flag", false);
+			if (flag) {
+				finish();
+				Utils.rightOut(this);
+
+			}
 		}
 	}
 }

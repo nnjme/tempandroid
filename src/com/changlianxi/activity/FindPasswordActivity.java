@@ -6,8 +6,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,17 +16,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.EditWather;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Logger;
+import com.changlianxi.util.MD5;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyViewGroup;
 
@@ -37,8 +38,8 @@ import com.changlianxi.view.MyViewGroup;
  * @author teeker_bin
  * 
  */
-public class FindPasswordActivity extends Activity implements OnClickListener,
-		PostCallBack {
+public class FindPasswordActivity extends BaseActivity implements
+		OnClickListener, PostCallBack {
 	private MyViewGroup group;
 	private LayoutInflater flater;
 	private View find1, find2, find3;// 找回密码的三个界面
@@ -54,7 +55,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 	private String uid;
 	private String type = "";// 1 找回密码回调接口处理 2 验证码接口回调处理 3 设置密码接口回调处理4
 								// 重新发送验证码回调处理
-	private ProgressDialog pd;
+	private Dialog pd;
 	private Button btGetCode;// 注册界面重新获取验证码按钮
 	private int second = 60;// 用于重新获取验证码时间倒计时
 	private Handler mHandler = new Handler() {
@@ -82,7 +83,6 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_find_password);
 		group = (MyViewGroup) findViewById(R.id.myGroup);
 		flater = LayoutInflater.from(this);
@@ -140,11 +140,17 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 		case R.id.btnext:
 			// 找回密码之验证手机号是否存在
 			map = new HashMap<String, Object>();
-			map.put("cellphone", ediNum.getText().toString().replace("-", ""));
+			String phoneNum = ediNum.getText().toString().replace("-", "");
+			map.put("cellphone", phoneNum);
+			map.put("version", "v1.0");
+			map.put("tag",
+					MD5.MD5_32(StringUtils.reverseSort(phoneNum) + "v1.0"
+							+ phoneNum + "v1.0"));
+
 			task = new PostAsyncTask(this, map, "/users/iretrievePassword");
 			task.setTaskCallBack(this);
 			task.execute();
-			pd = new ProgressDialog(this);
+			pd = DialogUtil.getWaitDialog(this, "请稍后");
 			pd.show();
 			type = "1";
 			break;
@@ -157,12 +163,14 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			task = new PostAsyncTask(this, map, "/users/iverifyAuthCode");
 			task.setTaskCallBack(this);
 			task.execute();
-			pd = new ProgressDialog(this);
+			pd = DialogUtil.getWaitDialog(this, "请稍后");
 			pd.show();
 			type = "2";
 			break;
 		case R.id.btback:
 			finish();
+			Utils.rightOut(this);
+
 			break;
 		case R.id.btfinish:
 			// 找回密码之设置密码
@@ -179,7 +187,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			task = new PostAsyncTask(this, map, "/users/isetPasswd");
 			task.setTaskCallBack(this);
 			task.execute();
-			pd = new ProgressDialog(this);
+			pd = DialogUtil.getWaitDialog(this, "请稍后");
 			pd.show();
 			type = "3";
 			break;
@@ -195,7 +203,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			task = new PostAsyncTask(this, map, "/users/isendAuthCode");
 			task.setTaskCallBack(this);
 			task.execute();
-			pd = new ProgressDialog(this);
+			pd = DialogUtil.getWaitDialog(this, "请稍后");
 			pd.show();
 			type = "4";
 			break;
@@ -220,7 +228,7 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 				btGetCode.setTextColor(Color.GRAY);
 				btGetCode.setEnabled(false);
 				mHandler.sendEmptyMessage(0);
-				Utils.hideSoftInput(this);
+//				Utils.hideSoftInput(this);
 
 			} else {
 				Utils.showToast("手机号码不存在");
@@ -262,6 +270,8 @@ public class FindPasswordActivity extends Activity implements OnClickListener,
 			int rt = object.getInt("rt");
 			if (rt == 1) {
 				finish();
+				Utils.rightOut(this);
+
 			} else {
 				Utils.showToast("密码设置失败");
 			}

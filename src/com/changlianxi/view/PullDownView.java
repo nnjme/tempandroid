@@ -163,7 +163,7 @@ public class PullDownView extends LinearLayout implements OnScrollOverListener {
 		mListView.setOnScrollOverListener(this);
 		mListView.setCacheColorHint(0);
 		mListView.setDivider(null);
-		addView(mListView, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		addView(mListView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
 		// 空的listener
 		mOnPullDownListener = new OnPullDownListener() {
@@ -179,6 +179,10 @@ public class PullDownView extends LinearLayout implements OnScrollOverListener {
 		mListView.addFooterView(mFooterView);
 		// mListView.setAdapter(mListView.getAdapter());
 
+	}
+
+	public void setHeadBb(int colorID) {
+		mListView.setParentLayBg(colorID);
 	}
 
 	private Handler mUIHandler = new Handler() {

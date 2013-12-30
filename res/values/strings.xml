@@ -16,6 +16,7 @@
     <string name="title_activity_register">RegisterActivity</string>
     <string name="title_activity_add_friends">AddFriendsActivity</string>
     <string name="title_activity_select_contacts">SelectContactsActivity</string>
+    <string name="viewpager_indicator">%1$d/%2$d</string>
 
     <string-array name="countrys">
         <item>中国</item>
@@ -40,7 +41,7 @@
     <string name="title_activity_add_circle_member">AddCircleMemberActivity</string>
     <string name="title_activity_create_ciecle">CreateCiecleActivity</string>
     <string name="title_activity_sms_invite">SmsInviteActivity</string>
-    <string name="sms_content">您可以访问http://changlianxi.com查看详情</string>
+    <string name="sms_content">亲爱的%1$s，您的朋友%2$s邀请您加入常联系圈子【%3$s】，点击链接加入http://clx.teeker.com/i/%4$s【常联系】</string>
     <string name="title_activity_circle_setting">CircleSettingActivity</string>
     <string name="title_activity_edit_growth">EditGrowthActivity</string>
     <string name="title_activity_add_one_member">AddOneMemberActivity</string>
@@ -53,5 +54,8 @@
     <string name="title_activity_about">AboutActivity</string>
     <string name="title_activity_problem">ProblemActivity</string>
     <string name="title_activity_notices">NoticesActivity</string>
+    <string name="title_activity_growth_comment">GrowthCommentActivity</string>
+    <string name="title_activity_user_info_edit">UserInfoEditActivity</string>
+    <string name="title_activity_my_card_edit">MyCardEditActivity</string>
 
 </resources>

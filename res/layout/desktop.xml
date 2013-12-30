@@ -10,44 +10,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="40dip"
-        android:layout_marginTop="20dip" >
+        android:layout_marginTop="30dip" >
 
         <ImageView
             android:id="@+id/avatarBg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="95dip"
+            android:layout_height="95dip"
             android:layout_centerInParent="true"
             android:contentDescription="@null"
-            android:src="@drawable/menu_pic_bg" />
+            android:src="@drawable/pic_bg" />
 
         <com.changlianxi.view.CircularImage
             android:id="@+id/avatar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="81dip"
+            android:layout_height="81dip"
             android:layout_centerInParent="true" />
     </RelativeLayout>
 
     <ListView
         android:id="@+id/menulist"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="30dip"
+        android:layout_height="0dip"
+        android:layout_marginTop="60dip"
         android:layout_weight="1"
-        android:divider="#3c3c3c"
-        android:dividerHeight="1dip" >
+        android:divider="#404040"
+        android:dividerHeight="0.2dip" >
     </ListView>
-
-    <Button
-        android:id="@+id/menuback"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@null"
-        android:paddingBottom="10dip"
-        android:paddingLeft="40dip"
-        android:paddingRight="30dip"
-        android:paddingTop="10dip"
-        android:text="注销"
-        android:textColor="@color/default_font_color"
-        android:textSize="25sp" />
 
 </LinearLayout>

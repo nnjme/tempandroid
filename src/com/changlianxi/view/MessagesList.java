@@ -9,9 +9,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,9 +28,10 @@ import com.changlianxi.adapter.MessageListAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessagesListModle;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
 import com.changlianxi.view.MyListView.OnRefreshListener;
 
@@ -70,6 +73,7 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 		mMenu.setOnClickListener(this);
 		listview.setOnItemClickListener(this);
 		listview.setCacheColorHint(0);
+		listview.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		listview.setonRefreshListener(new OnRefreshListener() {
 			public void onRefresh() {
 				listModle.clear();
@@ -83,7 +87,7 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 	 * 
 	 */
 	class GetMessagetTask extends AsyncTask<String, Integer, String> {
-		ProgressDialog progressDialog;
+		Dialog progressDialog;
 
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		@Override
@@ -105,7 +109,6 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 					String cid = object.getString("cid");
 					String type = object.getString("type");
 					String msg = object.getString("msg");
-					Logger.debug(this, "msg:" + msg);
 					String time = object.getString("time");
 					String newCount = object.getString("new");
 					String cirName = DBUtils.getCircleNameById(cid);
@@ -146,7 +149,7 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 		@Override
 		protected void onPreExecute() {
 			// 任务启动，可以在这里显示一个对话框，这里简单处理
-			progressDialog = new ProgressDialog(mContext);
+			progressDialog = DialogUtil.getWaitDialog(mContext, "请稍后");
 			progressDialog.show();
 		}
 	}
@@ -159,7 +162,6 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 				mOnOpenListener.open();
 			}
 			break;
-
 		default:
 			break;
 		}
@@ -178,10 +180,13 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 		int position = arg2 - 1;
 		Intent intent = new Intent();
 		intent.putExtra("type", "read");// 阅读私信
-		intent.putExtra("uid", listModle.get(position).getUid());// 要读私信者的id
+		intent.putExtra("ruid", listModle.get(position).getUid());// 要读私信者的id
 		intent.putExtra("cid", listModle.get(position).getCid());// 私信所属圈子ID
+		intent.putExtra("name", listModle.get(position).getUserName());
 		intent.setClass(mContext, MessageActivity.class);
 		mContext.startActivity(intent);
+		Utils.leftOutRightIn(mContext);
+
 	}
 
 }

@@ -118,8 +118,6 @@ public class HttpUrlHelper {
 				if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 					strPostResult = EntityUtils.toString(httpResponse
 							.getEntity());
-					Logger.debug(HttpUrlHelper.class, "strPostResult:"
-							+ strPostResult);
 					return strPostResult;
 				} else {
 					strPostResult = EntityUtils.toString(httpResponse
@@ -220,13 +218,14 @@ public class HttpUrlHelper {
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				strPostResult = EntityUtils.toString(response.getEntity(),
 						"utf-8");
-				Logger.debug("HttpUrlHelper.postDataFile", "strPostResult:"
-						+ strPostResult);
 				return strPostResult;
 			} else {
-				return strPostResult;
+				return strPostResult + response.getStatusLine().getStatusCode();
 			}
+
 		} catch (Exception e) {
+			e.printStackTrace();
+
 		} finally {
 			if (mpEntity != null) {
 				try {

@@ -1,46 +1,47 @@
 package com.changlianxi.activity;
 
-import java.util.HashMap;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.MotionEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
-import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.changlianxi.inteface.ChangeView;
-import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
-import com.changlianxi.modle.SelectPicModle;
-import com.changlianxi.popwindow.SelectPicPopwindow;
-import com.changlianxi.task.UpLoadPicAsyncTask;
-import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
+import com.changlianxi.popwindow.AddKeyAndValuePopwindow.OnSelectKey;
+import com.changlianxi.task.GetUserDetailsTask;
+import com.changlianxi.task.GetUserDetailsTask.GetValuesTask;
 import com.changlianxi.util.Constants;
-import com.changlianxi.util.FileUtils;
-import com.changlianxi.util.ImageManager;
-import com.changlianxi.util.Logger;
-import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.UserInfoUtils;
 import com.changlianxi.util.Utils;
-import com.changlianxi.util.WigdtContorl;
-import com.changlianxi.util.WigdtContorl.Visible;
-import com.changlianxi.view.MyViewGroup;
-import com.changlianxi.view.UserInfoEdit;
-import com.changlianxi.view.UserInfoShow;
+import com.changlianxi.view.CircularImage;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 
 /**
  * 用户资料显示界面
@@ -48,244 +49,713 @@ import com.changlianxi.view.UserInfoShow;
  * @author teeker_bin
  * 
  */
-public class UserInfoActivity extends Activity implements Visible, ChangeView,
-		OnClickListener, UpLoadPic {
-	private RelativeLayout drag;
-	private Button scrollDrag;
-	private TextView txtname;
-	private ImageView imgback;
+public class UserInfoActivity extends BaseActivity implements OnClickListener,
+		GetValuesTask {
 	private String iconPath;
-	private String userlistName;// 资料存储表
-	private MyViewGroup rGroup;
-	private UserInfoShow infoShow;
-	private UserInfoEdit vEdit;
-	private LinearLayout layCall;
-	private String pid;// 用户id
+	private String pid;// 用户pid
+	private String uid;// 用户uid
 	private String cid;// 圈子id
 	private String username;
-	private LinearLayout sendMessage;
-	private RelativeLayout layAvatar;
-	private ImageView avatar;
-	private ImageView avatarBg;
-	private ProgressDialog pd;
-	private int flag = 0;// 0标示显示界面 1 编辑界面
+	private List<String> showGroupkey = new ArrayList<String>();
+	private List<Info> showBasicList = new ArrayList<Info>();// 存放基本信息数据
+	private List<Info> showContactList = new ArrayList<Info>();// 存放联系方式数据
+	private List<Info> showSocialList = new ArrayList<Info>();// 存放社交账号数据
+	private List<Info> showAddressList = new ArrayList<Info>();// 存放地址数据
+	private List<Info> showEduList = new ArrayList<Info>();// 存放教育经历
+	private List<Info> showWorkList = new ArrayList<Info>();// 存放工作经历
+	private ImageView back;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
+	private TextView name;
+	private CircularImage avatar;
+	private LinearLayout btnCall;
+	private LinearLayout btnMessage;
+	private Button btnEdit;
+	private ValueAdapter basicAdapter;
+	private ValueAdapter socialAdapter;
+	private ContactValueAdapter contactAdapter;
+	private ValueAdapter addressAdapter;
+	private EduValueAdapter eduAdapter;
+	private EduValueAdapter workAdapter;
+	private ListView basicListView;
+	private ListView contactListView;
+	private ListView socialListView;
+	private ListView addressListView;
+	private ListView eduListView;
+	private ListView workListView;
+	private Dialog dialog;
+	private LinearLayout laybasic;
+	private LinearLayout laycontact;
+	private LinearLayout laysocial;
+	private LinearLayout layadress;
+	private LinearLayout layedu;
+	private LinearLayout layword;
+	private ScrollView scrollView;
+	private LinearLayout layChild;
+	private DataBase dbase = DataBase.getInstance();
+	private SQLiteDatabase db = dbase.getWritableDatabase();
+	private RelativeLayout layParent;
+	private RelativeLayout topBg;
+	private TextView txtnews;
 
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.user_info);
+		setContentView(R.layout.user_info_show);
 		iconPath = getIntent().getStringExtra("iconImg");
-		userlistName = getIntent().getStringExtra("userlistname");
 		username = getIntent().getStringExtra("username");
 		pid = getIntent().getStringExtra("pid");
 		cid = getIntent().getStringExtra("cid");
-		layAvatar = (RelativeLayout) findViewById(R.id.LayAvatar);
-		layAvatar.setOnClickListener(this);
-		avatar = (ImageView) findViewById(R.id.avatar);
-		avatarBg = (ImageView) findViewById(R.id.avatarBg);
-		WigdtContorl.setAvatarWidth(this, avatar, avatarBg);
-		sendMessage = (LinearLayout) findViewById(R.id.sendMessage);
-		sendMessage.setOnClickListener(this);
-		layCall = (LinearLayout) findViewById(R.id.call);
-		layCall.setOnClickListener(this);
-		infoShow = new UserInfoShow(this, userlistName, pid, cid);
-		rGroup = (MyViewGroup) findViewById(R.id.infoGroup);
-		rGroup.addView(infoShow.getView());
-		scrollDrag = (Button) infoShow.getView().findViewById(R.id.scrolldrag);
-		scrollDrag.setOnTouchListener(MyTouchListener);
-		drag = (RelativeLayout) findViewById(R.id.drag);
-		drag.setOnTouchListener(MyTouchListener);
-		drag.post(new Runnable() {
-			@Override
-			public void run() {
-				WigdtContorl.delaultY = drag.getTop();
-				Logger.debug(this, "delaultY:" + WigdtContorl.delaultY);
-			}
-		});
-		txtname = (TextView) findViewById(R.id.name);
-		txtname.setText(username);
-		imgback = (ImageView) findViewById(R.id.back);
-		imgback.setOnClickListener(this);
-		Logger.debug(this, "iconPath:" + iconPath);
-		avatar.post(new Runnable() {
-			@Override
-			public void run() {
-				int[] location = new int[2];
-				// iconImg.getLocationInWindow(location); // 获取在当前窗口内的绝对坐标
-				avatar.getLocationOnScreen(location);// 获取在整个屏幕内的绝对坐标
-				WigdtContorl.moveY = location[1] - avatar.getHeight();
-				Logger.debug(this, "moveY:" + WigdtContorl.moveY);
-				ImageManager.from(UserInfoActivity.this).displayImage(avatar,
-						iconPath, -1, avatar.getWidth(), avatar.getWidth());
-			}
-		});
-		WigdtContorl.setVisible(this);
-		infoShow.setChangeView(this);
+		uid = getIntent().getStringExtra("uid");
+		imageLoader = CLXApplication.getImageLoader();
+		options = CLXApplication.getOptions();
+		initView();
+		setOnClickListener();
+		initData();
+		getUserDetails(pid);
+		setValuesAdapter();
+		getDetailsFromServer();
 	}
 
-	private OnTouchListener MyTouchListener = new OnTouchListener() {
-		int y1 = 0, y2;
+	/**
+	 * 获取成员资料信息
+	 * 
+	 * @param view
+	 * @param pid
+	 */
+	private void getUserDetails(String pid) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		Cursor cursor = db.query(Constants.USERDETAIL, null, "personID='" + pid
+				+ "'", null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				String tid = cursor.getString(cursor.getColumnIndex("tID"));
+				String key = cursor.getString(cursor.getColumnIndex("key"));
+				String value = cursor.getString(cursor.getColumnIndex("value"));
+				String start = cursor.getString(cursor
+						.getColumnIndex("startDate"));
+				String end = cursor.getString(cursor.getColumnIndex("endDate"));
+				valuesClassification(tid, key, value, start, end);
+				cursor.moveToNext();
+			}
+		}
+		cursor.close();
+	}
 
-		public boolean onTouch(View v, MotionEvent event) {
-			// TODO Auto-generated method stub
-			switch (event.getAction()) {
-			case MotionEvent.ACTION_DOWN: {
-				y1 = (int) event.getY();
-				// 按住事件发生后执行代码的区域
-				break;
+	private void getDetailsFromServer() {
+		if (showBasicList.size() == 0) {
+			dialog = DialogUtil.getWaitDialog(this, "请稍后");
+			dialog.show();
+		}
+		GetUserDetailsTask task = new GetUserDetailsTask(cid, pid);
+		task.setTaskCallBack(this);
+		task.execute();
+
+	}
+
+	private void initView() {
+		layParent = (RelativeLayout) findViewById(R.id.parent);
+		back = (ImageView) findViewById(R.id.back);
+		btnCall = (LinearLayout) findViewById(R.id.btncall);
+		btnMessage = (LinearLayout) findViewById(R.id.btnmessage);
+		name = (TextView) findViewById(R.id.name);
+		avatar = (CircularImage) findViewById(R.id.avatar);
+		name.setText(username);
+		setAvatar();
+		btnEdit = (Button) findViewById(R.id.btnedit);
+		basicListView = (ListView) findViewById(R.id.basicListView);
+		contactListView = (ListView) findViewById(R.id.contactListView);
+		socialListView = (ListView) findViewById(R.id.socialListView);
+		addressListView = (ListView) findViewById(R.id.addressListView);
+		eduListView = (ListView) findViewById(R.id.eduListView);
+		workListView = (ListView) findViewById(R.id.workListView);
+		laybasic = (LinearLayout) findViewById(R.id.laybasic);
+		laycontact = (LinearLayout) findViewById(R.id.laycontact);
+		laysocial = (LinearLayout) findViewById(R.id.laysocial);
+		layadress = (LinearLayout) findViewById(R.id.layaddress);
+		layedu = (LinearLayout) findViewById(R.id.layedu);
+		layword = (LinearLayout) findViewById(R.id.laywork);
+		scrollView = (ScrollView) findViewById(R.id.scrollView1);
+		topBg = (RelativeLayout) findViewById(R.id.top);
+		txtnews = (TextView) findViewById(R.id.txtnews);
+		layChild = (LinearLayout) findViewById(R.id.layChild);
+	}
+
+	private void setOnClickListener() {
+		back.setOnClickListener(this);
+		btnCall.setOnClickListener(this);
+		btnMessage.setOnClickListener(this);
+		btnEdit.setOnClickListener(this);
+	}
+
+	private void setValuesAdapter() {
+		delName();
+		basicAdapter = new ValueAdapter(showBasicList);
+		socialAdapter = new ValueAdapter(showSocialList);
+		contactAdapter = new ContactValueAdapter(showContactList, true);
+		addressAdapter = new ValueAdapter(showAddressList);
+		eduAdapter = new EduValueAdapter(showEduList);
+		workAdapter = new EduValueAdapter(showWorkList);
+		basicListView.setAdapter(basicAdapter);
+		contactListView.setAdapter(contactAdapter);
+		socialListView.setAdapter(socialAdapter);
+		addressListView.setAdapter(addressAdapter);
+		eduListView.setAdapter(eduAdapter);
+		workListView.setAdapter(workAdapter);
+		Utils.setListViewHeightBasedOnChildren(basicListView);
+		Utils.setListViewHeightBasedOnChildren(contactListView);
+		Utils.setListViewHeightBasedOnChildren(socialListView);
+		Utils.setListViewHeightBasedOnChildren(addressListView);
+		Utils.setListViewHeightBasedOnChildren(eduListView);
+		Utils.setListViewHeightBasedOnChildren(workListView);
+		if (showContactList.size() > 0) {
+			txtnews.setText("移动电话：" + showContactList.get(0).getValue());
+		}
+		setLayVisible();
+	}
+
+	private void setLayVisible() {
+		if (showBasicList.size() == 0) {
+			laybasic.setVisibility(View.GONE);
+		} else {
+			laybasic.setVisibility(View.VISIBLE);
+		}
+		if (showContactList.size() == 0) {
+			laycontact.setVisibility(View.GONE);
+		} else {
+			laycontact.setVisibility(View.VISIBLE);
+		}
+		if (showSocialList.size() == 0) {
+			laysocial.setVisibility(View.GONE);
+		} else {
+			laysocial.setVisibility(View.VISIBLE);
+		}
+		if (showAddressList.size() == 0) {
+			layadress.setVisibility(View.GONE);
+		} else {
+			layadress.setVisibility(View.VISIBLE);
+		}
+		if (showEduList.size() == 0) {
+			layedu.setVisibility(View.GONE);
+		} else {
+			layedu.setVisibility(View.VISIBLE);
+		}
+		if (showWorkList.size() == 0) {
+			layword.setVisibility(View.GONE);
+		} else {
+			layword.setVisibility(View.VISIBLE);
+		}
+		List<View> view = new ArrayList<View>();
+		for (int i = 0; i < layChild.getChildCount(); i++) {
+			View v = layChild.getChildAt(i);
+			if (v.getVisibility() == View.VISIBLE) {
+				view.add(v);
 			}
-			case MotionEvent.ACTION_MOVE: {
-				// 移动事件发生后执行代码的区域
-				y2 = (int) (y1 - event.getY());
-				if (y2 > 0) {
-					WigdtContorl.setLayoutY_UP(drag, y2, UserInfoActivity.this,
-							layAvatar);
-				} else {
-					WigdtContorl.setLayoutY_Down(drag, y2,
-							UserInfoActivity.this, layAvatar);
+
+		}
+		for (int i = 0; i < view.size(); i++) {
+			if (i % 2 == 0) {
+				view.get(i).setBackgroundColor(Color.WHITE);
+			} else {
+				view.get(i).setBackgroundColor(
+						getResources().getColor(R.color.f6));
+
+			}
+		}
+	}
+
+	private void setAvatar() {
+		imageLoader.loadImage(iconPath, options, new ImageLoadingListener() {
+
+			@Override
+			public void onLoadingStarted(String arg0, View arg1) {
+
+			}
+
+			@Override
+			public void onLoadingFailed(String arg0, View arg1, FailReason arg2) {
+
+			}
+
+			@SuppressLint("NewApi")
+			@Override
+			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
+				if (bmp == null) {
+					avatar.setImageResource(R.drawable.pic);
+					return;
 				}
-				break;
+				avatar.setImageBitmap(bmp);
+				// topBg.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+
 			}
-			case MotionEvent.ACTION_UP: {
-				// 松开事件发生后执行代码的区域
-				break;
+
+			@Override
+			public void onLoadingCancelled(String arg0, View arg1) {
+
 			}
+		});
+	}
+
+	public void initData() {
+		for (int i = 0; i < UserInfoUtils.infoTitleKey.length; i++) {
+			showGroupkey.add(UserInfoUtils.infoTitleKey[i]);
+		}
+	}
+
+	private void delName() {
+		for (int i = showBasicList.size() - 1; i >= 0; i--) {
+			String type = showBasicList.get(i).getType();
+			if (type.equals("D_NAME")) {
+				showBasicList.remove(i);
+			}
+		}
+	}
+
+	/**
+	 * 数据分类
+	 * 
+	 * @param id
+	 * @param key
+	 * @param value
+	 */
+	public void valuesClassification(String id, String key, String value,
+			String start, String end) {
+		Info info = new Info();
+		info.setValue(value);
+		info.setId(id);
+		info.setType(key);
+		String typekey = "";
+		for (int i = 0; i < UserInfoUtils.basicStr.length; i++) {
+			if (key.equals(UserInfoUtils.basicStr[i])) {
+				typekey = UserInfoUtils.convertToChines(key);
+				info.setKey(typekey);
+				showBasicList.add(info);
+			}
+		}
+		if (Arrays.toString(UserInfoUtils.socialStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			showSocialList.add(info);
+		} else if (Arrays.toString(UserInfoUtils.contactStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			showContactList.add(info);
+
+		} else if (Arrays.toString(UserInfoUtils.addressStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			showAddressList.add(info);
+
+		} else if (Arrays.toString(UserInfoUtils.eduStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			info.setStartDate(start);
+			info.setEndDate(end);
+			showEduList.add(info);
+		} else if (Arrays.toString(UserInfoUtils.workStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			info.setStartDate(start);
+			info.setEndDate(end);
+			showWorkList.add(info);
+		}
+
+	}
+
+	class ValueAdapter extends BaseAdapter {
+		List<Info> valuesList = new ArrayList<Info>();
+
+		public ValueAdapter(List<Info> valuesList) {
+			this.valuesList = valuesList;
+		}
+
+		@Override
+		public int getCount() {
+			return valuesList.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return 0;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ViewHolderValues holderValues = null;
+			if (convertView == null) {
+				convertView = LayoutInflater.from(UserInfoActivity.this)
+						.inflate(R.layout.user_info_show_list_item_key_value,
+								null);
+				holderValues = new ViewHolderValues();
+				holderValues.key = (TextView) convertView
+						.findViewById(R.id.key);
+				holderValues.value = (TextView) convertView
+						.findViewById(R.id.value);
+				convertView.setTag(holderValues);
+			} else {
+				holderValues = (ViewHolderValues) convertView.getTag();
+			}
+			holderValues.key.setText(valuesList.get(position).getKey());
+			holderValues.value.setText(valuesList.get(position).getValue());
+			return convertView;
+		}
+	}
+
+	class ViewHolderValues {
+		TextView key;
+		TextView value;
+	}
+
+	class ContactValueAdapter extends BaseAdapter {
+		List<Info> contactValuesList = new ArrayList<Info>();
+		boolean falg;
+
+		public ContactValueAdapter(List<Info> valuesList, boolean flag) {
+			this.contactValuesList = valuesList;
+			this.falg = flag;
+		}
+
+		@Override
+		public int getCount() {
+			return contactValuesList.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ContactViewHolderValues holderValues = null;
+			if (convertView == null) {
+				convertView = LayoutInflater.from(UserInfoActivity.this)
+						.inflate(R.layout.user_info_show_list_item_call_sms,
+								null);
+				holderValues = new ContactViewHolderValues();
+				holderValues.key = (TextView) convertView
+						.findViewById(R.id.key);
+				holderValues.value = (TextView) convertView
+						.findViewById(R.id.value);
+				holderValues.iconSms = (ImageView) convertView
+						.findViewById(R.id.icon_sms);
+				holderValues.iconCall = (ImageView) convertView
+						.findViewById(R.id.icon_call);
+				convertView.setTag(holderValues);
+			} else {
+				holderValues = (ContactViewHolderValues) convertView.getTag();
+			}
+			if (falg) {
+				holderValues.iconCall.setVisibility(View.VISIBLE);
+				holderValues.iconSms.setVisibility(View.VISIBLE);
+
+			} else {
+				holderValues.iconCall.setVisibility(View.GONE);
+				holderValues.iconSms.setVisibility(View.GONE);
+			}
+			String values = contactValuesList.get(position).getValue();
+			holderValues.iconCall.setOnClickListener(new BtnClick(values));
+			holderValues.iconSms.setOnClickListener(new BtnClick(values));
+			holderValues.key.setText(contactValuesList.get(position).getKey());
+			holderValues.value.setText(values);
+			return convertView;
+		}
+	}
+
+	class EduValueAdapter extends BaseAdapter {
+		List<Info> eduValuesList = new ArrayList<Info>();
+		boolean falg;
+
+		public EduValueAdapter(List<Info> valuesList) {
+			this.eduValuesList = valuesList;
+		}
+
+		@Override
+		public int getCount() {
+			return eduValuesList.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			EduHolderValues holderValues = null;
+			if (convertView == null) {
+				convertView = LayoutInflater.from(UserInfoActivity.this)
+						.inflate(R.layout.user_info_show_list_item_edu_work,
+								null);
+				holderValues = new EduHolderValues();
+				holderValues.key = (TextView) convertView
+						.findViewById(R.id.key);
+				holderValues.value = (TextView) convertView
+						.findViewById(R.id.value);
+				holderValues.endTime = (TextView) convertView
+						.findViewById(R.id.endTime);
+				holderValues.startTime = (TextView) convertView
+						.findViewById(R.id.startTime);
+
+				convertView.setTag(holderValues);
+			} else {
+				holderValues = (EduHolderValues) convertView.getTag();
+			}
+
+			String values = eduValuesList.get(position).getValue();
+			holderValues.key.setText(eduValuesList.get(position).getKey());
+			holderValues.value.setText(values);
+			holderValues.endTime.setText(eduValuesList.get(position)
+					.getEndDate());
+			holderValues.startTime.setText(eduValuesList.get(position)
+					.getStartDate());
+			return convertView;
+		}
+	}
+
+	class EduHolderValues {
+		TextView key;
+		TextView value;
+		TextView startTime;
+		TextView endTime;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == 2 && data != null) {
+			Bundle bundle = data.getExtras();
+			List<Info> basicList = (List<Info>) bundle
+					.getSerializable("basicList");
+			List<Info> contactList = (List<Info>) bundle
+					.getSerializable("contactList");
+			List<Info> socialList = (List<Info>) bundle
+					.getSerializable("socialList");
+			List<Info> addressList = (List<Info>) bundle
+					.getSerializable("addressList");
+			List<Info> eduList = (List<Info>) bundle.getSerializable("eduList");
+			List<Info> workList = (List<Info>) bundle
+					.getSerializable("workList");
+			notifyData(basicList, contactList, socialList, addressList,
+					eduList, workList);
+		}
+	}
+
+	class ContactViewHolderValues {
+		TextView key;
+		TextView value;
+		ImageView iconSms;
+		ImageView iconCall;
+	}
+
+	/**
+	 * 拨打电话
+	 * 
+	 * @param num
+	 */
+	private void callPhone(String num) {
+		Intent intent = new Intent(Intent.ACTION_CALL);
+		intent.setData(Uri.parse("tel:" + num));
+		startActivity(intent);
+
+	}
+
+	/**
+	 * 发短信
+	 * 
+	 * @param num
+	 */
+	private void sendMessage(String num) {
+		Uri uri = Uri.parse("smsto:" + num);
+		Intent it = new Intent(Intent.ACTION_SENDTO, uri);
+		it.putExtra("sms_body", "");
+		startActivity(it);
+	}
+
+	class BtnClick implements OnClickListener {
+		String str;
+
+		public BtnClick() {
+		}
+
+		public BtnClick(String str) {
+			this.str = str;
+		}
+
+		@Override
+		public void onClick(View v) {
+			switch (v.getId()) {
+			case R.id.icon_sms:
+				sendMessage(str);
+				break;
+			case R.id.icon_call:
+				callPhone(str);
+				break;
+
 			default:
 				break;
 			}
-			return true;
-		}
-	};
-
-	public void setVisible(boolean visible) {
-		Animation ani1 = null;
-		if (visible) {
-			ani1 = AnimationUtils.loadAnimation(this,
-					R.anim.alpha_animation_show);
-			scrollDrag.setVisibility(View.GONE);
-
-		} else {
-			ani1 = AnimationUtils.loadAnimation(this,
-					R.anim.alpha_animation_hidden);
-			scrollDrag.setVisibility(View.VISIBLE);
 
 		}
-		layAvatar.setAnimation(ani1);
+
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.back:
-			if (flag == 1) {
-				rGroup.delView();
-				flag = 0;
-				return;
-			}
 			finish();
+			Utils.rightOut(this);
 			break;
-		case R.id.LayAvatar:
-			SelectPicPopwindow pop = new SelectPicPopwindow(this, v);
-			pop.show();
+		case R.id.btnedit:
+
+			Intent it = new Intent();
+			Bundle bundle = new Bundle();
+			bundle.putSerializable("basicList", (Serializable) showBasicList);
+			bundle.putSerializable("contactList",
+					(Serializable) showContactList);
+			bundle.putSerializable("socialList", (Serializable) showSocialList);
+			bundle.putSerializable("addressList",
+					(Serializable) showAddressList);
+			bundle.putSerializable("eduList", (Serializable) showEduList);
+			bundle.putSerializable("workList", (Serializable) showWorkList);
+			it.putExtras(bundle);
+			it.putExtra("name", username);
+			it.putExtra("cid", cid);
+			it.putExtra("pid", pid);
+			it.putExtra("avatar", iconPath);
+			it.setClass(this, UserInfoEditActivity.class);
+			startActivityForResult(it, 2);
+			Utils.leftOutRightIn(this);
 			break;
-		case R.id.call:
-			infoShow.moveToCall();
+		case R.id.btncall:
+			if (showContactList.size() == 1) {
+				callPhone(showContactList.get(0).getValue());
+			} else {
+				List<String> mobile = new ArrayList<String>();
+				for (int i = 0; i < showContactList.size(); i++) {
+					if (showContactList.get(i).getType().equals("D_MOBILE")
+							|| showContactList.get(i).getType()
+									.equals("D_WORK_PHONE")
+							|| showContactList.get(i).getType()
+									.equals("D_HOME_PHONE")) {
+						mobile.add(showContactList.get(i).getValue());
+
+					}
+				}
+				String mobileArray[] = (mobile
+						.toArray(new String[mobile.size()]));
+				callPhone(mobileArray);
+
+			}
 			break;
-		case R.id.sendMessage:
+		case R.id.btnmessage:
 			Intent intent = new Intent();
-			intent.putExtra("uid", pid);
+			intent.putExtra("ruid", uid);
 			intent.putExtra("cid", cid);
+			intent.putExtra("name", username);
 			intent.putExtra("type", "write");
 			intent.setClass(this, MessageActivity.class);
 			startActivity(intent);
+			Utils.leftOutRightIn(this);
 			break;
 		default:
 			break;
 		}
-
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		Bitmap bitmap = null;
-		String avatarPath = "";
-		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
-				&& resultCode == RESULT_OK && data != null) {
-			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
-			avatarPath = modle.getPicPath();
-			bitmap = modle.getBmp();
-		}// 拍摄图片
-		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-			if (resultCode != RESULT_OK) {
-				return;
-			}
-			super.onActivityResult(requestCode, resultCode, data);
-			Bundle bundle = data.getExtras();
-			bitmap = (Bitmap) bundle.get("data");// 获取相机返回的数据，并转换为Bitmap图片格式
-
-			if (bitmap != null) {
-				String dir = "/clx/camera/";
-				FileUtils.createDir(dir);
-				String name = FileUtils.getFileName() + ".jpg";
-				String fileName = FileUtils.getgetAbsoluteDir(dir) + name;
-				BitmapUtils.createImgToFile(bitmap, fileName);
-				avatarPath = fileName;
-			}
-		}
-		avatar.setImageBitmap(bitmap);
-		upLoadPic(avatarPath);
 	}
 
 	/**
-	 * 上传头像
+	 * 显示电话列表
+	 * 
+	 * @param str
 	 */
-	private void upLoadPic(String avatarPath) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("uid", SharedUtils.getString("uid", ""));
-		map.put("token", SharedUtils.getString("token", ""));
-		map.put("pid", pid);
-		map.put("cid", cid);
-		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-				"/people/iuploadAvatar", avatarPath, "avatar");
-		picTask.setCallBack(this);
-		picTask.execute();
-		pd = new ProgressDialog(this);
-		pd.show();
-	}
+	private void callPhone(final String str[]) {
+		AddKeyAndValuePopwindow pop = new AddKeyAndValuePopwindow(this,
+				layParent, str, "选择手机号码");
+		pop.setCallBack(new OnSelectKey() {
 
-	@Override
-	public void setViewData(List<Info> data, int type, String cid, String pid,
-			String tableName) {
-		vEdit = new UserInfoEdit(this, data, type, cid, pid, tableName);
-		vEdit.setChangeView(this);
-		rGroup.setInfoEditView(vEdit.getView());
-		flag = 1;
+			@Override
+			public void getSelectKey(String str) {
+				callPhone(str);
+
+			}
+		});
+		pop.show();
 
 	}
 
-	@Override
-	public void delView() {
-		rGroup.delView();
-		flag = 0;
+	private void clearData() {
+		showBasicList.clear();
+		showContactList.clear();
+		showSocialList.clear();
+		showAddressList.clear();
+		showEduList.clear();
+		showWorkList.clear();
 
 	}
 
-	@Override
-	public void NotifyData(List<Info> data, int infoType) {
-		infoShow.refushData(data, infoType);
-	}
-
-	@Override
-	public void upLoadFinish(boolean flag) {
-		pd.dismiss();
-		if (flag) {
-			Utils.showToast("上传成功");
-			return;
+	private void notifyData(List<Info> basicList, List<Info> contactList,
+			List<Info> socialList, List<Info> addressList, List<Info> eduList,
+			List<Info> workList) {
+		clearData();
+		this.showBasicList.addAll(basicList);
+		this.showContactList.addAll(contactList);
+		this.showSocialList.addAll(socialList);
+		this.showAddressList.addAll(addressList);
+		this.showEduList.addAll(eduList);
+		this.showWorkList.addAll(workList);
+		delName();
+		basicAdapter.notifyDataSetChanged();
+		socialAdapter.notifyDataSetChanged();
+		contactAdapter.notifyDataSetChanged();
+		addressAdapter.notifyDataSetChanged();
+		eduAdapter.notifyDataSetChanged();
+		workAdapter.notifyDataSetChanged();
+		Utils.setListViewHeightBasedOnChildren(basicListView);
+		Utils.setListViewHeightBasedOnChildren(contactListView);
+		Utils.setListViewHeightBasedOnChildren(socialListView);
+		Utils.setListViewHeightBasedOnChildren(addressListView);
+		Utils.setListViewHeightBasedOnChildren(eduListView);
+		Utils.setListViewHeightBasedOnChildren(workListView);
+		if (showContactList.size() > 0) {
+			txtnews.setText("移动电话：" + showContactList.get(0).getValue());
 		}
-		Utils.showToast("上传失败");
+		setLayVisible();
+	}
+
+	@Override
+	public void onTaskFinish(List<Info> basicList, List<Info> contactList,
+			List<Info> socialList, List<Info> addressList, List<Info> eduList,
+			List<Info> workList) {
+		if (dialog != null) {
+			dialog.dismiss();
+		}
+		notifyData(basicList, contactList, socialList, addressList, eduList,
+				workList);
 
 	}
 }

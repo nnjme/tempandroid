@@ -3,28 +3,40 @@ package com.changlianxi.adapter;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.GrowthImgModle;
-import com.changlianxi.util.ImageManager;
-import com.changlianxi.util.Utils;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class GrowthImgAdapter extends BaseAdapter {
 	private Context mContext;
 	private List<GrowthImgModle> listData;
 	private int average;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 
 	public GrowthImgAdapter(Context context, List<GrowthImgModle> data,
 			int average) {
 		this.mContext = context;
 		this.listData = data;
 		this.average = average;
+		options = new DisplayImageOptions.Builder()
+				.showStubImage(R.drawable.empty_photo)
+				.showImageForEmptyUri(R.drawable.empty_photo)
+				.showImageOnFail(R.drawable.empty_photo).cacheInMemory(true)
+				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
+				.build();
+		imageLoader = CLXApplication.getImageLoader();
 	}
 
 	@Override
@@ -45,37 +57,30 @@ public class GrowthImgAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder holder = null;
-
 		if (convertView == null) {
 			holder = new ViewHolder();
 			convertView = LayoutInflater.from(mContext).inflate(
 					R.layout.grow_img_gridview_item, null);
 			holder.img = (ImageView) convertView.findViewById(R.id.img);
-			holder.fream = (FrameLayout) convertView.findViewById(R.id.fream);
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		int width = Utils.getSecreenWidth(mContext);
-		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width
-				/ average, width / average);
-		holder.img.setLayoutParams(params);
-		String path;
-		if (listData != null && position < listData.size()) {
-			path = listData.get(position).getSamllImg();
+		String path = "";
+		if (average == 2) {
+			holder.img.setScaleType(ScaleType.CENTER_CROP);
+			path = listData.get(position).getImg_200();
+			holder.img.setLayoutParams(new FrameLayout.LayoutParams(150, 150));
 		} else {
-			path = "camera_default";
+			holder.img.setScaleType(ScaleType.FIT_XY);
+			path = listData.get(position).getImg_200();
 		}
-		if (path.contains("default")) {
-			holder.img.setImageResource(R.drawable.root_default);
-		} else {
-			ImageManager.from(mContext).displayImage(holder.img, path, 0);
-		}
+		imageLoader.displayImage(path, holder.img, options);
+
 		return convertView;
 	}
 
 	class ViewHolder {
 		ImageView img;
-		FrameLayout fream;
 	}
 }

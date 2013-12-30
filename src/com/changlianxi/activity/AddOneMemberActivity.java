@@ -1,6 +1,5 @@
 package com.changlianxi.activity;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,44 +9,39 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.changlianxi.inteface.UpLoadPic;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
-import com.changlianxi.modle.MemberModle;
-import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.modle.SmsPrevieModle;
-import com.changlianxi.popwindow.SelectPicPopwindow;
+import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
+import com.changlianxi.popwindow.AddKeyAndValuePopwindow.OnSelectKey;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
-import com.changlianxi.task.UpLoadPicAsyncTask;
-import com.changlianxi.util.BitmapUtils;
-import com.changlianxi.util.Constants;
+import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.EditWather;
 import com.changlianxi.util.ErrorCodeUtil;
-import com.changlianxi.util.Logger;
-import com.changlianxi.util.PinyinUtils;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.view.Switch;
 
-public class AddOneMemberActivity extends Activity implements OnClickListener,
-		PostCallBack, UpLoadPic {
+public class AddOneMemberActivity extends BaseActivity implements
+		OnClickListener, PostCallBack {
 	private List<String> moreInfo = new ArrayList<String>();
 	private LinearLayout addLay;
 	private LinearLayout addInfo;
@@ -62,22 +56,22 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	private EditText editEmail;
 	private ImageView back;
 	private ImageView img;
-	private String imgPath = "";
-	private ProgressDialog pd;
+	private Dialog pd;
 	private String pid = "";// 邀请成功的成员ID
 	private String type;// add 添加成员 create 创建圈子
 	private String cmids = "";// 邀请链接中的邀请码，可用来构造邀请链接，在需要发送邀请的情况下才会有值
 	private String code = "";// 成员圈子组合ID，在发送邀请短信接口中有用
 	private String cirName = "";
 	private String rep = "0"; // 该成员是否已经存在
-	private SelectPicPopwindow pop;
 	private TextView titleTxt;
+	private Switch btnswitch;
+	private LinearLayout parent;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_add_one_member);
+		CLXApplication.addInviteActivity(this);
 		type = getIntent().getStringExtra("type");
 		if (type.equals("add")) {
 			cid = getIntent().getStringExtra("cid");
@@ -92,6 +86,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * 初始化控件
 	 */
 	private void initView() {
+		parent = (LinearLayout) findViewById(R.id.parent);
 		addLay = (LinearLayout) findViewById(R.id.layAdd);
 		addInfo = (LinearLayout) findViewById(R.id.addInfo);
 		btnNext = (Button) findViewById(R.id.next);
@@ -103,11 +98,13 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		img = (ImageView) findViewById(R.id.avatarImg);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("输入联系人");
+		btnswitch = (Switch) findViewById(R.id.switchBtn);
 	}
 
 	/**
 	 * 设置监听事件
 	 */
+	@SuppressLint("NewApi")
 	private void setListener() {
 		addLay.setOnClickListener(this);
 		btnNext.setOnClickListener(this);
@@ -116,6 +113,7 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		if (type.equals("add")) {
 			btnNext.setText("完成");
 		}
+		btnswitch.setChecked(false);
 	}
 
 	private void initData() {
@@ -195,47 +193,18 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * @param str
 	 */
 	private void showTypeDialog(final String str[]) {
-		DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+		AddKeyAndValuePopwindow pop = new AddKeyAndValuePopwindow(this, parent,
+				str, "选择添加属性");
+		pop.setCallBack(new OnSelectKey() {
+
 			@Override
-			public void onClick(DialogInterface dialogInterface, int which) {
-				addView(str[which]);
-				moreInfo.remove(str[which]);// 删除所选项 每项只能添加一条
-
+			public void getSelectKey(String str) {
+				addView(str);
+				moreInfo.remove(str);// 删除所选项 每项只能添加一条
 			}
-		};
-		new AlertDialog.Builder(this).setTitle("选择添加属性")
-				.setItems(str, listener).show();
+		});
+		pop.show();
 
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		SelectPicModle modle = new SelectPicModle();
-		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
-				&& resultCode == RESULT_OK && data != null) {
-			modle = BitmapUtils.getPickPic(this, data);
-			imgPath = modle.getPicPath();
-			BitmapUtils.startPhotoZoom(this, data.getData());
-		}// 拍摄图片
-		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-			if (resultCode != RESULT_OK) {
-				return;
-			}
-			if (resultCode != RESULT_OK) {
-				return;
-			}
-
-			String fileName = pop.getTakePhotoPath();
-			imgPath = fileName;
-			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
-		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
-			Bundle extras = data.getExtras();
-			if (extras != null) {
-				Bitmap photo = extras.getParcelable("data");
-				img.setImageBitmap(BitmapUtils.toRoundBitmap(photo));
-			}
-		}
 	}
 
 	@Override
@@ -252,13 +221,16 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 				Utils.showToast("手机号不能为空!");
 				return;
 			}
+			if (!Utils.isPhoneNum(mobile)) {
+				Utils.showToast("请输入有效的手机号码");
+				return;
+			}
 			if (name.length() == 0) {
 				Utils.showToast("姓名不能为空!");
 				return;
 			}
 			if (type.equals("create")) {
 				MemberInfoModle modle = new MemberInfoModle();
-				modle.setAvator(imgPath);
 				modle.setBirthday(birthday);
 				modle.setCellPhone(mobile);
 				modle.setEmail(editEmail.getText().toString());
@@ -274,8 +246,11 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 				intent.putExtra("type", "one");
 				startActivity(intent);
 				finish();
+				Utils.rightOut(this);
 				return;
 			}
+			pd = DialogUtil.getWaitDialog(this, "请稍后");
+			pd.show();
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("cid", cid);
 			map.put("uid", SharedUtils.getString("uid", ""));
@@ -291,15 +266,16 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 					"/people/iinviteOne");
 			task.setTaskCallBack(this);
 			task.execute();
-			pd = new ProgressDialog(this);
-			pd.show();
+			if (btnswitch.isChecked()) {
+				testInsert(name, mobile);
+			}
 			break;
 		case R.id.back:
 			finish();
+			Utils.rightOut(this);
+
 			break;
 		case R.id.avatarImg:
-			pop = new SelectPicPopwindow(this, v);
-			pop.show();
 			break;
 		default:
 			break;
@@ -311,7 +287,6 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 */
 	@Override
 	public void taskFinish(String result) {
-		Logger.debug(this, "result:" + result);
 		try {
 			JSONObject object = new JSONObject(result);
 			int rt = object.getInt("rt");
@@ -320,29 +295,15 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 				rep = object.getString("rep");
 				cmids = object.getString("cmid");
 				code = object.getString("code");
-				// if (rep.equals("1")) {
-				// Utils.showToast("该用户已存在");
-				// pd.dismiss();
-				// return;
-				// }
-				if (!imgPath.equals("")) {
-					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("cid", cid);
-					map.put("uid", SharedUtils.getString("uid", ""));
-					map.put("token", SharedUtils.getString("token", ""));
-					map.put("pid", pid);
-					UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-							"/people/iuploadAvatar", imgPath, "avatar");
-					picTask.setCallBack(this);
-					picTask.execute();
+				if (rep.equals("0")) {
+					finish();
+					intentSmsPreviewActivity();
 					return;
 				}
 				Utils.showToast("添加成功");
 				pd.dismiss();
-				setModle();
-				if (rep.equals("0")) {
-					intentSmsPreviewActivity();
-				}
+				finish();
+				CLXApplication.exitSmsInvite();
 			} else {
 				pd.dismiss();
 				String errorCoce = object.getString("err");
@@ -350,7 +311,6 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 			}
 		} catch (JSONException e) {
 			pd.dismiss();
-			Utils.showToast("异常错误");
 			e.printStackTrace();
 		}
 	}
@@ -359,12 +319,15 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 	 * 跳转到短信预览界面
 	 */
 	private void intentSmsPreviewActivity() {
+		String name = DBUtils.getMyName(SharedUtils.getString("uid", ""));
 		List<SmsPrevieModle> listModle = new ArrayList<SmsPrevieModle>();
 		SmsPrevieModle modle = new SmsPrevieModle();
 		modle.setName(editName.getText().toString());
 		modle.setNum(editMobile.getText().toString().replace("-", ""));
-		modle.setContent("亲爱的" + editName.getText().toString() + ",邀请您加入"
-				+ cirName + "圈子.您可以访问http://clx.teeker.com/" + code + "查看详情");
+		String data = getResources().getString(R.string.sms_content);
+		data = String.format(data, editName.getText().toString(), name,
+				cirName, code);
+		modle.setContent(data);
 		listModle.add(modle);
 		Intent intent = new Intent();
 		Bundle bundle = new Bundle();
@@ -374,40 +337,9 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		intent.putExtra("cid", cid);
 		intent.setClass(this, SmsPreviewActivity.class);
 		startActivity(intent);
-		finish();
-	}
 
-	/**
-	 * 添加完成之后的返回值 供列表界面刷新使用
-	 * 
-	 * @return
-	 */
-	private void setModle() {
-		MemberModle modle = new MemberModle();
-		modle.setId(pid);
-		modle.setName(editName.getText().toString());
-		modle.setEmployer(employer);
-		modle.setImg(imgPath);
-		modle.setSort_key(PinyinUtils.getPinyin(editName.getText().toString()));
-		CLXApplication.setModle(modle);
-		finish();
-	}
+		Utils.leftOutRightIn(this);
 
-	/**
-	 * 图片上传完成接口
-	 */
-	@Override
-	public void upLoadFinish(boolean flag) {
-		pd.dismiss();
-		if (flag) {
-			Utils.showToast("添加成功");
-			setModle();
-			if (rep.equals("0")) {
-				intentSmsPreviewActivity();
-			}
-		} else {
-			Utils.showToast("图标上传失败");
-		}
 	}
 
 	@Override
@@ -417,4 +349,27 @@ public class AddOneMemberActivity extends Activity implements OnClickListener,
 		}
 		super.onDestroy();
 	}
+
+	public void testInsert(String name, String num) {
+		ContentResolver resolver = this.getContentResolver();
+		Uri uri = Uri.parse("content://com.android.contacts/raw_contacts");
+		ContentValues values = new ContentValues();
+		// 向raw_contacts插入一条除了ID之外, 其他全部为NULL的记录, ID是自动生成的
+		long id = ContentUris.parseId(resolver.insert(uri, values));
+		// 添加联系人姓名
+		uri = Uri.parse("content://com.android.contacts/data");
+		values.put("raw_contact_id", id);
+		values.put("data2", name);
+		values.put("mimetype", "vnd.android.cursor.item/name");
+		resolver.insert(uri, values);
+		// 添加联系人电话
+		values.clear(); // 清空上次的数据
+		values.put("raw_contact_id", id);
+		values.put("data1", num);
+		values.put("data2", "2");
+		values.put("mimetype", "vnd.android.cursor.item/phone_v2");
+		resolver.insert(uri, values);
+
+	}
+
 }

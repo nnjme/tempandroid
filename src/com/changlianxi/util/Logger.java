@@ -227,7 +227,6 @@ public class Logger {
 			return;
 		}
 		if (!writeFile) {
-			System.out.println("[" + logTag + "] " + msg);
 			return;
 		}
 		File logFile = checkLogFile(); // 检查日志文件

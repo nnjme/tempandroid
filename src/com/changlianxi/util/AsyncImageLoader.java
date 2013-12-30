@@ -56,6 +56,7 @@ public class AsyncImageLoader {
 			public void handleMessage(Message msg) {
 				super.handleMessage(msg);
 				imageCallback.imageLoaded((Bitmap) msg.obj, imgUrl);
+				return;
 			}
 		};
 		new Thread() {

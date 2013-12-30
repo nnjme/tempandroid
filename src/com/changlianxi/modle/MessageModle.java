@@ -7,15 +7,31 @@ package com.changlianxi.modle;
  * 
  */
 public class MessageModle {
-	// private String id;// 私信消息ID
-	private String cid;// 私信消息所属圈子ID
-	// private String uid;// 私信发送者用户ID
-	// private String type;// 私信类型
-	private String content;// 私信内容，依据不同类型，内容含义不一样
-	private String time;// 私信发送时间
+	// private String id;// 消息ID
+	private String cid;// 消息所属圈子ID
+	private String uid;// 发送或接收用户ID
+	private int type;// 类型0 文本1图片
+	private String content;// 内容，依据不同类型，内容含义不一样
+	private String time;// 发送时间
 	private String avatar;
 	private boolean isSelf;// 是否是自己发送
 	private String name;// 发送者姓名
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public String getUid() {
+		return uid;
+	}
+
+	public void setUid(String uid) {
+		this.uid = uid;
+	}
 
 	public String getCid() {
 		return cid;

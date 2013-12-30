@@ -1,16 +1,16 @@
 package com.changlianxi.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class AddCircleMemberActivity extends Activity implements
+import com.changlianxi.util.Utils;
+
+public class AddCircleMemberActivity extends BaseActivity implements
 		OnClickListener {
 	private Button add;
 	private Button input;
@@ -23,10 +23,10 @@ public class AddCircleMemberActivity extends Activity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_add_circle_member);
+		CLXApplication.addInviteActivity(this);
 		back = (ImageView) findViewById(R.id.back);
-		titleTxt=(TextView)findViewById(R.id.titleTxt);
+		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("添加第一批成员");
 		add = (Button) findViewById(R.id.addFromAddBook);
 		input = (Button) findViewById(R.id.inputContact);
@@ -35,6 +35,7 @@ public class AddCircleMemberActivity extends Activity implements
 		back.setOnClickListener(this);
 		type = getIntent().getStringExtra("type");
 		if (type.equals("add")) {
+			titleTxt.setText("添加成员");
 			cid = getIntent().getStringExtra("cid");
 			cirName = getIntent().getStringExtra("cirName");
 		}
@@ -50,6 +51,9 @@ public class AddCircleMemberActivity extends Activity implements
 			intent.putExtra("cid", cid);
 			intent.putExtra("cirName", cirName);
 			startActivity(intent);
+			// overridePendingTransition(R.anim.push_bottom_in,
+			// R.anim.out_to_left);
+			Utils.leftOutRightIn(this);
 			break;
 		case R.id.inputContact:
 			intent.setClass(this, AddOneMemberActivity.class);
@@ -57,13 +61,17 @@ public class AddCircleMemberActivity extends Activity implements
 			intent.putExtra("cirName", cirName);
 			intent.putExtra("type", type);
 			startActivity(intent);
+			Utils.leftOutRightIn(this);
 			break;
 		case R.id.back:
+			finish();
+			Utils.rightOut(this);
 			break;
 		default:
 			break;
 		}
-		finish();
+		// finish();
+		// Utils.rightOut(this);
 	}
 
 }

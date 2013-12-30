@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/laybg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical" >
+
+    <RelativeLayout
+        android:id="@+id/calendar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip" >
+
+        <ImageView
+            android:id="@+id/timeline_line1"
+            android:layout_width="1dip"
+            android:layout_height="10dip"
+            android:layout_marginLeft="30dip"
+            android:scaleType="fitXY"
+            android:src="@drawable/news_line" />
+
+        <LinearLayout
+            android:id="@+id/layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/timeline_line1"
+            android:background="@drawable/box_bg"
+            android:orientation="vertical" >
+
+            <RelativeLayout
+                android:id="@+id/top"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dip"
+                android:layout_marginTop="10dip" >
+
+                <RelativeLayout
+                    android:id="@+id/layAvatar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/timeline_line1"
+                    android:gravity="center" >
+
+                    <ImageView
+                        android:id="@+id/imgBg"
+                        android:layout_width="40dip"
+                        android:layout_height="40dip"
+                        android:src="@drawable/pic_bg" />
+
+                    <com.changlianxi.view.CircularImage
+                        android:id="@+id/avatarInvite"
+                        android:layout_width="33dip"
+                        android:layout_height="33dip"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dip"
+                    android:layout_marginTop="5dip"
+                    android:layout_toRightOf="@+id/layAvatar"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/timeInvite"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/default_font_color"
+                        android:textSize="@dimen/scale20sp" />
+
+                    <TextView
+                        android:id="@+id/contentInvite"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingExtra="4dip"
+                        android:textColor="@color/default_font_color"
+                        android:textSize="@dimen/scale26sp" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                box_footer_bg=""
+                drawable="" >
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout1"
+                android:layout_width="match_parent"
+                android:layout_height="30dip"
+                android:layout_marginTop="@dimen/scale32dip"
+                android:gravity="center_vertical" >
+
+                <Button
+                    android:id="@+id/btnAgree"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/box_footer_bg"
+                    android:text="我同意"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/scale36sp" />
+
+                <View
+                    android:layout_width="0.2dip"
+                    android:layout_height="fill_parent"
+                    android:background="#b0b0b0" />
+
+                <Button
+                    android:id="@+id/btnNotAgree"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/box_footer_bg"
+                    android:text="忽略"
+                    android:textSize="@dimen/scale36sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="1dip"
+            android:layout_height="10dip"
+            android:layout_below="@+id/layout"
+            android:layout_marginLeft="30dip"
+            android:scaleType="fitXY"
+            android:src="@drawable/news_line" />
+    </RelativeLayout>
+
+</RelativeLayout>

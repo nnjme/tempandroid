@@ -10,18 +10,24 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.R;
 import com.changlianxi.modle.MessagesListModle;
 import com.changlianxi.util.DateUtils;
-import com.changlianxi.util.ImageManager;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class MessageListAdapter extends BaseAdapter {
 	private Context mContext;
 	private List<MessagesListModle> listModle;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
 
 	public MessageListAdapter(Context context, List<MessagesListModle> modle) {
 		this.mContext = context;
 		this.listModle = modle;
+		imageLoader = CLXApplication.getImageLoader();
+		options = CLXApplication.getOptions();
 	}
 
 	@Override
@@ -66,9 +72,8 @@ public class MessageListAdapter extends BaseAdapter {
 		holder.name.setText(listModle.get(position).getUserName());
 		holder.time.setText(DateUtils.interceptDateStr(listModle.get(position)
 				.getTime(), "MM-dd"));
-		ImageManager.from(mContext).displayImage(holder.avatar,
-				listModle.get(position).getAvatar(), R.drawable.hand_pic, 50,
-				50);
+		imageLoader.displayImage(listModle.get(position).getAvatar(),
+				holder.avatar, options);
 		return convertView;
 	}
 
