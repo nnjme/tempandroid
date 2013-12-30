@@ -132,7 +132,10 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public void getGrowthList(List<GrowthModle> list) {
 		if (progressDialog != null) {
-			progressDialog.dismiss();
+			try {
+				progressDialog.dismiss();
+			} catch (Exception e) {
+			}
 		}
 		mPullDownView.notifyDidMore();
 		mPullDownView.RefreshComplete();
