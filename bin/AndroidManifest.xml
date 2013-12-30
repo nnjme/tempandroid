@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.changlianxi.activity"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="0.1.14" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -24,6 +24,7 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <supports-screens
         android:anyDensity="true"
@@ -110,7 +111,8 @@
         <activity
             android:name=".ReleaseGrowthActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:label="@string/title_activity_release_growth_main" >
+            android:label="@string/title_activity_release_growth_main"
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name=".NewsActivity"
@@ -253,6 +255,26 @@
             android:name=".NoticesActivity"
             android:label="@string/title_activity_notices" >
         </activity>
+        <activity android:name="com.changlianxi.activity.showBigPic.ImagePagerActivity" />
+        <activity
+            android:name=".GrowthCommentActivity"
+            android:label="@string/title_activity_growth_comment"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name=".UserInfoEditActivity"
+            android:label="@string/title_activity_user_info_edit" >
+        </activity>
+        <activity
+            android:name=".MyCardEditActivity"
+            android:label="@string/title_activity_my_card_edit" >
+        </activity>
+
+        <service android:name="com.changlianxi.service.UpdateService" >
+            <intent-filter>
+                <action android:name="com.changlianxi.service.versionservice" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

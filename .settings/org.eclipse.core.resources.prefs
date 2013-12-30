@@ -1,4 +1,4 @@
-#Sat Nov 30 11:21:22 CST 2013
+#Sat Dec 28 17:58:17 CST 2013
 eclipse.preferences.version=1
 encoding//src/com/changlianxi/activity=Gbk
 encoding//src/com/changlianxi/activity/CLXApplication.java=UTF-8
@@ -11,6 +11,8 @@ encoding//src/com/changlianxi/activity/MainActivity.java=Gbk
 encoding//src/com/changlianxi/activity/ReleaseGrowthActivity.java=UTF-8
 encoding//src/com/changlianxi/activity/SelectContactsActivity.java=UTF-8
 encoding//src/com/changlianxi/activity/UserInfoActivity.java=Gbk
+encoding//src/com/changlianxi/activity/showBigPic/ImageDetailFragment.java=UTF-8
+encoding//src/com/changlianxi/activity/showBigPic/ImagePagerActivity.java=UTF-8
 encoding//src/com/changlianxi/adapter/GrowthAdapter.java=UTF-8
 encoding//src/com/changlianxi/db/DataBase.java=Gbk
 encoding//src/com/changlianxi/modle/GrowthModle.java=Gbk
@@ -18,6 +20,7 @@ encoding//src/com/changlianxi/modle/Info.java=Gbk
 encoding//src/com/changlianxi/modle/MemberInfoModle.java=Gbk
 encoding//src/com/changlianxi/modle/SelectContactModle.java=Gbk
 encoding//src/com/changlianxi/popwindow/DialogPopWindow.java=UTF-8
+encoding//src/com/changlianxi/service/UpdateService.java=gbk
 encoding//src/com/changlianxi/util/AsyncImageLoader.java=Gbk
 encoding//src/com/changlianxi/util/CrashHandler.java=Gbk
 encoding//src/com/changlianxi/util/ExpressionUtil.java=UTF-8
@@ -28,6 +31,4 @@ encoding//src/com/changlianxi/util/MemoryCache.java=Gbk
 encoding//src/com/changlianxi/util/MyComparator.java=Gbk
 encoding//src/com/changlianxi/util/UserInfoUtils.java=Gbk
 encoding//src/com/changlianxi/util/WigdtContorl.java=Gbk
-encoding//src/com/changlianxi/view/UserInfoEdit.java=Gbk
-encoding//src/com/changlianxi/view/UserInfoShow.java=Gbk
 encoding/src=UTF-8
