@@ -58,6 +58,7 @@
                 android:background="@null"
                 android:paddingBottom="10dip"
                 android:paddingTop="10dip"
+                android:singleLine="true"
                 android:textColor="#313131"
                 android:textSize="15sp" >
             </EditText>
@@ -68,6 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="5dip"
                 android:layout_marginTop="2dip"
+                android:padding="5dip"
                 android:src="@drawable/icon_del__edit" />
         </LinearLayout>
     </RelativeLayout>

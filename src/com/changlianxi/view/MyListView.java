@@ -17,7 +17,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.util.DateUtils;
 
 /**
@@ -229,9 +229,9 @@ public class MyListView extends ListView implements OnScrollListener {
 	private void changeHeaderViewByState() {
 		switch (state) {
 		case RELEASE_To_REFRESH:
-			arrowImageView.setVisibility(View.GONE);
+			arrowImageView.setVisibility(View.VISIBLE);
 			progressBar.setVisibility(View.GONE);
-			tipsTextview.setVisibility(View.GONE);
+			tipsTextview.setVisibility(View.VISIBLE);
 			lastUpdatedTextView.setVisibility(View.GONE);
 			arrowImageView.clearAnimation();
 			arrowImageView.startAnimation(animation);
@@ -244,7 +244,6 @@ public class MyListView extends ListView implements OnScrollListener {
 			arrowImageView.clearAnimation();
 			arrowImageView.setVisibility(View.GONE);
 			// 是由RELEASE_To_REFRESH状态转变来的
-
 			if (isBack) {
 				isBack = false;
 				arrowImageView.clearAnimation();
@@ -297,6 +296,11 @@ public class MyListView extends ListView implements OnScrollListener {
 		if (refreshListener != null) {
 			refreshListener.onRefresh();
 		}
+	}
+
+	public void Refush() {
+		state = REFRESHING;
+		changeHeaderViewByState();
 	}
 
 	// 此方法直接照搬自网络上的一个下拉刷新的demo，此处是“估计”headView的width以及height

@@ -22,7 +22,7 @@ import com.changlianxi.activity.ChangePassswordActivity;
 import com.changlianxi.activity.LoginActivity;
 import com.changlianxi.activity.NoticesActivity;
 import com.changlianxi.activity.ProblemActivity;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.popwindow.NewVersionPopWindow;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
@@ -203,20 +203,28 @@ public class Setting implements OnClickListener, PostCallBack {
 
 	}
 
+	private void finish() {
+		SharedUtils.setString("uid", "");
+		SharedUtils.setString("token", "");
+		CLXApplication.exit(false);
+		Intent intent = new Intent();
+		intent.setClass(mContext, LoginActivity.class);
+		mContext.startActivity(intent);
+	}
+
 	@Override
 	public void taskFinish(String result) {
 		try {
 			JSONObject json = new JSONObject(result);
 			int rt = json.getInt("rt");
 			if (rt == 1) {
-				SharedUtils.setString("uid", "");
-				SharedUtils.setString("token", "");
-				CLXApplication.exit();
-				Intent intent = new Intent();
-				intent.setClass(mContext, LoginActivity.class);
-				mContext.startActivity(intent);
+				finish();
 			} else {
 				String err = json.getString("err");
+				if (err.equals("TOKEN_INVALID")) {
+					finish();
+					return;
+				}
 				String errorString = ErrorCodeUtil.convertToChines(err);
 				Utils.showToast(errorString);
 				dialog.dismiss();
@@ -226,5 +234,4 @@ public class Setting implements OnClickListener, PostCallBack {
 			e.printStackTrace();
 		}
 	}
-
 }

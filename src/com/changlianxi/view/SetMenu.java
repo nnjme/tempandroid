@@ -3,7 +3,7 @@ package com.changlianxi.view;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -17,8 +17,13 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.db.DBUtils;
+import com.changlianxi.util.Constants;
+import com.changlianxi.util.PushMessageReceiver;
+import com.changlianxi.util.PushMessageReceiver.MessagePrompt;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -28,28 +33,30 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * 菜单界面
  * 
  */
-public class SetMenu implements OnItemClickListener {
+public class SetMenu implements OnItemClickListener, MessagePrompt {
 	/**
 	 * 当前界面的View
 	 */
 	private View mDesktop;
-
 	private List<MenuModle> menulist = new ArrayList<MenuModle>();
 	private Context mcontext;
 	private ListView listview;
 	private MyAdapter adapter;
-	private static CircularImage avatar;
+	private CircularImage avatar;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
+	private boolean myCardPrompt;
 	/**
 	 * 接口对象,用来修改显示的View
 	 */
 	private onChangeViewListener mOnChangeViewListener;
 
-	public SetMenu(Context context, Activity activity) {
+	public SetMenu(Context context, boolean myCardPrompt) {
 		// 绑定布局到当前View
 		this.mcontext = context;
+		this.myCardPrompt = myCardPrompt;
 		mDesktop = LayoutInflater.from(context).inflate(R.layout.desktop, null);
+		PushMessageReceiver.setMessagePromptMenu(this);
 		getMenu();
 		listview = (ListView) mDesktop.findViewById(R.id.menulist);
 		adapter = new MyAdapter();
@@ -74,8 +81,36 @@ public class SetMenu implements OnItemClickListener {
 		imageLoader.displayImage(avatarUrl, avatar, options);
 	}
 
-	public static void setEidtAvatar(Bitmap bmp) {
+	public void setEidtAvatar(Bitmap bmp) {
 		avatar.setImageBitmap(bmp);
+	}
+
+	/**
+	 * 个人名片提醒
+	 * 
+	 * @param prompt
+	 */
+	public void setMyCardPrompt(boolean prompt) {
+		if (prompt) {// 改变数据库个人修改提醒状态
+			ContentValues cv = new ContentValues();
+			cv.put("changed", "1");
+			DBUtils.updateInfo(Constants.MYDETAIL, cv, "uid=?",
+					new String[] { SharedUtils.getString("uid", "") });
+		}
+		menulist.get(1).setNofiyPrompt(prompt);
+		adapter.notifyDataSetChanged();
+
+	}
+
+	/**
+	 * 私信提醒
+	 * 
+	 * @param prompt
+	 */
+	public void setMessagePrompt(boolean prompt) {
+		menulist.get(2).setNofiyPrompt(prompt);
+		adapter.notifyDataSetChanged();
+
 	}
 
 	private void getMenu() {
@@ -86,6 +121,7 @@ public class SetMenu implements OnItemClickListener {
 		modle = new MenuModle();
 		modle.setAngle(false);
 		modle.setMenu("我的名片");
+		modle.setNofiyPrompt(myCardPrompt);
 		menulist.add(modle);
 		modle = new MenuModle();
 		modle.setAngle(false);
@@ -126,6 +162,8 @@ public class SetMenu implements OnItemClickListener {
 				holder = new ViewHolder();
 				holder.txt = (TextView) convertView.findViewById(R.id.menutxt);
 				holder.angle = (ImageView) convertView.findViewById(R.id.angle);
+				holder.notifyPrompt = (ImageView) convertView
+						.findViewById(R.id.notifyPrompt);
 				WigdtContorl.setLayoutX(
 						holder.angle,
 						Utils.getSecreenWidth(mcontext)
@@ -144,9 +182,13 @@ public class SetMenu implements OnItemClickListener {
 				holder.angle.setVisibility(View.GONE);
 				holder.txt.setTextColor(mcontext.getResources().getColor(
 						R.color.default_font_color));
-
 			}
 			holder.txt.setText(menulist.get(position).getMenu());
+			if (menulist.get(position).isNofiyPrompt()) {
+				holder.notifyPrompt.setVisibility(View.VISIBLE);
+			} else {
+				holder.notifyPrompt.setVisibility(View.GONE);
+			}
 			return convertView;
 		}
 	}
@@ -154,11 +196,21 @@ public class SetMenu implements OnItemClickListener {
 	class ViewHolder {
 		TextView txt;
 		ImageView angle;
+		ImageView notifyPrompt;
 	}
 
 	class MenuModle {
 		String menu;
 		boolean angle;
+		boolean nofiyPrompt;
+
+		public boolean isNofiyPrompt() {
+			return nofiyPrompt;
+		}
+
+		public void setNofiyPrompt(boolean nofiyPrompt) {
+			this.nofiyPrompt = nofiyPrompt;
+		}
 
 		public String getMenu() {
 			return menu;
@@ -206,6 +258,18 @@ public class SetMenu implements OnItemClickListener {
 		}
 		menulist.get(posititon).setAngle(true);
 		adapter.notifyDataSetChanged();
+
+	}
+
+	@Override
+	public void messagePrompt(boolean messagePrompt) {
+		setMyCardPrompt(messagePrompt);
+
+	}
+
+	@Override
+	public void myCardPrompt(boolean myCardPrompt) {
+		setMyCardPrompt(myCardPrompt);
 
 	}
 }

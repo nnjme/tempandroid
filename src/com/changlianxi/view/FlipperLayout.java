@@ -40,9 +40,6 @@ public class FlipperLayout extends ViewGroup {
 	public FlipperLayout(Context context) {
 		super(context);
 		mScroller = new Scroller(context);
-		// mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-		// Utils.getSecreenWidth(context) / 3, getResources()
-		// .getDisplayMetrics());
 		mWidth = Utils.getSecreenWidth(context) / 2;
 
 	}
@@ -174,7 +171,6 @@ public class FlipperLayout extends ViewGroup {
 			mVelocityValue = (int) mVelocityTracker.getXVelocity();
 			getChildAt(1).scrollTo(-(int) event.getX(), 0);
 			break;
-
 		case MotionEvent.ACTION_UP:
 			if (mScrollState == SCROLL_STATE_ALLOW) {
 				if (mVelocityValue > 2000) {

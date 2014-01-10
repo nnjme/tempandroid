@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="@dimen/dip110"
+        android:layout_height="@dimen/scale110dip"
         android:background="@drawable/top_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
@@ -16,15 +16,14 @@
             android:id="@+id/back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dip"
-            android:paddingRight="10dip"
+            android:paddingLeft="@dimen/scale30dip"
+            android:paddingRight="@dimen/scale29dip"
             android:src="@drawable/icon_return" />
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginRight="10dip"
+            android:layout_marginRight="@dimen/scale28dip"
             android:src="@drawable/top_line" />
 
         <LinearLayout
@@ -117,7 +116,6 @@
             android:id="@+id/cy_list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:cacheColorHint="#00000000"
             android:divider="#e3e3e3"
             android:dividerHeight="0.3dip"
             android:scrollbars="none" />
@@ -130,7 +128,8 @@
             android:background="@drawable/yuanjiao"
             android:gravity="center"
             android:textColor="#FFFFFF"
-            android:textSize="50dip" >
+            android:textSize="50dip"
+            android:visibility="gone" >
         </TextView>
 
         <com.changlianxi.view.QuickAlphabeticBar

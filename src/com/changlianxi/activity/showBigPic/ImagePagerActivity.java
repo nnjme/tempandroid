@@ -10,7 +10,7 @@ import android.util.Log;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class ImagePagerActivity extends FragmentActivity {
 	private static final String TAG = "ImagePagerActivity";

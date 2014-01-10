@@ -51,28 +51,29 @@
                 android:background="#dddddd" />
 
             <RadioGroup
-                android:layout_weight="1"
                 android:id="@+id/gendarRradioGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:orientation="horizontal" >
 
                 <RadioButton
-                    android:id="@+id/radio0"
+                    android:id="@+id/radioboy"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:button="@drawable/radiobutton_selector"
-                    android:checked="true"
+                    android:paddingLeft="5dip"
                     android:text="男"
                     android:textColor="#313131"
                     android:textSize="15sp" />
 
                 <RadioButton
-                    android:id="@+id/radio1"
+                    android:id="@+id/radiogirl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dip"
                     android:button="@drawable/radiobutton_selector"
+                    android:paddingLeft="5dip"
                     android:text="女"
                     android:textColor="#313131"
                     android:textSize="15sp" />

@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 import android.content.Context;
 import android.graphics.Bitmap;

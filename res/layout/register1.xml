@@ -9,15 +9,17 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/scale228dip"
         android:text="请选择你所在的国家并输入手机号"
-        android:textSize="20dip" />
+        android:textColor="#b2000000"
+        android:textSize="@dimen/scale36sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
-        android:layout_marginTop="40dip"
+        android:layout_marginLeft="@dimen/scale34dip"
+        android:layout_marginRight="@dimen/scale34dip"
+        android:layout_marginTop="@dimen/scale52dip"
         android:gravity="center"
         android:orientation="vertical" >
 
@@ -33,16 +35,14 @@
         <EditText
             android:id="@+id/spinner"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="1dip"
-            android:layout_marginRight="1dip"
+            android:layout_height="@dimen/scale129dip"
             android:background="@drawable/input_top_radius"
             android:drawableRight="@drawable/angle_down"
             android:focusable="false"
-            android:padding="17dip"
+            android:paddingLeft="@dimen/scale44dip"
             android:text="中国"
-            android:textColor="@color/gray_f4"
-            android:textSize="23sp" >
+            android:textColor="#66000000"
+            android:textSize="@dimen/scale46sp" >
         </EditText>
 
         <View
@@ -54,19 +54,8 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="1dip"
-            android:layout_marginRight="1dip"
+            android:layout_height="@dimen/scale129dip"
             android:background="@drawable/input" >
-
-            <TextView
-                android:id="@+id/txtQH"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dip"
-                android:background="@null"
-                android:text="+86"
-                android:textSize="20dip" />
 
             <EditText
                 android:id="@+id/num"
@@ -77,19 +66,23 @@
                 android:inputType="number"
                 android:maxLength="13"
                 android:padding="17dip"
-                android:textSize="20sp" >
+                android:paddingLeft="@dimen/scale44dip"
+                android:singleLine="true"
+                android:textColor="#66000000"
+                android:textSize="@dimen/scale46sp" >
             </EditText>
         </LinearLayout>
 
         <Button
             android:id="@+id/next"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/scale129dip"
+            android:layout_marginLeft="-1dip"
+            android:layout_marginRight="-1dip"
             android:background="@drawable/gray_bottom_radius"
-            android:padding="15dip"
             android:text="下一步"
             android:textColor="@color/white"
-            android:textSize="25sp" />
+            android:textSize="@dimen/scale46sp" />
     </LinearLayout>
 
 </LinearLayout>

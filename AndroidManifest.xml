@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.changlianxi.activity"
+    package="com.changlianxi"
     android:versionCode="1"
-    android:versionName="0.1.14" >
+    android:versionName="0.1.18" >
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
+        android:targetSdkVersion="16" />
     <!-- Push service 运行需要的权限 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -25,6 +25,7 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <supports-screens
         android:anyDensity="true"
@@ -33,15 +34,17 @@
         android:resizeable="true"
         android:smallScreens="true" />
 
+    <uses-permission android:name="android.permission.GET_TASKS" />
+
     <application
-        android:name=".CLXApplication"
+        android:name=".activity.CLXApplication"
         android:icon="@drawable/app_icon_1"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
 
         <!-- android:name=".LoginActivity" -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.LoginActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
@@ -53,23 +56,18 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CircleActivity"
+            android:name=".activity.CircleActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".CYActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
-            android:name=".CircleUserActivity"
+            android:name=".activity.CircleUserActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
@@ -77,49 +75,49 @@
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
-            android:name=".RegisterActivity"
+            android:name=".activity.RegisterActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_register"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" >
         </activity>
         <activity
-            android:name=".RegisterFinishActivity"
+            android:name=".activity.RegisterFinishActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_register_finish"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" >
         </activity>
         <activity
-            android:name=".FindPasswordActivity"
+            android:name=".activity.FindPasswordActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_find_password"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="stateHidden" >
         </activity>
-        <activity android:name=".SelectContactsActivity" >
+        <activity android:name=".activity.SelectContactsActivity" >
         </activity>
         <activity
-            android:name=".UserInfoActivity"
+            android:name=".activity.UserInfoActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_user_info" >
         </activity>
         <activity
-            android:name=".GrowthActivity"
+            android:name=".activity.GrowthActivity"
             android:configChanges="keyboardHidden|orientation" >
         </activity>
         <activity
-            android:name=".ReleaseGrowthActivity"
+            android:name=".activity.ReleaseGrowthActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_release_growth_main"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
-            android:name=".NewsActivity"
+            android:name=".activity.NewsActivity"
             android:configChanges="keyboardHidden|orientation" >
         </activity>
         <activity
-            android:name=".ChatActivity"
+            android:name=".activity.ChatActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_chat"
             android:screenOrientation="portrait" >
@@ -127,63 +125,63 @@
             <!-- android:windowSoftInputMode="adjustResize" -->
         </activity>
         <activity
-            android:name=".AddCircleMemberActivity"
+            android:name=".activity.AddCircleMemberActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_add_circle_member"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".CreateCircleActivity"
+            android:name=".activity.CreateCircleActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_create_ciecle"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".SmsPreviewActivity"
+            android:name=".activity.SmsPreviewActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_sms_invite"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".SmsInviteActivity"
+            android:name=".activity.SmsInviteActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_sms_invite"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".CircleSettingActivity"
+            android:name=".activity.CircleSettingActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_circle_setting"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".AddOneMemberActivity"
+            android:name=".activity.AddOneMemberActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_add_one_member"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateHidden" >
         </activity>
         <activity
-            android:name=".MessagesListActivity"
+            android:name=".activity.MessagesListActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_messages_list"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".MessageActivity"
+            android:name=".activity.MessageActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_message"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize" >
         </activity>
         <activity
-            android:name=".CircleInfoActivity"
+            android:name=".activity.CircleInfoActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_circle_info"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".EditCircleActivity"
+            android:name=".activity.EditCircleActivity"
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/title_activity_edit_circle"
             android:screenOrientation="portrait"
@@ -236,37 +234,37 @@
             android:value="QdCuL0S0CEP8TgTPrHb3FYmt" />
         <!-- push service end -->
         <activity
-            android:name=".ChangePassswordActivity"
+            android:name=".activity.ChangePassswordActivity"
             android:label="@string/title_activity_change_passsword" >
         </activity>
         <activity
-            android:name=".AdviceFeedBackActivity"
+            android:name=".activity.AdviceFeedBackActivity"
             android:label="@string/title_activity_advice_feed_back" >
         </activity>
         <activity
-            android:name=".AboutActivity"
+            android:name=".activity.AboutActivity"
             android:label="@string/title_activity_about" >
         </activity>
         <activity
-            android:name=".ProblemActivity"
+            android:name=".activity.ProblemActivity"
             android:label="@string/title_activity_problem" >
         </activity>
         <activity
-            android:name=".NoticesActivity"
+            android:name=".activity.NoticesActivity"
             android:label="@string/title_activity_notices" >
         </activity>
         <activity android:name="com.changlianxi.activity.showBigPic.ImagePagerActivity" />
         <activity
-            android:name=".GrowthCommentActivity"
+            android:name=".activity.GrowthCommentActivity"
             android:label="@string/title_activity_growth_comment"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
-            android:name=".UserInfoEditActivity"
+            android:name=".activity.UserInfoEditActivity"
             android:label="@string/title_activity_user_info_edit" >
         </activity>
         <activity
-            android:name=".MyCardEditActivity"
+            android:name=".activity.MyCardEditActivity"
             android:label="@string/title_activity_my_card_edit" >
         </activity>
 
@@ -275,6 +273,24 @@
                 <action android:name="com.changlianxi.service.versionservice" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".activity.CommentsListActivity"
+            android:label="@string/title_activity_comments_list" >
+        </activity>
+        <activity
+            android:name=".activity.CommentsListItemActivity"
+            android:label="@string/title_activity_comments_list_item"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main" >
+        </activity>
+        <activity
+            android:name=".activity.UserInfoActivity1"
+            android:label="@string/title_activity_user_info_activity1" >
+        </activity>
     </application>
 
 </manifest>

@@ -8,7 +8,7 @@
     <RelativeLayout
         android:id="@+id/top"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/scale390dip"
         android:background="@drawable/header_boxbg" >
 
         <ImageView
@@ -137,16 +137,17 @@
                         android:id="@+id/basicAdd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:padding="5dip"
                         android:src="@drawable/icon_add_edit" />
                 </LinearLayout>
 
-                <com.changlianxi.view.ScrollViewWithListView
+                <ListView
                     android:id="@+id/basicListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@null"
                     android:scrollbars="none" >
-                </com.changlianxi.view.ScrollViewWithListView>
+                </ListView>
             </LinearLayout>
 
             <View
@@ -181,16 +182,17 @@
                         android:id="@+id/contactAdd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:padding="5dip"
                         android:src="@drawable/icon_add_edit" />
                 </LinearLayout>
 
-                <com.changlianxi.view.ScrollViewWithListView
+                <ListView
                     android:id="@+id/contactListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@null"
                     android:scrollbars="none" >
-                </com.changlianxi.view.ScrollViewWithListView>
+                </ListView>
             </LinearLayout>
 
             <View
@@ -224,16 +226,17 @@
                         android:id="@+id/socialAdd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:padding="5dip"
                         android:src="@drawable/icon_add_edit" />
                 </LinearLayout>
 
-                <com.changlianxi.view.ScrollViewWithListView
+                <ListView
                     android:id="@+id/socialListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@null"
                     android:scrollbars="none" >
-                </com.changlianxi.view.ScrollViewWithListView>
+                </ListView>
             </LinearLayout>
 
             <View
@@ -268,16 +271,17 @@
                         android:id="@+id/addressAdd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:padding="5dip"
                         android:src="@drawable/icon_add_edit" />
                 </LinearLayout>
 
-                <com.changlianxi.view.ScrollViewWithListView
+                <ListView
                     android:id="@+id/addressListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@null"
                     android:scrollbars="none" >
-                </com.changlianxi.view.ScrollViewWithListView>
+                </ListView>
             </LinearLayout>
 
             <View
@@ -311,16 +315,17 @@
                         android:id="@+id/eduAdd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:padding="5dip"
                         android:src="@drawable/icon_add_edit" />
                 </LinearLayout>
 
-                <com.changlianxi.view.ScrollViewWithListView
+                <ListView
                     android:id="@+id/eduListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@null"
                     android:scrollbars="none" >
-                </com.changlianxi.view.ScrollViewWithListView>
+                </ListView>
             </LinearLayout>
 
             <View
@@ -355,16 +360,17 @@
                         android:id="@+id/workAdd"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:padding="5dip"
                         android:src="@drawable/icon_add_edit" />
                 </LinearLayout>
 
-                <com.changlianxi.view.ScrollViewWithListView
+                <ListView
                     android:id="@+id/workListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:divider="@null"
                     android:scrollbars="none" >
-                </com.changlianxi.view.ScrollViewWithListView>
+                </ListView>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

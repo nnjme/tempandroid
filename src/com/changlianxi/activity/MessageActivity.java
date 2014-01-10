@@ -66,6 +66,7 @@ import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyListView;
 import com.changlianxi.view.MyListView.OnRefreshListener;
+import com.changlianxi.R;
 
 /**
  * 私信聊天界面
@@ -145,7 +146,6 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 		messageThread.setMessageAndChatCallBack(this);
 		messageThread.start();
 		getDBMessage();
-
 	}
 
 	private void getIntentData() {
@@ -158,7 +158,6 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 	 * 先从数据库获取数据
 	 */
 	private void getDBMessage() {
-		listModle = DBUtils.getMessage(ruid);
 		adapter.setData(listModle);
 		listview.setSelection(listModle.size());
 		if (listModle.size() == 0) {
@@ -171,8 +170,8 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 
 	private void getNameById() {
 		name.setText(receiveName);
-		MemberInfoModle info = DBUtils.selectNameAndImgByID("circle" + cid,
-				SharedUtils.getString("uid", ""));
+		MemberInfoModle info = DBUtils.selectNameAndImgByID(SharedUtils
+				.getString("uid", ""));
 		if (info != null) {
 			avatarPath = info.getAvator();
 		}
@@ -453,17 +452,15 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 
 	@Override
 	protected void onDestroy() {
-		messageThread.setRun(false);
-		// messageThread = null;
+		messageThread.running = false;
 		PushMessageReceiver.pushMessage = null;
-		// DBUtils.delMessage(ruid);
-		// int count = listModle.size() - 1 >= 20 ? listModle.size() - 20 : 0;
-		// for (int i = listModle.size() - 1; i >= count; i--) {
-		// DBUtils.saveMessage(listModle.get(i), ruid);
-		// }
-		// if (pd != null) {
-		// pd.dismiss();
-		// }
+		DBUtils.delMessage(ruid);
+		int size = listModle.size();
+		int count = size > 20 ? size - 20 : 0;
+		for (int i = 0; i < count; i++) {
+			MessageModle modle = listModle.get(i);
+			DBUtils.saveMessage(modle, ruid);
+		}
 		super.onDestroy();
 	}
 
@@ -583,11 +580,13 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 			if (uid.equals(SharedUtils.getString("uid", ""))) {
 				return;
 			}
+			if (!ruid.equals(uid)) {
+				return;
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		MemberInfoModle info = DBUtils
-				.selectNameAndImgByID("circle" + cid, uid);
+		MemberInfoModle info = DBUtils.selectNameAndImgByID(uid);
 		if (info != null) {
 			avatarPath = info.getAvator();
 			name = info.getName();
@@ -640,7 +639,6 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 				mHandler.sendMessage(msg);
 				return;
 			}
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

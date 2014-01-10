@@ -62,20 +62,22 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="50dip"
             android:orientation="vertical" >
 
             <com.changlianxi.view.SearchEditText
                 android:id="@+id/search"
                 android:layout_width="fill_parent"
                 android:layout_height="50dip"
-                android:layout_marginLeft="10dip"
-                android:layout_marginRight="10dip"
+                android:layout_marginLeft="@dimen/scale20dip"
+                android:layout_marginRight="@dimen/scale20dip"
                 android:layout_marginTop="13dip"
                 android:background="@drawable/search"
                 android:hint="搜索成员"
                 android:paddingLeft="48dip"
                 android:singleLine="true"
                 android:textColor="@color/a3"
+                android:textSize="@dimen/scale42sp"
                 android:visibility="gone" >
             </com.changlianxi.view.SearchEditText>
 
@@ -83,6 +85,8 @@
                 android:id="@+id/gridView1"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/scale25dip"
+                android:layout_marginRight="@dimen/scale25dip"
                 android:layout_marginTop="14dip"
                 android:numColumns="3"
                 android:scrollbars="none" >

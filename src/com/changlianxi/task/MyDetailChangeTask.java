@@ -33,6 +33,9 @@ public class MyDetailChangeTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
@@ -48,8 +51,7 @@ public class MyDetailChangeTask extends AsyncTask<String, Integer, String> {
 				String uid = object.getString("uid");
 				String content = object.getString("content");
 				String time = object.getString("time");
-				MemberInfoModle info = DBUtils.selectNameAndImgByID("circle"
-						+ cid, uid);
+				MemberInfoModle info = DBUtils.selectNameAndImgByID(uid);
 				if (info != null) {
 					modle.setName(info.getName());
 					modle.setAvatarURL(info.getAvator());

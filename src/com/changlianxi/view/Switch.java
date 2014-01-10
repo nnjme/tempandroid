@@ -38,7 +38,7 @@ import android.view.ViewConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.CompoundButton;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 /**
  * A Switch is a two-state toggle switch widget that can select between two

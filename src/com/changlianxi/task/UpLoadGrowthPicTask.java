@@ -40,6 +40,9 @@ public class UpLoadGrowthPicTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		String result = "";
 		for (int i = 0; i < picPath.size(); i++) {
 			String path = picPath.get(i);

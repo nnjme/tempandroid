@@ -20,7 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.NewsModle;
 import com.changlianxi.task.PostAsyncTask;
@@ -235,7 +235,7 @@ public class NewsListAdapter extends BaseAdapter {
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("cid", cid);
-			map.put("pid", DBUtils.getPidByUid("circle" + cid, pid));
+			map.put("pid", DBUtils.getPidByUid(pid));
 		}
 
 		@Override
@@ -261,6 +261,7 @@ public class NewsListAdapter extends BaseAdapter {
 			task.setTaskCallBack(new PostCallBack() {
 				@Override
 				public void taskFinish(String result) {
+					System.out.println("result:::::" + result);
 					pd.dismiss();
 					try {
 						JSONObject object = new JSONObject(result);

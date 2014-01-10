@@ -6,7 +6,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class DialogUtil {
 	public static Dialog getWaitDialog(Context context, String str) {

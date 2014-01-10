@@ -2,6 +2,7 @@ package com.changlianxi.util;
 
 import java.io.File;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,6 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -28,8 +31,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
@@ -311,6 +314,25 @@ public class Utils {
 		}
 		return version;
 	}
+/**
+ * 判断程序是否在后台
+ * @param context
+ * @return
+ */
+	public static boolean isTopActivity(Context context) {
+		String packageName = context.getPackageName();
+		ActivityManager activityManager = (ActivityManager) context
+				.getSystemService(Context.ACTIVITY_SERVICE);
+		List<RunningTaskInfo> tasksInfo = activityManager.getRunningTasks(1);
+		if (tasksInfo.size() > 0) {
+			// 应用程序位于堆栈的顶层
+			if (packageName.equals(tasksInfo.get(0).topActivity
+					.getPackageName())) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * 解析聊天内容
@@ -343,8 +365,7 @@ public class Utils {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		MemberInfoModle info = DBUtils
-				.selectNameAndImgByID("circle" + cid, uid);
+		MemberInfoModle info = DBUtils.selectNameAndImgByID(uid);
 		if (info == null) {
 			Utils.showToast("未知错误 tableName:" + "circle" + cid + "  uid:" + uid);
 		} else {

@@ -21,5 +21,6 @@
     <color name="dc">#dcdcdc</color>
     <color name="versionbg">#d8d9d4</color>
     <color name="red">#ff00ff</color>
-
+    <color name="tabfond">#828282</color>
+    
 </resources>

@@ -27,7 +27,7 @@ import android.widget.TextView;
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.GrowthCommentActivity;
 import com.changlianxi.activity.GrowthCommentActivity.RecordOperation;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.task.PraiseAndCanclePraiseTask;
@@ -82,7 +82,6 @@ public class GrowthAdapter extends BaseAdapter {
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		ViewHolder holder = null;
-		String content = listData.get(position).getContent();
 		if (convertView == null) {
 			holder = new ViewHolder();
 			convertView = LayoutInflater.from(mContext).inflate(
@@ -108,9 +107,7 @@ public class GrowthAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		if (content.equals("")) {
-			holder.content.setVisibility(View.GONE);
-		}
+
 		int size = listData.get(position).getImgModle().size();
 		int average = 0;
 		if (size == 1) {
@@ -130,7 +127,8 @@ public class GrowthAdapter extends BaseAdapter {
 			holder.img.setVisibility(View.VISIBLE);
 			holder.gridView.setVisibility(View.GONE);
 			imageLoader.displayImage(imgPath, holder.img, options1);
-			holder.img.setOnClickListener(new ImgOnClick(imgPath));
+			holder.img.setOnClickListener(new ImgOnClick(listData.get(position)
+					.getImgModle().get(0).getImg()));
 		} else {
 			holder.img.setVisibility(View.GONE);
 			holder.gridView.setVisibility(View.VISIBLE);
@@ -163,8 +161,11 @@ public class GrowthAdapter extends BaseAdapter {
 		holder.name.setText(listData.get(position).getName());
 		holder.time.setText(DateUtils.publishedTime(listData.get(position)
 				.getPublish()));
-		holder.content.setText(StringUtils.ToDBC(listData.get(position)
-				.getContent()));
+		String content = StringUtils.ToDBC(listData.get(position).getContent());
+		if (content.length() == 0) {
+			holder.content.setVisibility(View.GONE);
+		}
+		holder.content.setText(content);
 		holder.praise.setText("赞（" + listData.get(position).getPraise() + "）");
 		holder.comment.setText("评论（" + listData.get(position).getComment()
 				+ "）");

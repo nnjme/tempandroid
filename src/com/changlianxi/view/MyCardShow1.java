@@ -1,10 +1,10 @@
 package com.changlianxi.view;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -13,7 +13,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,21 +24,26 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.MyCardEditActivity;
-import com.changlianxi.activity.R;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
 import com.changlianxi.task.GetMyDetailTask;
 import com.changlianxi.task.GetMyDetailTask.GetMyDetailValues;
+import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.UserInfoUtils;
 import com.changlianxi.util.Utils;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 
 /**
  * 用户资料显示View 主要对用户资料的分类显示
@@ -77,7 +83,6 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 	private ListView eduListView;
 	private ListView workListView;
 	private Dialog dialog;
-	private String pid = "";
 	private DataBase dbase = DataBase.getInstance();
 	private SQLiteDatabase db = dbase.getWritableDatabase();
 	private LinearLayout laybasic;
@@ -89,6 +94,22 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 	private LinearLayout layChild;
 	private boolean changed;
 	private LinearLayout layChanged;
+	private RelativeLayout layTop;
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				initData();
+				getMyDetails();
+				setValuesAdapter();
+				getDetailsFromServer();
+				break;
+			default:
+				break;
+			}
+		}
+	};
 
 	public MyCardShow1(Context context) {
 		this.mContext = context;
@@ -96,10 +117,7 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 		options = CLXApplication.getOptions();
 		initView();
 		setOnClickListener();
-		initData();
-		getMyDetails();
-		setValuesAdapter();
-		getDetailsFromServer();
+		mHandler.sendEmptyMessageDelayed(0, 400);
 	}
 
 	/**
@@ -121,6 +139,11 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 				String tid = cursor.getString(cursor.getColumnIndex("tid"));
 				String key = cursor.getString(cursor.getColumnIndex("key"));
 				String value = cursor.getString(cursor.getColumnIndex("value"));
+				if (key.equals("D_AVATAR")) {
+					avatarURL = value;
+				} else if (key.equals("D_NAME")) {
+					strName = value;
+				}
 				String start = cursor.getString(cursor
 						.getColumnIndex("startDate"));
 				String end = cursor.getString(cursor.getColumnIndex("endDate"));
@@ -129,8 +152,44 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 				cursor.moveToNext();
 			}
 		}
+		txtname.setText(strName);
+		// imageLoader.displayImage(avatarURL, avatar, options);
+		loadAvatar();
 		isDetailChange(change);
 		cursor.close();
+	}
+
+	private void loadAvatar() {
+		imageLoader.loadImage(avatarURL, options, new ImageLoadingListener() {
+
+			@Override
+			public void onLoadingStarted(String arg0, View arg1) {
+
+			}
+
+			@Override
+			public void onLoadingFailed(String arg0, View arg1, FailReason arg2) {
+
+			}
+
+			@SuppressLint("NewApi")
+			@Override
+			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
+				if (bmp == null) {
+					avatar.setImageResource(R.drawable.pic);
+					return;
+				}
+				avatar.setImageBitmap(bmp);
+				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+
+			}
+
+			@Override
+			public void onLoadingCancelled(String arg0, View arg1) {
+
+			}
+		});
+
 	}
 
 	public void isDetailChange(String change) {
@@ -220,6 +279,7 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 		myCard = LayoutInflater.from(mContext).inflate(R.layout.my_card_show,
 				null);
 		back = (ImageView) myCard.findViewById(R.id.back);
+		layTop = (RelativeLayout) myCard.findViewById(R.id.top);
 
 		txtname = (TextView) myCard.findViewById(R.id.name);
 		avatar = (CircularImage) myCard.findViewById(R.id.avatar);
@@ -271,8 +331,13 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 		setLayVisible();
 	}
 
-	public void setAvatar(Bitmap bmp) {
+	@SuppressLint("NewApi")
+	public void setAvatar(Bitmap bmp, String avatarPath) {
 		avatar.setImageBitmap(bmp);
+		layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+		if (!avatarPath.equals("")) {
+			avatarURL = avatarPath;
+		}
 	}
 
 	public View getView() {
@@ -425,7 +490,26 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ViewHolderValues holderValues = null;
-			if (convertView == null) {
+			String key = valuesList.get(position).getKey();
+			if (key.equals("性別")) {
+				holderValues = new ViewHolderValues();
+				convertView = LayoutInflater.from(mContext).inflate(
+						R.layout.user_info_show_gendar, null);
+				holderValues.radioBoy = (RadioButton) convertView
+						.findViewById(R.id.radioboy);
+				holderValues.radioGirl = (RadioButton) convertView
+						.findViewById(R.id.radiogirl);
+				holderValues.key = (TextView) convertView
+						.findViewById(R.id.key);
+				holderValues.key.setText(key);
+				holderValues.radioBoy.setClickable(false);
+				holderValues.radioGirl.setClickable(false);
+				if (valuesList.get(position).getValue().equals("1")) {
+					holderValues.radioBoy.setChecked(true);
+				} else if (valuesList.get(position).getValue().equals("2")) {
+					holderValues.radioGirl.setChecked(true);
+				}
+			} else {
 				convertView = LayoutInflater.from(mContext).inflate(
 						R.layout.user_info_show_list_item_key_value, null);
 				holderValues = new ViewHolderValues();
@@ -434,11 +518,9 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 				holderValues.value = (TextView) convertView
 						.findViewById(R.id.value);
 				convertView.setTag(holderValues);
-			} else {
-				holderValues = (ViewHolderValues) convertView.getTag();
+				holderValues.key.setText(key);
+				holderValues.value.setText(valuesList.get(position).getValue());
 			}
-			holderValues.key.setText(valuesList.get(position).getKey());
-			holderValues.value.setText(valuesList.get(position).getValue());
 			return convertView;
 		}
 	}
@@ -446,6 +528,9 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 	class ViewHolderValues {
 		TextView key;
 		TextView value;
+		RadioButton radioBoy;
+		RadioButton radioGirl;
+
 	}
 
 	class ContactValueAdapter extends BaseAdapter {
@@ -508,18 +593,7 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 			break;
 		case R.id.btnedit:
 			Intent it = new Intent();
-			Bundle bundle = new Bundle();
-			bundle.putSerializable("basicList", (Serializable) showBasicList);
-			bundle.putSerializable("contactList",
-					(Serializable) showContactList);
-			bundle.putSerializable("socialList", (Serializable) showSocialList);
-			bundle.putSerializable("addressList",
-					(Serializable) showAddressList);
-			bundle.putSerializable("eduList", (Serializable) showEduList);
-			bundle.putSerializable("workList", (Serializable) showWorkList);
-			it.putExtras(bundle);
-			it.putExtra("name", strName);
-			it.putExtra("pid", pid);
+			it.putExtra("name", txtname.getText());
 			it.putExtra("avatar", avatarURL);
 			it.setClass(mContext, MyCardEditActivity.class);
 			((Activity) mContext).startActivityForResult(it, 2);
@@ -590,9 +664,9 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 		isDetailChange(change);
 		strName = name;
 		txtname.setText(name);
-		this.pid = pid;
 		this.avatarURL = avatarURL;
-		imageLoader.displayImage(avatarURL, avatar, options);
+		// imageLoader.displayImage(avatarURL, avatar, options);
+		loadAvatar();
 		notifyData(basicList, contactList, socialList, addressList, eduList,
 				workList);
 	}

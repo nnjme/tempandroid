@@ -2,6 +2,7 @@ package com.changlianxi.activity;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.changlianxi.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +20,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
@@ -58,6 +61,8 @@ public class FindPasswordActivity extends BaseActivity implements
 	private Dialog pd;
 	private Button btGetCode;// 注册界面重新获取验证码按钮
 	private int second = 60;// 用于重新获取验证码时间倒计时
+	private TextView title;
+	private LinearLayout layBg;
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -92,8 +97,12 @@ public class FindPasswordActivity extends BaseActivity implements
 		find2 = flater.inflate(R.layout.find_word2, null);
 		find3 = flater.inflate(R.layout.find_word3, null);
 		group.addView(find1, params);
-		btback = (ImageView) findViewById(R.id.btback);
+		btback = (ImageView) findViewById(R.id.back);
 		btback.setOnClickListener(this);
+		title = (TextView) findViewById(R.id.titleTxt);
+		title.setText("找回密码");
+		layBg = (LinearLayout) findViewById(R.id.bg);
+		layBg.setBackgroundResource(R.drawable.back_trans6);
 		initFind1View();
 		initFind2View();
 		initFind3View();
@@ -167,7 +176,7 @@ public class FindPasswordActivity extends BaseActivity implements
 			pd.show();
 			type = "2";
 			break;
-		case R.id.btback:
+		case R.id.back:
 			finish();
 			Utils.rightOut(this);
 
@@ -228,7 +237,7 @@ public class FindPasswordActivity extends BaseActivity implements
 				btGetCode.setTextColor(Color.GRAY);
 				btGetCode.setEnabled(false);
 				mHandler.sendEmptyMessage(0);
-//				Utils.hideSoftInput(this);
+				// Utils.hideSoftInput(this);
 
 			} else {
 				Utils.showToast("手机号码不存在");

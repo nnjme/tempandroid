@@ -28,7 +28,7 @@ import android.os.Message;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class UpdateService extends Service {
 	private NotificationManager nm;

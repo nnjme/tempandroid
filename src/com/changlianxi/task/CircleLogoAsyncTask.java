@@ -41,6 +41,9 @@ public class CircleLogoAsyncTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		String result = "";
 		File file = new File(cirIconPath);
 		Map<String, Object> map = new HashMap<String, Object>();

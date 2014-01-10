@@ -39,6 +39,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.ContactModle;
 import com.changlianxi.modle.MemberModle;
@@ -86,7 +87,6 @@ public class SelectContactsActivity extends BaseActivity implements
 	private TextView selectedChar;// 显示选择字母
 	private int position;// 当前字母子listview中所对应的位置
 	private SearchEditText editSearch;
-	private HorizontalScrollView hScroll;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -188,7 +188,6 @@ public class SelectContactsActivity extends BaseActivity implements
 		indexBar.setOnTouchUp(this);
 		selectedChar = (TextView) findViewById(R.id.selected_tv);
 		selectedChar.setVisibility(View.INVISIBLE);
-		hScroll = (HorizontalScrollView) findViewById(R.id.horizontalScrollView1);
 		listview.setOnScrollListener(new OnScrollListener() {
 
 			@Override

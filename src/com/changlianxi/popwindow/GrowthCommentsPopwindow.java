@@ -36,7 +36,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.activity.ReleaseGrowthActivity;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.adapter.GrowthImgAdapter;
@@ -116,7 +116,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 		cid = modle.getCid();
 		gid = modle.getId();
 		uid = modle.getUid();
-		MemberInfoModle md = DBUtils.selectNameAndImgByID("circle" + cid, uid);
+		MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
 		if (md != null) {
 			name.setText(md.getName());
 			String path = md.getAvator();
@@ -458,7 +458,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 	 */
 	private void setNameAndImg(String tableName, String id, ViewHolder holder) {
 		MemberInfoModle modle = new MemberInfoModle();
-		modle = DBUtils.selectNameAndImgByID(tableName, id);
+		modle = DBUtils.selectNameAndImgByID(id);
 		String name = modle.getName();
 		String path = modle.getAvator();
 		holder.name.setText(name);

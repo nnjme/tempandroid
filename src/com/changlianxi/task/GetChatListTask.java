@@ -15,6 +15,7 @@ import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessageModle;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.StringUtils;
 
 /**
  * 获取某个圈子的聊天内容列表 *
@@ -40,6 +41,9 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
@@ -58,11 +62,9 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 				MessageModle modle = new MessageModle();
 				String name = "";
 				String avatarPath = "";
-				String id = object.getString("id");
 				String type = object.getString("type");
 				String senderid = object.getString("sender");// 发言用户id
-				MemberInfoModle info = DBUtils.selectNameAndImgByID("circle"
-						+ cid, senderid);
+				MemberInfoModle info = DBUtils.selectNameAndImgByID(senderid);
 				if (info != null) {
 					avatarPath = info.getAvator();
 					name = info.getName();
@@ -76,11 +78,14 @@ public class GetChatListTask extends AsyncTask<String, Integer, String> {
 				}
 				if (type.equals("TYPE_TEXT")) {
 					modle.setType(0);
+					modle.setContent(content);
+
 				} else if (type.equals("TYPE_IMAGE")) {
 					modle.setType(1);
+					modle.setContent(StringUtils
+							.JoinString(content, "_100x100"));
 				}
 				modle.setCid(cid);
-				modle.setContent(content);
 				modle.setTime(time);
 				modle.setAvatar(avatarPath);
 				modle.setName(name);

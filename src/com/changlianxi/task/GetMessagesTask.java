@@ -47,6 +47,9 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		String result = HttpUrlHelper.postData(map, url);
 		try {
 			JSONObject jsonobject = new JSONObject(result);
@@ -66,8 +69,7 @@ public class GetMessagesTask extends AsyncTask<String, Integer, String> {
 				String time = object.getString("time");
 				String cid = object.getString("cid");
 				String type = object.getString("type");
-				MemberInfoModle info = DBUtils.selectNameAndImgByID("circle"
-						+ cid, uid);
+				MemberInfoModle info = DBUtils.selectNameAndImgByID(uid);
 				if (info != null) {
 					avatarPath = info.getAvator();
 					name = info.getName();

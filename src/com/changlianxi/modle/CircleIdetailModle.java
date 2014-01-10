@@ -13,7 +13,7 @@ public class CircleIdetailModle {
 	String name = ""; // 圈子名称
 	String description = ""; // 圈子描述
 	String logo = ""; // 圈子logo图片地址
-	String creator; // 圈子创建者，用户ID
+	String creator = ""; // 圈子创建者，用户ID
 	String createdTime = ""; // 圈子创建时间
 	List<CircleRoles> rolesModle;// 职务
 	int membersTotal;// 圈子成员总数（包括邀请中的，同意加入的，认证通过的）

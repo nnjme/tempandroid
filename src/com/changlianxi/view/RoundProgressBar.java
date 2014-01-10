@@ -11,7 +11,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 /**
  * 自定义进度条

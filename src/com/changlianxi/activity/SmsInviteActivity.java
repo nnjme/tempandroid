@@ -25,6 +25,7 @@ import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.changlianxi.R;
 
 /**
  * .¶ÌÐÅÑûÇë½çÃæ

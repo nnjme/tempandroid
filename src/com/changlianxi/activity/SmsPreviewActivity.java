@@ -16,6 +16,7 @@ import android.widget.ListView;
 import com.changlianxi.adapter.SmsAdaprter;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.util.Utils;
+import com.changlianxi.R;
 
 /**
  * ∂Ã–≈‘§¿¿ΩÁ√Ê

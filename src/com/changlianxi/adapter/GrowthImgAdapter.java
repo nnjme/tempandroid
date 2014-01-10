@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;

@@ -15,7 +15,7 @@ import com.changlianxi.util.HttpUrlHelper;
  */
 public class SendMessageThread extends Thread {
 	private Queue<HashMap<String, Object>> queueMap = new LinkedList<HashMap<String, Object>>();// 用于发送私信的队列
-	private boolean running = true;
+	public boolean running = true;
 	private String url = "";
 	private SendMessageAndChatCallBack callBack;
 

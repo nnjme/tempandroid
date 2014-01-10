@@ -3,10 +3,10 @@ package com.changlianxi.popwindow;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -15,7 +15,8 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
+import com.changlianxi.util.WigdtContorl;
 
 /**
  * 圈子设置提示框
@@ -48,6 +49,7 @@ public class ListViewPopwindow implements OnItemClickListener {
 		listview.setOnItemClickListener(this);
 		adapter = new MyAdapter();
 		listview.setAdapter(adapter);
+		WigdtContorl.setListViewHeight(listview);
 	}
 
 	/**
@@ -55,8 +57,8 @@ public class ListViewPopwindow implements OnItemClickListener {
 	 */
 	@SuppressWarnings("deprecation")
 	private void initPopwindow() {
-		popupWindow = new PopupWindow(view, v.getWidth() - 20,
-				v.getHeight() * 4);
+		popupWindow = new PopupWindow(view, v.getWidth() - 10,
+				LayoutParams.MATCH_PARENT);
 		// 这个是为了点击“返回Back”也能使其消失，并且并不会影响你的背景（很神奇的）
 		popupWindow.setBackgroundDrawable(new BitmapDrawable());
 	}
@@ -65,7 +67,9 @@ public class ListViewPopwindow implements OnItemClickListener {
 	 * popwindow的显示
 	 */
 	public void show() {
-		popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, v.getHeight());
+		// popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, v.getHeight());
+		// popupWindow.showAsDropDown(v);
+		popupWindow.showAsDropDown(v, 5, 0);
 		// 使其聚集
 		popupWindow.setFocusable(true);
 		// 设置允许在外点击消失

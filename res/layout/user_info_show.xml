@@ -8,7 +8,7 @@
     <RelativeLayout
         android:id="@+id/top"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/scale390dip"
         android:background="@drawable/header_boxbg" >
 
         <ImageView
@@ -120,6 +120,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:clickable="false"
             android:gravity="center" >
 
             <ImageView
@@ -138,8 +139,8 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- <ListView -->
-    <!-- android:id="@+id/listView_list" -->
+    <!-- <com.changlianxi.view.ScrollViewWithListView -->
+    <!-- android:id="@+id/com.changlianxi.view.ScrollViewWithListView_list" -->
     <!-- android:layout_width="fill_parent" -->
     <!-- android:layout_height="fill_parent" -->
     <!-- android:layout_below="@+id/tag" -->
@@ -147,7 +148,7 @@
     <!-- android:divider="#d1d1d1" -->
     <!-- android:dividerHeight="0.2dip" -->
     <!-- android:scrollbars="none" > -->
-    <!-- </ListView> -->
+    <!-- </com.changlianxi.view.ScrollViewWithListView> -->
 
     <ScrollView
         android:id="@+id/scrollView1"
@@ -193,6 +194,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="23dip"
                         android:orientation="vertical" >
+
+                        <!-- com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView -->
 
                         <com.changlianxi.view.ScrollViewWithListView
                             android:id="@+id/basicListView"
@@ -247,6 +250,9 @@
                             android:layout_height="match_parent"
                             android:divider="@null"
                             android:listSelector="@android:color/transparent" >
+
+                            <!-- <com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
+                            <!-- </com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
                         </com.changlianxi.view.ScrollViewWithListView>
                     </LinearLayout>
                 </LinearLayout>
@@ -293,6 +299,9 @@
                             android:layout_height="match_parent"
                             android:divider="@null"
                             android:listSelector="@android:color/transparent" >
+
+                            <!-- <com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
+                            <!-- </com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
                         </com.changlianxi.view.ScrollViewWithListView>
                     </LinearLayout>
                 </LinearLayout>
@@ -340,6 +349,8 @@
                             android:layout_height="match_parent"
                             android:divider="@null"
                             android:listSelector="@android:color/transparent" >
+
+                            <!-- </com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
                         </com.changlianxi.view.ScrollViewWithListView>
                     </LinearLayout>
                 </LinearLayout>
@@ -433,6 +444,10 @@
                             android:layout_height="match_parent"
                             android:divider="@null"
                             android:listSelector="@android:color/transparent" >
+
+                            <!-- <com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
+                            <!-- </com.changlianxi.view.ScrollViewWithcom.changlianxi.view.ScrollViewWithListView> -->
+
                         </com.changlianxi.view.ScrollViewWithListView>
                     </LinearLayout>
                 </LinearLayout>

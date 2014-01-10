@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -19,23 +20,24 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleIdetailModle;
 import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
-import com.changlianxi.task.GetCircleIdetailTask;
 import com.changlianxi.task.GetCircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
-import com.changlianxi.view.Home;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -47,11 +49,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  */
 public class EditCircleActivity extends BaseActivity implements
 		OnClickListener, GetCircleIdetail, PostCallBack {
-	// private LinearLayout addRoles;
-	// private LinearLayout layRoles;
-	// private int count;// 添加职务数量
-	// private JSONArray jsonAry = new JSONArray();
-	// private JSONObject jsonObj;
 	private Button btnSave;
 	private EditText circleName;// 圈子名称
 	private TextView titleName;
@@ -62,10 +59,10 @@ public class EditCircleActivity extends BaseActivity implements
 	private String logoPath = "";
 	private ImageView back;
 	private SelectPicPopwindow pop;
-	// private List<CircleRoles> rolesModle = null;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	private Bitmap cirBmp = null;
+	private CircleIdetailModle modle = new CircleIdetailModle();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,20 +77,30 @@ public class EditCircleActivity extends BaseActivity implements
 	}
 
 	private void getSercverData() {
-		if (!Utils.isNetworkAvailable()) {
-			Utils.showToast("请检查网络");
-			return;
+		modle = DBUtils.getCircleDetail(cid);
+		circleDescription.setText(modle.getDescription());
+		circleName.setText(modle.getName());
+		titleName.setText(modle.getName());
+		String path = modle.getLogo();
+		String logo = "";
+		if (path.startsWith("http")) {
+			logo = StringUtils.JoinString(path, "_200x200");
+		} else {
+			logo = "file://" + path;
 		}
-		pd = DialogUtil.getWaitDialog(this, "请稍后");
-		GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
-		task.setTaskCallBack(this);
-		task.execute();
-		pd.show();
+		imageLoader.displayImage(logo, circleLogo, options);
+		// if (!Utils.isNetworkAvailable()) {
+		// Utils.showToast("请检查网络");
+		// return;
+		// }
+		// pd = DialogUtil.getWaitDialog(this, "请稍后");
+		// GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
+		// task.setTaskCallBack(this);
+		// task.execute();
+		// pd.show();
 	}
 
 	private void findViewByID() {
-		// addRoles = (LinearLayout) findViewById(R.id.addroles);
-		// layRoles = (LinearLayout) findViewById(R.id.layRoles);
 		btnSave = (Button) findViewById(R.id.btnsave);
 		titleName = (TextView) findViewById(R.id.titleName);
 		circleName = (EditText) findViewById(R.id.circleName);
@@ -104,98 +111,19 @@ public class EditCircleActivity extends BaseActivity implements
 	}
 
 	private void setListener() {
-		// addRoles.setOnClickListener(this);
 		btnSave.setOnClickListener(this);
 		circleLogo.setOnClickListener(this);
 		back.setOnClickListener(this);
 	}
 
-	// /**
-	// * 添加职务
-	// */
-	// private void addView(String roleName, String tag) {
-	// count++;
-	// View view = LayoutInflater.from(this).inflate(
-	// R.layout.circle_roles_layout, null);
-	// // layRoles.addView(view);
-	// TextView txt = (TextView) view.findViewById(R.id.textView1);
-	// EditText edit = (EditText) view.findViewById(R.id.roleName);
-	// edit.setTag(tag);
-	// edit.setText(roleName);
-	// if (count == 1) {
-	// txt.setVisibility(View.VISIBLE);
-	// } else {
-	// txt.setVisibility(View.INVISIBLE);
-	// }
-	// }
-
-	// /**
-	// * 新增职务json串
-	// *
-	// * @param name
-	// * 职务名称
-	// */
-	// private void BuildAddJson(String name) {
-	// try {
-	// jsonObj = new JSONObject();
-	// jsonObj.put("name", name);
-	// jsonObj.put("op", "new");
-	// jsonAry.put(jsonObj);
-	// } catch (JSONException e) {
-	// e.printStackTrace();
-	// }
-	// }
-	//
-	// /**
-	// * 编辑职务json串
-	// *
-	// * @param name
-	// * 职务名称
-	// */
-	// private void BuildEditJson(String name, String id) {
-	// try {
-	// jsonObj = new JSONObject();
-	// jsonObj.put("name", name);
-	// jsonObj.put("id", id);
-	// jsonObj.put("op", "edit");
-	// jsonAry.put(jsonObj);
-	// } catch (JSONException e) {
-	// e.printStackTrace();
-	// }
-	// }
-
-	// /**
-	// * 获取职务名称
-	// */
-	// private String getValue() {
-	// int newposition = 0;
-	// if (rolesModle != null && rolesModle.size() > 0) {// 判断是否编辑
-	// newposition = rolesModle.size();
-	// for (int i = 0; i < rolesModle.size(); i++) {
-	// EditText t = (EditText) layRoles.getChildAt(i).findViewById(
-	// R.id.roleName);
-	// String txt = t.getText().toString();
-	// if (!txt.equals(rolesModle.get(i).getRoleName())) {
-	// BuildEditJson(txt, rolesModle.get(i).getRoleId());
-	// }
-	// }
-	// }
-	// // 新增
-	// for (int i = newposition; i < layRoles.getChildCount(); i++) {
-	// EditText t = (EditText) layRoles.getChildAt(i).findViewById(
-	// R.id.roleName);
-	// BuildAddJson(t.getText().toString());
-	// }
-	// return jsonAry.toString();
-	// }
-
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		// case R.id.addroles:
-		// addView("", "new");
-		// break;
 		case R.id.btnsave:
+			if (circleName.getText().toString().length() == 0) {
+				Utils.showToast("圈子名称不能为空");
+				return;
+			}
 			saveInfo();
 			break;
 		case R.id.circleLogo:
@@ -223,10 +151,6 @@ public class EditCircleActivity extends BaseActivity implements
 		titleName.setText(modle.getName());
 		String logo = StringUtils.JoinString(modle.getLogo(), "_200x200");
 		imageLoader.displayImage(logo, circleLogo, options);
-		// rolesModle = modle.getRolesModle();
-		// for (int i = 0; i < rolesModle.size(); i++) {
-		// addView(rolesModle.get(i).getRoleName(), "");
-		// }
 	}
 
 	/**
@@ -241,7 +165,6 @@ public class EditCircleActivity extends BaseActivity implements
 		map.put("cid", cid);
 		map.put("name", circleName.getText());
 		map.put("description", circleDescription.getText().toString());
-		// map.put("roles", getValue());
 		PostAsyncTask task = new PostAsyncTask(this, map, "/circles/iedit");
 		task.setTaskCallBack(this);
 		task.execute();
@@ -266,9 +189,9 @@ public class EditCircleActivity extends BaseActivity implements
 				pd.dismiss();
 				if (flag) {
 					Utils.showToast("修改成功");
-					Home.refreshCircleList(null);
+					BroadCast.sendBroadCast(EditCircleActivity.this,
+							Constants.REFRESH_CIRCLE_LIST);// 发送广播更新圈子列表
 					exitSuccess();
-
 				} else {
 					Utils.showToast("修改失败");
 				}
@@ -281,6 +204,9 @@ public class EditCircleActivity extends BaseActivity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		SelectPicModle modle = new SelectPicModle();
+		if (resultCode != RESULT_OK || data == null) {
+			return;
+		}
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			modle = BitmapUtils.getPickPic(this, data);
@@ -288,12 +214,7 @@ public class EditCircleActivity extends BaseActivity implements
 			BitmapUtils.startPhotoZoom(this, data.getData());
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-			if (resultCode != RESULT_OK) {
-				return;
-			}
-			if (resultCode != RESULT_OK) {
-				return;
-			}
+
 			String fileName = pop.getTakePhotoPath();
 			logoPath = fileName;
 			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
@@ -318,6 +239,14 @@ public class EditCircleActivity extends BaseActivity implements
 				pd.dismiss();
 				return;
 			}
+			ContentValues values = new ContentValues();
+			values.put("cirName", circleName.getText().toString());
+			values.put("cirDescribe", circleDescription.getText().toString());
+			if (!logoPath.equals("")) {
+				values.put("cirIcon", logoPath);
+			}
+			DBUtils.updateInfo(Constants.CIRCLEDETAIL, values, "cid=?",
+					new String[] { cid });
 			if (logoPath.equals("")) {
 				pd.dismiss();
 				Utils.showToast("修改成功");

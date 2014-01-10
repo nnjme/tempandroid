@@ -12,8 +12,6 @@ import org.json.JSONObject;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,19 +19,22 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.changlianxi.activity.MessageActivity;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.adapter.MessageListAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MessagesListModle;
+import com.changlianxi.util.BroadCast;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
-import com.changlianxi.view.MyListView.OnRefreshListener;
 
 /**
  * 私信列表展示界面
@@ -46,9 +47,11 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 	private View mMessages;
 	private OnOpenListener mOnOpenListener;
 	private LinearLayout mMenu;
-	private MyListView listview;
+	private ListView listview;
 	private List<MessagesListModle> listModle = new ArrayList<MessagesListModle>();
 	private MessageListAdapter adapter;
+	private TextView txtMessageCount;
+	private int messageCount;
 
 	public MessagesList(Context context) {
 		this.mContext = context;
@@ -65,21 +68,17 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 	 */
 	private void initView() {
 		mMenu = (LinearLayout) mMessages.findViewById(R.id.home_menu);
-		listview = (MyListView) mMessages.findViewById(R.id.listView);
+		listview = (ListView) mMessages.findViewById(R.id.listView);
 		listview.setAdapter(adapter);
+		txtMessageCount = (TextView) mMessages.findViewById(R.id.messageCount);
 	}
 
 	private void setListener() {
 		mMenu.setOnClickListener(this);
 		listview.setOnItemClickListener(this);
 		listview.setCacheColorHint(0);
-		listview.setSelector(new ColorDrawable(Color.TRANSPARENT));
-		listview.setonRefreshListener(new OnRefreshListener() {
-			public void onRefresh() {
-				listModle.clear();
-				new GetMessagetTask().execute();
-			}
-		});
+		listview.setCacheColorHint(0);
+
 	}
 
 	/**
@@ -110,10 +109,10 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 					String type = object.getString("type");
 					String msg = object.getString("msg");
 					String time = object.getString("time");
-					String newCount = object.getString("new");
+					int newCount = object.getInt("new");
+					messageCount += newCount;
 					String cirName = DBUtils.getCircleNameById(cid);
-					MemberInfoModle info = DBUtils.selectNameAndImgByID(
-							"circle" + cid, uid);
+					MemberInfoModle info = DBUtils.selectNameAndImgByID(uid);
 					if (info != null) {
 						avatarPath = info.getAvator();
 						name = info.getName();
@@ -142,8 +141,10 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 		protected void onPostExecute(String result) {
 			progressDialog.dismiss();
 			adapter.notifyDataSetChanged();
-			listview.onRefreshComplete();
-
+			if (messageCount > 0) {
+				txtMessageCount.setText(messageCount + "");
+				txtMessageCount.setVisibility(View.VISIBLE);
+			}
 		}
 
 		@Override
@@ -176,8 +177,22 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		int position = arg2 - 1;
+	public void onItemClick(AdapterView<?> arg0, View arg1, int position,
+			long arg3) {
+		messageCount -= listModle.get(position).getNewCount();
+		if (messageCount > 0) {
+			txtMessageCount.setText(messageCount + "");
+			txtMessageCount.setVisibility(View.VISIBLE);
+		} else {
+			txtMessageCount.setVisibility(View.GONE);
+			Intent intent = new Intent();
+			intent.setAction(Constants.MESSAGE_PROMPT);
+			intent.putExtra("prompt", false);
+			BroadCast.sendBroadCast(mContext, intent);
+
+		}
+		listModle.get(position).setNewCount(0);
+		adapter.setData(listModle);
 		Intent intent = new Intent();
 		intent.putExtra("type", "read");// 阅读私信
 		intent.putExtra("ruid", listModle.get(position).getUid());// 要读私信者的id
@@ -188,5 +203,4 @@ public class MessagesList implements OnClickListener, OnItemClickListener {
 		Utils.leftOutRightIn(mContext);
 
 	}
-
 }

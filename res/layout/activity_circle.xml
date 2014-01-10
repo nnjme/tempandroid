@@ -23,76 +23,157 @@
         </FrameLayout>
     </TabHost>
 
+    <View
+        android:id="@+id/imageView1"
+        android:layout_width="fill_parent"
+        android:layout_height="0.2dip"
+        android:background="#d7d7d7" />
+
     <LinearLayout
         android:id="@+id/btParent"
         android:layout_width="match_parent"
-        android:layout_height="50dip"
+        android:layout_height="52dip"
         android:layout_gravity="bottom"
-        android:background="@drawable/footer_nav_bg"
-        android:gravity="center"
-        android:padding="3dip" >
+        android:background="#efefef" >
 
-        <Button
-            android:id="@+id/cy"
+        <RelativeLayout
+            android:id="@+id/layCY"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@null"
-            android:padding="10dip"
-            android:text="成员"
-            android:textSize="16sp" />
+            android:gravity="center_horizontal" >
 
-        <Button
-            android:id="@+id/cz"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@null"
-            android:padding="10dip"
-            android:text="成长"
-            android:textColor="@color/default_font_color"
-            android:textSize="16sp" />
+            <TextView
+                android:id="@+id/cy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dip"
+                android:background="@null"
+                android:text="成员"
+                android:textColor="@color/black"
+                android:textSize="@dimen/scale32sp" />
 
-        <Button
-            android:id="@+id/lt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@null"
-            android:padding="10dip"
-            android:text="聊天"
-            android:textColor="@color/default_font_color"
-            android:textSize="16sp" />
+            <TextView
+                android:id="@+id/cyPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/cy"
+                android:background="@drawable/news_num_bg"
+                android:gravity="center"
+                android:text="88"
+                android:textColor="#ffffff"
+                android:textSize="@dimen/scale26sp"
+                android:visibility="gone" />
+        </RelativeLayout>
 
-        <Button
-            android:id="@+id/dt"
+        <RelativeLayout
+            android:id="@+id/layCZ"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@null"
-            android:padding="10dip"
-            android:text="动态"
-            android:textColor="@color/default_font_color"
-            android:textSize="16sp" />
+            android:gravity="center_horizontal" >
+
+            <TextView
+                android:id="@+id/cz"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dip"
+                android:background="@null"
+                android:text="成长"
+                android:textColor="@color/tabfond"
+                android:textSize="@dimen/scale32sp" />
+
+            <TextView
+                android:id="@+id/czPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/cz"
+                android:background="@drawable/news_num_bg"
+                android:gravity="center"
+                android:text="88"
+                android:textColor="#ffffff"
+                android:textSize="@dimen/scale26sp"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/layLT"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_horizontal" >
+
+            <TextView
+                android:id="@+id/lt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dip"
+                android:background="@null"
+                android:text="聊天"
+                android:textColor="@color/tabfond"
+                android:textSize="@dimen/scale32sp" />
+
+            <TextView
+                android:id="@+id/ltPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/lt"
+                android:background="@drawable/news_num_bg"
+                android:gravity="center"
+                android:text="88"
+                android:textColor="#ffffff"
+                android:textSize="@dimen/scale26sp"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/layDT"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_horizontal" >
+
+            <TextView
+                android:id="@+id/dt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dip"
+                android:background="@null"
+                android:text="动态"
+                android:textColor="@color/tabfond"
+                android:textSize="@dimen/scale32sp" />
+
+            <TextView
+                android:id="@+id/dtPrompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/dt"
+                android:background="@drawable/news_num_bg"
+                android:gravity="center"
+                android:text="88"
+                android:textColor="#ffffff"
+                android:textSize="@dimen/scale26sp"
+                android:visibility="gone" />
+        </RelativeLayout>
 
         <View
             android:id="@+id/imageView1"
             android:layout_width="0.2dip"
-            android:layout_height="fill_parent"
+            android:layout_height="60dip"
             android:background="#d7d7d7" />
 
         <LinearLayout
             android:id="@+id/more"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center" >
+            android:layout_marginTop="17dip"
+            android:gravity="center_horizontal" >
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dip"
-                android:layout_marginRight="15dip"
+                android:layout_marginLeft="@dimen/scale55dip"
+                android:layout_marginRight="@dimen/scale55dip"
                 android:background="@drawable/footer_nav_more" />
         </LinearLayout>
     </LinearLayout>

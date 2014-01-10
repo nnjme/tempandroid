@@ -22,7 +22,7 @@ public class MemberModle implements Serializable {
 	private String cid = "";// 所属圈子id
 	private String mobileNum = "";
 	private boolean auth;// 成员认证状态，
-	private String location;
+	private String location = "";
 
 	public String getLocation() {
 		return location;

@@ -1,6 +1,5 @@
 package com.changlianxi.activity;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,16 +24,18 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow.OnSelectKey;
 import com.changlianxi.task.GetUserDetailsTask;
 import com.changlianxi.task.GetUserDetailsTask.GetValuesTask;
+import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.UserInfoUtils;
@@ -71,7 +74,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private LinearLayout btnCall;
 	private LinearLayout btnMessage;
 	private Button btnEdit;
-	private ValueAdapter basicAdapter;
+	private BasicValueAdapter basicAdapter;
 	private ValueAdapter socialAdapter;
 	private ContactValueAdapter contactAdapter;
 	private ValueAdapter addressAdapter;
@@ -90,13 +93,26 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private LinearLayout layadress;
 	private LinearLayout layedu;
 	private LinearLayout layword;
-	private ScrollView scrollView;
 	private LinearLayout layChild;
 	private DataBase dbase = DataBase.getInstance();
 	private SQLiteDatabase db = dbase.getWritableDatabase();
 	private RelativeLayout layParent;
-	private RelativeLayout topBg;
+	private RelativeLayout layTop;
 	private TextView txtnews;
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				getUserDetails(pid);
+				setValuesAdapter();
+				getDetailsFromServer();
+				break;
+			default:
+				break;
+			}
+		}
+	};
 
 	@SuppressLint("NewApi")
 	@Override
@@ -113,9 +129,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		initView();
 		setOnClickListener();
 		initData();
-		getUserDetails(pid);
-		setValuesAdapter();
-		getDetailsFromServer();
+		mHandler.sendEmptyMessageDelayed(0, 100);
+
 	}
 
 	/**
@@ -147,7 +162,9 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	}
 
 	private void getDetailsFromServer() {
-		if (showBasicList.size() == 0) {
+		if (showBasicList.size() == 0 && showContactList.size() == 0
+				&& showSocialList.size() == 0 && showEduList.size() == 0
+				&& showWorkList.size() == 0 && showAddressList.size() == 0) {
 			dialog = DialogUtil.getWaitDialog(this, "«Î…‘∫Û");
 			dialog.show();
 		}
@@ -159,6 +176,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 
 	private void initView() {
 		layParent = (RelativeLayout) findViewById(R.id.parent);
+		layTop = (RelativeLayout) findViewById(R.id.top);
 		back = (ImageView) findViewById(R.id.back);
 		btnCall = (LinearLayout) findViewById(R.id.btncall);
 		btnMessage = (LinearLayout) findViewById(R.id.btnmessage);
@@ -179,8 +197,6 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		layadress = (LinearLayout) findViewById(R.id.layaddress);
 		layedu = (LinearLayout) findViewById(R.id.layedu);
 		layword = (LinearLayout) findViewById(R.id.laywork);
-		scrollView = (ScrollView) findViewById(R.id.scrollView1);
-		topBg = (RelativeLayout) findViewById(R.id.top);
 		txtnews = (TextView) findViewById(R.id.txtnews);
 		layChild = (LinearLayout) findViewById(R.id.layChild);
 	}
@@ -194,7 +210,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 
 	private void setValuesAdapter() {
 		delName();
-		basicAdapter = new ValueAdapter(showBasicList);
+		basicAdapter = new BasicValueAdapter(showBasicList);
 		socialAdapter = new ValueAdapter(showSocialList);
 		contactAdapter = new ContactValueAdapter(showContactList, true);
 		addressAdapter = new ValueAdapter(showAddressList);
@@ -289,7 +305,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				// topBg.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
 
 			}
 
@@ -329,25 +345,29 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		info.setId(id);
 		info.setType(key);
 		String typekey = "";
-		for (int i = 0; i < UserInfoUtils.basicStr.length; i++) {
-			if (key.equals(UserInfoUtils.basicStr[i])) {
+		for (int i = 0; i < UserInfoUtils.basicUserStr.length; i++) {
+			if (key.equals(UserInfoUtils.basicUserStr[i])) {
 				typekey = UserInfoUtils.convertToChines(key);
 				info.setKey(typekey);
+				info.setTitleKey(showGroupkey.get(0));
 				showBasicList.add(info);
 			}
 		}
 		if (Arrays.toString(UserInfoUtils.socialStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
+			info.setTitleKey(showGroupkey.get(2));
 			showSocialList.add(info);
 		} else if (Arrays.toString(UserInfoUtils.contactStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
+			info.setTitleKey(showGroupkey.get(1));
 			showContactList.add(info);
 
 		} else if (Arrays.toString(UserInfoUtils.addressStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
+			info.setTitleKey(showGroupkey.get(3));
 			showAddressList.add(info);
 
 		} else if (Arrays.toString(UserInfoUtils.eduStr).contains(key)) {
@@ -355,15 +375,141 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			info.setKey(typekey);
 			info.setStartDate(start);
 			info.setEndDate(end);
+			info.setTitleKey(showGroupkey.get(4));
+
 			showEduList.add(info);
 		} else if (Arrays.toString(UserInfoUtils.workStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
 			info.setStartDate(start);
+			info.setTitleKey(showGroupkey.get(5));
+
 			info.setEndDate(end);
 			showWorkList.add(info);
 		}
 
+	}
+
+	class BasicValueAdapter extends BaseAdapter {
+		List<Info> valuesList = new ArrayList<Info>();
+		final int TYPE_1 = 0;
+		final int TYPE_2 = 1;
+
+		public BasicValueAdapter(List<Info> valuesList) {
+			this.valuesList = valuesList;
+		}
+
+		@Override
+		public int getCount() {
+			return valuesList.size();
+		}
+
+		@Override
+		public int getItemViewType(int position) {
+			String key = valuesList.get(position).getKey();
+			if (key.equals("–‘Ñe")) {
+				return TYPE_1;
+			} else {
+				return TYPE_2;
+			}
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			// TODO Auto-generated method stub
+			return 2;
+		}
+
+		@Override
+		public Object getItem(int arg0) {
+			// TODO Auto-generated method stub
+			return valuesList.get(arg0);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ViewHolder1 holder1 = null;
+			ViewHolder2 holder2 = null;
+			int type = getItemViewType(position);
+			String key = valuesList.get(position).getKey();
+			if (convertView == null) {
+				switch (type) {
+				case TYPE_1:
+					holder1 = new ViewHolder1();
+					convertView = LayoutInflater.from(UserInfoActivity.this)
+							.inflate(R.layout.user_info_show_gendar, null);
+					holder1.radioBoy = (RadioButton) convertView
+							.findViewById(R.id.radioboy);
+					holder1.radioGirl = (RadioButton) convertView
+							.findViewById(R.id.radiogirl);
+					holder1.key = (TextView) convertView.findViewById(R.id.key);
+					convertView.setTag(holder1);
+					break;
+				case TYPE_2:
+					convertView = LayoutInflater
+							.from(UserInfoActivity.this)
+							.inflate(
+									R.layout.user_info_show_list_item_key_value,
+									null);
+					holder2 = new ViewHolder2();
+					holder2.key = (TextView) convertView.findViewById(R.id.key);
+					holder2.value = (TextView) convertView
+							.findViewById(R.id.value);
+					convertView.setTag(holder2);
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (type) {
+				case TYPE_1:
+					holder1 = (ViewHolder1) convertView.getTag();
+					break;
+				case TYPE_2:
+					holder2 = (ViewHolder2) convertView.getTag();
+					break;
+				default:
+					break;
+				}
+			}
+			switch (type) {
+			case TYPE_1:
+				holder1.key.setText(key);
+				holder1.radioBoy.setClickable(false);
+				holder1.radioGirl.setClickable(false);
+				if (valuesList.get(position).getValue().equals("1")) {
+					holder1.radioBoy.setChecked(true);
+				} else if (valuesList.get(position).getValue().equals("2")) {
+					holder1.radioGirl.setChecked(true);
+				}
+				break;
+			case TYPE_2:
+				holder2.key.setText(key);
+				holder2.value.setText(valuesList.get(position).getValue());
+				break;
+			default:
+				break;
+			}
+			return convertView;
+		}
+	}
+
+	class ViewHolder1 {
+		TextView key;
+		RadioButton radioBoy;
+		RadioButton radioGirl;
+
+	}
+
+	class ViewHolder2 {
+		TextView key;
+		TextView value;
 	}
 
 	class ValueAdapter extends BaseAdapter {
@@ -453,9 +599,9 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 						.findViewById(R.id.key);
 				holderValues.value = (TextView) convertView
 						.findViewById(R.id.value);
-				holderValues.iconSms = (ImageView) convertView
+				holderValues.iconSms = (LinearLayout) convertView
 						.findViewById(R.id.icon_sms);
-				holderValues.iconCall = (ImageView) convertView
+				holderValues.iconCall = (LinearLayout) convertView
 						.findViewById(R.id.icon_call);
 				convertView.setTag(holderValues);
 			} else {
@@ -524,7 +670,6 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			} else {
 				holderValues = (EduHolderValues) convertView.getTag();
 			}
-
 			String values = eduValuesList.get(position).getValue();
 			holderValues.key.setText(eduValuesList.get(position).getKey());
 			holderValues.value.setText(values);
@@ -568,8 +713,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	class ContactViewHolderValues {
 		TextView key;
 		TextView value;
-		ImageView iconSms;
-		ImageView iconCall;
+		LinearLayout iconSms;
+		LinearLayout iconCall;
 	}
 
 	/**
@@ -632,18 +777,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			Utils.rightOut(this);
 			break;
 		case R.id.btnedit:
-
 			Intent it = new Intent();
-			Bundle bundle = new Bundle();
-			bundle.putSerializable("basicList", (Serializable) showBasicList);
-			bundle.putSerializable("contactList",
-					(Serializable) showContactList);
-			bundle.putSerializable("socialList", (Serializable) showSocialList);
-			bundle.putSerializable("addressList",
-					(Serializable) showAddressList);
-			bundle.putSerializable("eduList", (Serializable) showEduList);
-			bundle.putSerializable("workList", (Serializable) showWorkList);
-			it.putExtras(bundle);
 			it.putExtra("name", username);
 			it.putExtra("cid", cid);
 			it.putExtra("pid", pid);
@@ -670,7 +804,6 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 				String mobileArray[] = (mobile
 						.toArray(new String[mobile.size()]));
 				callPhone(mobileArray);
-
 			}
 			break;
 		case R.id.btnmessage:
@@ -751,6 +884,9 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	public void onTaskFinish(List<Info> basicList, List<Info> contactList,
 			List<Info> socialList, List<Info> addressList, List<Info> eduList,
 			List<Info> workList) {
+		if (isFinishing()) {
+			return;
+		}
 		if (dialog != null) {
 			dialog.dismiss();
 		}

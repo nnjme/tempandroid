@@ -3,8 +3,12 @@ package com.changlianxi.activity;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.ViewGroup.LayoutParams;
@@ -14,6 +18,11 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.Info;
 import com.changlianxi.task.GetMyDetailTask;
 import com.changlianxi.task.GetMyDetailTask.GetMyDetail;
+import com.changlianxi.task.GetMyNotifyTask;
+import com.changlianxi.task.GetMyNotifyTask.GetMyNotify;
+import com.changlianxi.util.Constants;
+import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.FlipperLayout;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
@@ -49,29 +58,33 @@ public class MainActivity extends Activity implements OnOpenListener {
 	 * 内容首页界面
 	 */
 	private Home mHome;
-	public static Activity mInstance;
+	private GetMyDetailTask task;
+	private GetMyNotifyTask task1;
+	private boolean prompt;
+	private boolean myCardPrompt;
+	private boolean messagePrompt;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		CLXApplication.addActivity(this);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		/**
-		 * 创建容器,并设置全屏大小
-		 */
 		mRoot = new FlipperLayout(this);
+		prompt = DBUtils.getMyCardPrompt();
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT);
 		mRoot.setLayoutParams(params);
-		/**
-		 * 创建菜单界面和内容首页界面,并添加到容器中,用于初始显示
-		 */
-		mDesktop = new SetMenu(this, this);
-		mHome = new Home(this);
+		mDesktop = new SetMenu(this, prompt);
+		mHome = new Home(this, prompt);
 		mRoot.addView(mDesktop.getView(), params);
 		mRoot.addView(mHome.getView(), params);
 		setContentView(mRoot);
 		setListener();
-		GetMyDetailTask task = new GetMyDetailTask();
+		getMyDetail();
+		registerBoradcastReceiver();
+	}
+
+	private void getMyDetail() {
+		task = new GetMyDetailTask();
 		task.setTaskCallBack(new GetMyDetail() {
 			@Override
 			public void getMydetail(String avatarUrl) {
@@ -79,21 +92,43 @@ public class MainActivity extends Activity implements OnOpenListener {
 			}
 		});
 		task.execute();
+		task1 = new GetMyNotifyTask(SharedUtils.getString("exitTime",
+				DateUtils.phpTime(System.currentTimeMillis())));
+		task1.setTaskCallBack(new GetMyNotify() {
+
+			@Override
+			public void getMyNotify(boolean newCircle, boolean newMessge,
+					boolean cardPrompt) {
+				mDesktop.setMessagePrompt(newMessge);
+				mDesktop.setMyCardPrompt(myCardPrompt);
+				myCardPrompt = cardPrompt;
+				messagePrompt = newMessge;
+				if (newMessge || cardPrompt) {
+					mHome.setVisibleImgPrompt();
+				}
+			}
+		});
+		task1.execute();
 	}
 
 	@Override
 	protected void onDestroy() {
+		if (task != null && task.getStatus() == Status.RUNNING) {
+			task.cancel(true); // 如果Task还在运行，则先取消它
+		}
+		if (task1 != null && task1.getStatus() == Status.RUNNING) {
+			task1.cancel(true); // 如果Task还在运行，则先取消它
+		}
+		mHome.cancleTask();
+		unregisterReceiver(mBroadcastReceiver);
+		SharedUtils.setBoolean("isBackHome", true);// 后台运行
 		DBUtils.close();
 		super.onDestroy();
 	}
 
 	@Override
-	protected void onRestart() {
-		super.onRestart();
-	}
-
-	@Override
 	protected void onResume() {
+		SharedUtils.setBoolean("isBackHome", false);// 后台运行
 		super.onResume();
 	}
 
@@ -115,11 +150,12 @@ public class MainActivity extends Activity implements OnOpenListener {
 			List<Info> workList = (List<Info>) bundle
 					.getSerializable("workList");
 			String name = data.getStringExtra("name");
+			String avatatPath = data.getStringExtra("avatarPath");
 			mCard.cardShow.setName(name);
 			Bitmap bmp = bundle.getParcelable("avatar");
 			if (bmp != null) {
-				mCard.cardShow.setAvatar(bmp);
-				SetMenu.setEidtAvatar(bmp);
+				mCard.cardShow.setAvatar(bmp, avatatPath);
+				mDesktop.setEidtAvatar(bmp);
 			}
 			if (basicList != null && contactList != null && socialList != null
 					&& addressList != null && eduList != null
@@ -132,6 +168,75 @@ public class MainActivity extends Activity implements OnOpenListener {
 	}
 
 	/**
+	 * 注册该广播
+	 */
+	public void registerBoradcastReceiver() {
+		IntentFilter myIntentFilter = new IntentFilter();
+		myIntentFilter.addAction(Constants.REFRESH_CIRCLE_LIST);
+		myIntentFilter.addAction(Constants.ACCEPT_OR_REFUSE_INVITE);
+		myIntentFilter.addAction(Constants.EXIT_CIRCLE);
+		myIntentFilter.addAction(Constants.REMOVE_PROMPT_COUNT);
+		myIntentFilter.addAction(Constants.PUSH_TYPE);
+		myIntentFilter.addAction(Constants.UPDECIRNAME);
+		myIntentFilter.addAction(Constants.MYCARD_PROMPT);
+		myIntentFilter.addAction(Constants.MESSAGE_PROMPT);
+
+		// 注册广播
+		registerReceiver(mBroadcastReceiver, myIntentFilter);
+	}
+
+	/**
+	 * 定义广播
+	 */
+	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (action.equals(Constants.REFRESH_CIRCLE_LIST)) {// 更新圈子列表
+				mHome.refreshCircleList();
+			} else if (action.equals(Constants.ACCEPT_OR_REFUSE_INVITE)) {// 接受或者拒绝圈子邀请
+				String cid = intent.getStringExtra("cid");
+				boolean flag = intent.getBooleanExtra("flag", false);
+				mHome.acceptOrRefuseInvite(cid, flag);
+
+			} else if (action.equals(Constants.EXIT_CIRCLE)) {// 退出圈子
+				String cid = intent.getStringExtra("cid");
+				mHome.exitCircle(cid);
+
+			} else if (action.equals(Constants.REMOVE_PROMPT_COUNT)) {// 减少圈子提示数量
+				String cid = intent.getStringExtra("cid");
+				int position = intent.getIntExtra("position", 0);
+				int promptCount = intent.getIntExtra("promptCount", 0);
+				mHome.remorePromptCount(cid, promptCount, position);
+
+			} else if (action.equals(Constants.PUSH_TYPE)) {// 推送消息
+				String cid = intent.getStringExtra("cid");
+				String type = intent.getStringExtra("type");
+				int promptCount = intent.getIntExtra("promptCount", 0);
+				mHome.pushPormpt(cid, promptCount, type);
+			} else if (action.equals(Constants.UPDECIRNAME)) {// 更改圈子名称
+				String cid = intent.getStringExtra("cid");
+				String cirName = intent.getStringExtra("cirName");
+				mHome.upDateCirName(cid, cirName);
+			} else if (action.equals(Constants.MYCARD_PROMPT)) {// 个人名片提醒
+				boolean prot = intent.getBooleanExtra("prompt", false);
+				mDesktop.setMyCardPrompt(prot);
+				myCardPrompt = false;
+				if (!messagePrompt) {
+					prompt = prot;
+				}
+			} else if (action.equals(Constants.MESSAGE_PROMPT)) {// 私信提醒
+				boolean prot = intent.getBooleanExtra("prompt", false);
+				mDesktop.setMessagePrompt(prot);
+				messagePrompt = false;
+				if (!myCardPrompt) {
+					prompt = prot;
+				}
+			}
+		}
+	};
+
+	/**
 	 * UI事件监听
 	 */
 	private void setListener() {
@@ -142,17 +247,19 @@ public class MainActivity extends Activity implements OnOpenListener {
 				switch (arg0) {
 				case 0:
 					// if (mHome == null) {
-					mHome = new Home(MainActivity.this);
+					mHome = new Home(MainActivity.this, prompt);
 					mHome.setOnOpenListener(MainActivity.this);
 					// }
 					mRoot.close(mHome.getView());
+					// mHome.getServerCircleLists();
 					break;
 				case 1:
-					// if (mCard == null) {
-					mCard = new MyCard(MainActivity.this);
-					mCard.setOnOpenListener(MainActivity.this);
-					// }
+					if (mCard == null) {
+						mCard = new MyCard(MainActivity.this);
+						mCard.setOnOpenListener(MainActivity.this);
+					}
 					mRoot.close(mCard.getView());
+
 					break;
 				case 2:
 					mMessage = new MessagesList(MainActivity.this);
@@ -184,20 +291,19 @@ public class MainActivity extends Activity implements OnOpenListener {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			// TODO Auto-generated method stub
-			if (System.currentTimeMillis() - firstTime < 3000) {
-				CLXApplication.exit();
-			} else {
-				firstTime = System.currentTimeMillis();
+			long secondTime = System.currentTimeMillis();
+			if (secondTime - firstTime > 2000) {// 如果两次按键时间间隔大于2秒，则不退出
 				Utils.showToast("再按一次退出程序");
+				firstTime = secondTime;// 更新firstTime
+				return true;
+			} else {
+				SharedUtils.setString("exitTime",
+						DateUtils.phpTime(System.currentTimeMillis()));
+				mHome.savePromptCount();
+				CLXApplication.exit(false);
 			}
 		}
 		return super.onKeyDown(keyCode, event);
-	}
-
-	@Override
-	public void onBackPressed() {
-
 	}
 
 	public void open() {

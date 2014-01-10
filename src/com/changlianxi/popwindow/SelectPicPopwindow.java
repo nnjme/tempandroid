@@ -16,7 +16,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.PopupWindow;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.FileUtils;
 

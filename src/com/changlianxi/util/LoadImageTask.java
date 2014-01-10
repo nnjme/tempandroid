@@ -2,12 +2,11 @@ package com.changlianxi.util;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.ImageView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class LoadImageTask {
 	private MemoryCache cache;

@@ -41,7 +41,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.photoview.PhotoView;
 import com.changlianxi.util.Logger;

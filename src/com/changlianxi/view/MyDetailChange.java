@@ -21,7 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.modle.MydetailChangeModle;
 import com.changlianxi.task.MyDetailChangeTask;
 import com.changlianxi.task.MyDetailChangeTask.GetChangedDetail;

@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/f6"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -14,7 +15,7 @@
         <ImageView
             android:id="@+id/back"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="fill_parent"
             android:paddingLeft="@dimen/scale30dip"
             android:paddingRight="@dimen/scale29dip"
             android:src="@drawable/icon_return" />
@@ -58,11 +59,27 @@
         </LinearLayout>
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/promptCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/scale20dip"
+        android:background="@drawable/news_bg"
+        android:paddingBottom="8dip"
+        android:paddingLeft="30dip"
+        android:paddingRight="30dip"
+        android:paddingTop="8dip"
+        android:text="5条消息"
+        android:textColor="@color/white"
+        android:textSize="@dimen/scale26sp"
+        android:visibility="gone" />
+
     <com.changlianxi.view.PullDownView
         android:id="@+id/PullDownlistView"
         android:layout_width="fill_parent"
         android:layout_height="0dip"
-        android:layout_weight="1"
-        android:background="@color/f6" />
+        android:layout_weight="1" >
+    </com.changlianxi.view.PullDownView>
 
 </LinearLayout>

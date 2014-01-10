@@ -9,29 +9,31 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/scale228dip"
         android:text="请输入您的手机号码"
-        android:textSize="20dip" />
+        android:textColor="#b2000000"
+        android:textSize="@dimen/scale36sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
-        android:layout_marginTop="40dip"
+        android:layout_marginLeft="@dimen/scale34dip"
+        android:layout_marginRight="@dimen/scale34dip"
+        android:layout_marginTop="@dimen/scale52dip"
         android:gravity="center"
         android:orientation="vertical" >
 
         <EditText
             android:id="@+id/editnum"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="1dip"
-            android:layout_marginRight="1dip"
+            android:layout_height="@dimen/scale129dip"
             android:background="@drawable/input_top_radius"
             android:hint="输入手机号码"
             android:maxLength="13"
-            android:padding="17dip"
-            android:textSize="20dip" >
+            android:paddingLeft="@dimen/scale44dip"
+            android:singleLine="true"
+            android:textColor="#66000000"
+            android:textSize="@dimen/scale46sp" >
 
             <requestFocus />
         </EditText>
@@ -39,12 +41,13 @@
         <Button
             android:id="@+id/btnext"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/scale129dip"
+            android:layout_marginLeft="-1dip"
+            android:layout_marginRight="-1dip"
             android:background="@drawable/gray_bottom_radius"
-            android:padding="15dip"
             android:text="下一步"
             android:textColor="@color/white"
-            android:textSize="25dip" />
+            android:textSize="@dimen/scale46sp" />
     </LinearLayout>
 
 </LinearLayout>

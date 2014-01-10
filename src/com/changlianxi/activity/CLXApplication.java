@@ -9,11 +9,13 @@ import android.app.NotificationManager;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 
-import com.changlianxi.modle.Info;
-import com.changlianxi.modle.MemberModle;
-import com.changlianxi.util.CrashHandler;
+import com.changlianxi.BuildConfig;
+import com.changlianxi.R;
+import com.changlianxi.db.DBUtils;
+import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Logger.Level;
+import com.changlianxi.util.SharedUtils;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -22,23 +24,12 @@ import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 public class CLXApplication extends Application {
 	private static CLXApplication instance;
-	private static List<MemberModle> modle;
 	private NotificationManager mNotificationManager;
 	private MediaPlayer mMediaPlayer;
 	private static DisplayImageOptions options;
 	private static ImageLoader imageLoader;
 	private static List<Activity> activityList = new ArrayList<Activity>();
 	private static List<Activity> smsInviteAactivityList = new ArrayList<Activity>();
-	public static List<Info> basicList = new ArrayList<Info>();// 存放基本信息数据
-	public static List<Info> contactList = new ArrayList<Info>();// 存放联系方式数据
-	public static List<Info> socialList = new ArrayList<Info>();// 存放社交账号数据
-	public static List<Info> addressList = new ArrayList<Info>();// 存放地址数据
-	public static List<Info> eduList = new ArrayList<Info>();// 存放教育经历
-	public static List<Info> workList = new ArrayList<Info>();// 存放工作经历
-	public static String name;
-	public static String pid;
-	public static String cid;
-	public static String avatar;
 
 	public static CLXApplication getInstance() {
 		return instance;
@@ -76,14 +67,16 @@ public class CLXApplication extends Application {
 	}
 
 	// 遍历所有Activity并finish
-	public static void exit() {
+	public static void exit(boolean flag) {
 		for (int i = 0; i < activityList.size(); i++) {
 			Activity activity = activityList.get(i);
 			if (activity != null) {
 				activity.finish();
 			}
 		}
-		// System.exit(0);
+		if (flag) {
+			System.exit(0);
+		}
 	}
 
 	// 遍历创建圈子activity并finish
@@ -141,32 +134,4 @@ public class CLXApplication extends Application {
 		return mNotificationManager;
 	}
 
-	public static void setEditData(List<Info> bList, List<Info> cList,
-			List<Info> sList, List<Info> addList, List<Info> eList,
-			List<Info> wList, String nameStr, String cidStr, String pidStr,
-			String avatarStr) {
-		basicList = bList;
-		contactList = cList;
-		socialList = sList;
-		addressList = addList;
-		eduList = eList;
-		workList = wList;
-		name = nameStr;
-		cid = cidStr;
-		pid = pidStr;
-		avatar = avatarStr;
-	}
-
-	public static void clearData() {
-		basicList = null;
-		contactList = null;
-		socialList = null;
-		addressList = null;
-		eduList = null;
-		workList = null;
-		name = null;
-		cid = null;
-		pid = null;
-		avatar = null;
-	}
 }

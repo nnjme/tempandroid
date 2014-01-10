@@ -18,7 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -104,7 +104,9 @@ public class MyAdapter extends BaseAdapter {
 		} else {
 			holder.imgAuth.setVisibility(View.GONE);
 		}
-		holder.info.setText(list.get(position).getLocation());
+		String employer = list.get(position).getEmployer();
+		holder.info.setText(employer.equals("") ? list.get(position)
+				.getLocation() : employer);
 		holder.name.setText(list.get(position).getName());
 		holder.news.setText(list.get(position).getMobileNum());
 		showAlpha(position, holder);

@@ -6,6 +6,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.util.Utils;
 
 public class AboutActivity extends BaseActivity implements OnClickListener {

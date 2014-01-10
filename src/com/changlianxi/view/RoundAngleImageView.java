@@ -14,7 +14,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class RoundAngleImageView extends ImageView {
 
