@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:id="@+id/titleKey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="23dip"
+        android:text="基本信息"
+        android:textColor="@color/blue"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/key"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="昵称"
+        android:textColor="#6f6f6f"
+        android:textSize="15sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dip"
+        android:paddingBottom="3dip" >
+
+        <RadioButton
+            android:id="@+id/radioboy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@drawable/radiobutton_selector"
+            android:paddingLeft="5dip"
+            android:text="男"
+            android:textColor="#313131"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/radiogirl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dip"
+            android:button="@drawable/radiobutton_selector"
+            android:paddingLeft="5dip"
+            android:text="女"
+            android:textColor="#313131"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+</LinearLayout>
