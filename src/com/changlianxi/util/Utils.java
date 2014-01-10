@@ -107,11 +107,16 @@ public class Utils {
 	 * 隐藏软键盘
 	 */
 	public static void hideSoftInput(Context context) {
-
-		((InputMethodManager) context
-				.getSystemService(Context.INPUT_METHOD_SERVICE))
-				.hideSoftInputFromWindow(((Activity) context).getCurrentFocus()
-						.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+		if (context == null) {
+			return;
+		}
+		InputMethodManager imm = (InputMethodManager) context
+				.getSystemService(Context.INPUT_METHOD_SERVICE);
+		if (imm == null) {
+			return;
+		}
+		imm.hideSoftInputFromWindow(((Activity) context).getCurrentFocus()
+				.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 	}
 
 	/***
