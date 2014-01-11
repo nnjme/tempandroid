@@ -11,11 +11,8 @@ import android.media.MediaPlayer;
 
 import com.changlianxi.BuildConfig;
 import com.changlianxi.R;
-import com.changlianxi.db.DBUtils;
-import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Logger.Level;
-import com.changlianxi.util.SharedUtils;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -26,7 +23,8 @@ public class CLXApplication extends Application {
 	private static CLXApplication instance;
 	private NotificationManager mNotificationManager;
 	private MediaPlayer mMediaPlayer;
-	private static DisplayImageOptions options;
+	private static DisplayImageOptions circlOoptions;
+	private static DisplayImageOptions userOptions;
 	private static ImageLoader imageLoader;
 	private static List<Activity> activityList = new ArrayList<Activity>();
 	private static List<Activity> smsInviteAactivityList = new ArrayList<Activity>();
@@ -100,10 +98,16 @@ public class CLXApplication extends Application {
 			builder.writeDebugLogs();
 		}
 		ImageLoader.getInstance().init(builder.build());
-		options = new DisplayImageOptions.Builder()
+		circlOoptions = new DisplayImageOptions.Builder()
 				.showStubImage(R.drawable.pic)
 				.showImageForEmptyUri(R.drawable.pic)
 				.showImageOnFail(R.drawable.pic).cacheInMemory(true)
+				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
+				.build();
+		userOptions = new DisplayImageOptions.Builder()
+				.showStubImage(R.drawable.head_bg)
+				.showImageForEmptyUri(R.drawable.head_bg)
+				.showImageOnFail(R.drawable.head_bg).cacheInMemory(true)
 				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
 				.build();
 		imageLoader = ImageLoader.getInstance();
@@ -114,7 +118,11 @@ public class CLXApplication extends Application {
 	}
 
 	public static DisplayImageOptions getOptions() {
-		return options;
+		return circlOoptions;
+	}
+
+	public static DisplayImageOptions getUserOptions() {
+		return userOptions;
 	}
 
 	private void initData() {

@@ -49,7 +49,7 @@ public class GrowthAdapter extends BaseAdapter {
 	public GrowthAdapter(Context context, List<GrowthModle> modle) {
 		this.mContext = context;
 		this.listData = modle;
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 		options1 = new DisplayImageOptions.Builder()
 				.showStubImage(R.drawable.empty_photo)

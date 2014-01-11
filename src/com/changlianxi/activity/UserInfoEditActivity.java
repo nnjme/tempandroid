@@ -137,7 +137,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_info_edit);
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		cid = getIntent().getStringExtra("cid");
 		pid = getIntent().getStringExtra("pid");
 		strName = getIntent().getStringExtra("name");
@@ -290,7 +290,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
 				if (bmp == null) {
-					avatar.setImageResource(R.drawable.pic);
+					avatar.setImageResource(R.drawable.head_bg);
 					return;
 				}
 				avatar.setImageBitmap(bmp);

@@ -51,7 +51,7 @@ import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
  * @author teeker_bin
  * 
  */
-public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
+public class MyCardShow implements OnClickListener, GetMyDetailValues {
 	private Context mContext;
 	private View myCard;
 	private List<String> showGroupkey = new ArrayList<String>();
@@ -111,10 +111,10 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 		}
 	};
 
-	public MyCardShow1(Context context) {
+	public MyCardShow(Context context) {
 		this.mContext = context;
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		initView();
 		setOnClickListener();
 		mHandler.sendEmptyMessageDelayed(0, 400);
@@ -153,7 +153,6 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 			}
 		}
 		txtname.setText(strName);
-		// imageLoader.displayImage(avatarURL, avatar, options);
 		loadAvatar();
 		isDetailChange(change);
 		cursor.close();
@@ -176,7 +175,7 @@ public class MyCardShow1 implements OnClickListener, GetMyDetailValues {
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
 				if (bmp == null) {
-					avatar.setImageResource(R.drawable.pic);
+					avatar.setImageResource(R.drawable.head_bg);
 					return;
 				}
 				avatar.setImageBitmap(bmp);

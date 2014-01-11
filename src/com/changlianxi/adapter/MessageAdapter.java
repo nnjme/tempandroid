@@ -4,7 +4,6 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,13 +37,7 @@ public class MessageAdapter extends BaseAdapter {
 	public MessageAdapter(Context context, List<MessageModle> listModle) {
 		this.mContext = context;
 		this.listModle = listModle;
-
-		optionsAvatar = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.head_bg)
-				.showImageForEmptyUri(R.drawable.head_bg)
-				.showImageOnFail(R.drawable.head_bg).cacheInMemory(true)
-				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
-				.build();
+		optionsAvatar = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 		myLoad = new LoadImageTask();
 		loadImg = new LoadHttpImage();

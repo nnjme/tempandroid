@@ -3,7 +3,6 @@ package com.changlianxi.adapter;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +12,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.R;
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.modle.NewsComments;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -29,12 +28,7 @@ public class NewsCommentsListAdapter extends BaseAdapter {
 		this.mContext = context;
 		this.listModle = modle;
 		imageLoader = CLXApplication.getImageLoader();
-		options = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.head_bg)
-				.showImageForEmptyUri(R.drawable.head_bg)
-				.showImageOnFail(R.drawable.head_bg).cacheInMemory(true)
-				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
-				.build();
+		options = CLXApplication.getUserOptions();
 	}
 
 	@Override

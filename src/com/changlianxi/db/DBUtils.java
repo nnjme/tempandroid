@@ -213,7 +213,6 @@ public class DBUtils {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-<<<<<<< HEAD
 		List<CircleModle> data = new ArrayList<CircleModle>();
 		Cursor cursor = db.query("circlelist", null, null, null, null, null,
 				null);
@@ -243,56 +242,9 @@ public class DBUtils {
 				modle.setPromptCount(promptCount);
 				data.add(modle);
 				cursor.moveToNext();
-=======
-		List<MemberModle> data = new ArrayList<MemberModle>();
-		try {
-			Cursor cursor = db.query(cirname, null, null, null, null, null,
-					null);
-			if (cursor.getCount() > 0) {
-				cursor.moveToFirst();
-				for (int i = 0; i < cursor.getCount(); i++) {
-					String pid = cursor.getString(cursor
-							.getColumnIndex("personID"));
-					String uid = cursor.getString(cursor
-							.getColumnIndex("userID"));
-					String name = cursor.getString(cursor
-							.getColumnIndex("userName"));
-					String imgAdd = cursor.getString(cursor
-							.getColumnIndex("userImg"));
-					String employer = cursor.getString(cursor
-							.getColumnIndex("employer"));
-					String sortkey = cursor.getString(cursor
-							.getColumnIndex("sortkey"));
-					String mobile = cursor.getString(cursor
-							.getColumnIndex("mobileNum"));
-					String auth = cursor.getString(cursor
-							.getColumnIndex("auth"));
-					String location = cursor.getString(cursor
-							.getColumnIndex("location"));
-					MemberModle modle = new MemberModle();
-					modle.setUid(uid);
-					modle.setId(pid);
-					modle.setEmployer(employer == null ? employer : "");
-					modle.setName(name);
-					modle.setSort_key(sortkey.toUpperCase());
-					modle.setImg(imgAdd);
-					modle.setMobileNum(mobile);
-					modle.setAuth(auth.equals("1") ? true : false);
-					modle.setLocation(location);
-					data.add(modle);
-					cursor.moveToNext();
-				}
->>>>>>> 2573e1ff25c06e867239315cbd76ed936f97c901
 			}
-			cursor.close();
-			MyComparator compartor = new MyComparator();
-			Collections.sort(data, compartor);
-		} catch (Exception e) {
 		}
-<<<<<<< HEAD
 		cursor.close();
-=======
->>>>>>> 2573e1ff25c06e867239315cbd76ed936f97c901
 		return data;
 	}
 
@@ -1079,44 +1031,36 @@ public class DBUtils {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-
-		try {
-			Cursor cursor = db.query(Constants.MESSAGELIST_TABLE_NAME, null,
-					"keyID='" + keyID + "'", null, null, null, null);
-			if (cursor.getCount() > 0) {
-				cursor.moveToFirst();
-				for (int i = 0; i < cursor.getCount(); i++) {
-					MessageModle modle = new MessageModle();
-					String name = cursor.getString(cursor
-							.getColumnIndex("name"));
-					String avatarURL = cursor.getString(cursor
-							.getColumnIndex("avatarURL"));
-					String time = cursor.getString(cursor
-							.getColumnIndex("time"));
-					String content = cursor.getString(cursor
-							.getColumnIndex("content"));
-					String ruid = cursor.getString(cursor
-							.getColumnIndex("ruid"));
-					String self = cursor.getString(cursor
-							.getColumnIndex("self"));
-					int type = cursor.getInt(cursor.getColumnIndex("type"));
-					modle.setAvatar(avatarURL);
-					modle.setContent(content);
-					modle.setSelf(self.equals("1") ? true : false);
-					modle.setTime(time);
-					modle.setName(name);
-					modle.setUid(ruid);
-					modle.setType(type);
-					listModle.add(modle);
-					cursor.moveToNext();
-				}
-			} else {
-				cursor.close();
+		Cursor cursor = db.query(Constants.MESSAGELIST_TABLE_NAME, null,
+				"keyID='" + keyID + "'", null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				MessageModle modle = new MessageModle();
+				String name = cursor.getString(cursor.getColumnIndex("name"));
+				String avatarURL = cursor.getString(cursor
+						.getColumnIndex("avatarURL"));
+				String time = cursor.getString(cursor.getColumnIndex("time"));
+				String content = cursor.getString(cursor
+						.getColumnIndex("content"));
+				String ruid = cursor.getString(cursor.getColumnIndex("ruid"));
+				String self = cursor.getString(cursor.getColumnIndex("self"));
+				int type = cursor.getInt(cursor.getColumnIndex("type"));
+				modle.setAvatar(avatarURL);
+				modle.setContent(content);
+				modle.setSelf(self.equals("1") ? true : false);
+				modle.setTime(time);
+				modle.setName(name);
+				modle.setUid(ruid);
+				modle.setType(type);
+				listModle.add(modle);
+				cursor.moveToNext();
 			}
-			ChatTimeComparator compartor = new ChatTimeComparator();
-			Collections.sort(listModle, compartor);// 按时间排序
-		} catch (Exception e) {
+		} else {
+			cursor.close();
 		}
+		ChatTimeComparator compartor = new ChatTimeComparator();
+		Collections.sort(listModle, compartor);// 按时间排序
 		return listModle;
 
 	}

@@ -125,7 +125,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		cid = getIntent().getStringExtra("cid");
 		uid = getIntent().getStringExtra("uid");
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		initView();
 		setOnClickListener();
 		initData();
@@ -301,7 +301,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
 				if (bmp == null) {
-					avatar.setImageResource(R.drawable.pic);
+					avatar.setImageResource(R.drawable.head_bg);
 					return;
 				}
 				avatar.setImageBitmap(bmp);

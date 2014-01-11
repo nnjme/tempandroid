@@ -33,7 +33,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -87,6 +86,7 @@ public class SelectContactsActivity extends BaseActivity implements
 	private TextView selectedChar;// 显示选择字母
 	private int position;// 当前字母子listview中所对应的位置
 	private SearchEditText editSearch;
+	private Dialog dialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -102,7 +102,10 @@ public class SelectContactsActivity extends BaseActivity implements
 		adapter = new ContactsAdapter(this, listModle);
 		listview.setAdapter(adapter);
 		asyncQuery = new MyAsyncQueryHandler(getContentResolver());
+		dialog = DialogUtil.getWaitDialog(this, "请稍后");
+		dialog.show();
 		init();
+
 	}
 
 	private void init() {
@@ -120,7 +123,6 @@ public class SelectContactsActivity extends BaseActivity implements
 	/**
 	 * 数据库异步查询类AsyncQueryHandler
 	 * 
-	 * @author administrator
 	 * 
 	 */
 	private class MyAsyncQueryHandler extends AsyncQueryHandler {
@@ -133,8 +135,10 @@ public class SelectContactsActivity extends BaseActivity implements
 		 */
 		@Override
 		protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+			if (dialog != null) {
+				dialog.dismiss();
+			}
 			if (cursor != null && cursor.getCount() > 0) {
-
 				cursor.moveToFirst();
 				for (int i = 0; i < cursor.getCount(); i++) {
 					cursor.moveToPosition(i);
@@ -533,7 +537,7 @@ public class SelectContactsActivity extends BaseActivity implements
 				holder.laybg.setBackgroundColor(getResources().getColor(
 						R.color.f6));
 			}
-			showAlpha(position, holder);
+			showAlpha(position, holder, listData);
 			return convertView;
 		}
 
@@ -544,18 +548,19 @@ public class SelectContactsActivity extends BaseActivity implements
 
 		public void add(ContactModle modle) {
 			listModle.add(modle);
-			listData = listModle;
+			listData.add(modle);
 			notifyDataSetChanged();
 		}
 
 		public void setData(List<ContactModle> list) {
-			listData = list;
+			listData.clear();
+			listData.addAll(list);
 			notifyDataSetChanged();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return listModle.get(position);
+			return listData.get(position);
 		}
 
 		@Override
@@ -564,11 +569,12 @@ public class SelectContactsActivity extends BaseActivity implements
 		}
 	}
 
-	private void showAlpha(int position, ViewHolder holder) {
+	private void showAlpha(int position, ViewHolder holder,
+			List<ContactModle> listData) {
 		// 当前联系人的sortKey
-		String currentStr = getAlpha(listModle.get(position).getSort_key());
+		String currentStr = getAlpha(listData.get(position).getSort_key());
 		// 上一个联系人的sortKey
-		String previewStr = (position - 1) >= 0 ? getAlpha(listModle.get(
+		String previewStr = (position - 1) >= 0 ? getAlpha(listData.get(
 				position - 1).getSort_key()) : " ";
 		/**
 		 * 判断显示#、A-Z的TextView隐藏与可�?

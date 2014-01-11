@@ -597,11 +597,15 @@ public class Home implements OnClickListener, OnRefreshComplete,
 
 	@Override
 	public void messagePrompt(boolean messagePrompt) {
-		setVisibleImgPrompt();
 	}
 
 	@Override
 	public void myCardPrompt(boolean myCardPrompt) {
+
+	}
+
+	@Override
+	public void homePrompt(boolean rompt) {
 		setVisibleImgPrompt();
 
 	}

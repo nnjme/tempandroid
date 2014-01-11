@@ -45,7 +45,9 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 	private CircularImage avatar;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
-	private boolean myCardPrompt;
+	public boolean myCardPrompt;
+	public boolean messagePrompt;
+
 	/**
 	 * 接口对象,用来修改显示的View
 	 */
@@ -64,7 +66,7 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 		listview.setOnItemClickListener(this);
 		avatar = (CircularImage) mDesktop.findViewById(R.id.avatar);
 		avatar.setBackgroundResource(R.drawable.menu_pic);
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 	}
 
@@ -99,6 +101,7 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 		}
 		menulist.get(1).setNofiyPrompt(prompt);
 		adapter.notifyDataSetChanged();
+		this.myCardPrompt = prompt;
 
 	}
 
@@ -110,7 +113,7 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 	public void setMessagePrompt(boolean prompt) {
 		menulist.get(2).setNofiyPrompt(prompt);
 		adapter.notifyDataSetChanged();
-
+		this.messagePrompt = prompt;
 	}
 
 	private void getMenu() {
@@ -263,13 +266,20 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 
 	@Override
 	public void messagePrompt(boolean messagePrompt) {
-		setMyCardPrompt(messagePrompt);
+		setMessagePrompt(messagePrompt);
+		this.messagePrompt = messagePrompt;
 
 	}
 
 	@Override
 	public void myCardPrompt(boolean myCardPrompt) {
 		setMyCardPrompt(myCardPrompt);
+		this.myCardPrompt = myCardPrompt;
+	}
+
+	@Override
+	public void homePrompt(boolean rompt) {
+		// TODO Auto-generated method stub
 
 	}
 }

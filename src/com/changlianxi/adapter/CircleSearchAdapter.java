@@ -27,7 +27,7 @@ public class CircleSearchAdapter extends BaseAdapter {
 	public CircleSearchAdapter(Context context, List<MemberModle> listModle) {
 		this.mContext = context;
 		this.listModle = listModle;
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 	}
 

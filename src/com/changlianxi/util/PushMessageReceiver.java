@@ -115,7 +115,7 @@ public class PushMessageReceiver extends BroadcastReceiver {
 					if (isBackHome) {
 						showNotify(strJson, "message");
 					} else {
-						callBack.messagePrompt(true);
+						callBack.homePrompt(true);
 						callBackMenu.messagePrompt(true);
 					}
 				} else
@@ -123,7 +123,7 @@ public class PushMessageReceiver extends BroadcastReceiver {
 
 			} else if (type.equals("MY_EDIT")) {
 				if (!isBackHome) {
-					callBack.messagePrompt(true);
+					callBack.homePrompt(true);
 					callBackMenu.myCardPrompt(true);
 				}
 			} else {
@@ -197,8 +197,25 @@ public class PushMessageReceiver extends BroadcastReceiver {
 	}
 
 	public interface MessagePrompt {
+		/***
+		 * 首页提醒
+		 * 
+		 * @param rompt
+		 */
+		void homePrompt(boolean rompt);
+
+		/**
+		 * 私信提醒
+		 * 
+		 * @param messagePrompt
+		 */
 		void messagePrompt(boolean messagePrompt);
 
+		/**
+		 * 我的名片提醒
+		 * 
+		 * @param myCardPrompt
+		 */
 		void myCardPrompt(boolean myCardPrompt);
 
 	}

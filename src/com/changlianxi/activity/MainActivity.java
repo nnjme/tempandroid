@@ -61,8 +61,6 @@ public class MainActivity extends Activity implements OnOpenListener {
 	private GetMyDetailTask task;
 	private GetMyNotifyTask task1;
 	private boolean prompt;
-	private boolean myCardPrompt;
-	private boolean messagePrompt;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -74,6 +72,7 @@ public class MainActivity extends Activity implements OnOpenListener {
 				LayoutParams.MATCH_PARENT);
 		mRoot.setLayoutParams(params);
 		mDesktop = new SetMenu(this, prompt);
+		mDesktop.setMyCardPrompt(prompt);
 		mHome = new Home(this, prompt);
 		mRoot.addView(mDesktop.getView(), params);
 		mRoot.addView(mHome.getView(), params);
@@ -100,9 +99,7 @@ public class MainActivity extends Activity implements OnOpenListener {
 			public void getMyNotify(boolean newCircle, boolean newMessge,
 					boolean cardPrompt) {
 				mDesktop.setMessagePrompt(newMessge);
-				mDesktop.setMyCardPrompt(myCardPrompt);
-				myCardPrompt = cardPrompt;
-				messagePrompt = newMessge;
+				mDesktop.setMyCardPrompt(cardPrompt);
 				if (newMessge || cardPrompt) {
 					mHome.setVisibleImgPrompt();
 				}
@@ -221,17 +218,12 @@ public class MainActivity extends Activity implements OnOpenListener {
 			} else if (action.equals(Constants.MYCARD_PROMPT)) {// 个人名片提醒
 				boolean prot = intent.getBooleanExtra("prompt", false);
 				mDesktop.setMyCardPrompt(prot);
-				myCardPrompt = false;
-				if (!messagePrompt) {
-					prompt = prot;
-				}
+				prompt = mDesktop.messagePrompt;
 			} else if (action.equals(Constants.MESSAGE_PROMPT)) {// 私信提醒
 				boolean prot = intent.getBooleanExtra("prompt", false);
 				mDesktop.setMessagePrompt(prot);
-				messagePrompt = false;
-				if (!myCardPrompt) {
-					prompt = prot;
-				}
+				prompt = mDesktop.myCardPrompt;
+
 			}
 		}
 	};

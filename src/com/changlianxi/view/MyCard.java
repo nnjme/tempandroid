@@ -12,7 +12,7 @@ import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
-import com.changlianxi.view.MyCardShow1.OnButtonClickListener;
+import com.changlianxi.view.MyCardShow.OnButtonClickListener;
 import com.changlianxi.view.MyDetailChange.OnBackClick;
 
 public class MyCard implements OnButtonClickListener, OnBackClick {
@@ -20,7 +20,7 @@ public class MyCard implements OnButtonClickListener, OnBackClick {
 	private View mCard;
 	private OnOpenListener mOnOpenListener;
 	private MyViewGroup rGroup;
-	public MyCardShow1 cardShow;
+	public MyCardShow cardShow;
 	private MyDetailChange cardChange;
 
 	/**
@@ -36,7 +36,7 @@ public class MyCard implements OnButtonClickListener, OnBackClick {
 	}
 
 	public void init() {
-		cardShow = new MyCardShow1(mContext);
+		cardShow = new MyCardShow(mContext);
 		cardShow.setOnBack(this);
 		rGroup.addView(cardShow.getView());
 	}

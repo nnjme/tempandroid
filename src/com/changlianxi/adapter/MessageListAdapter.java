@@ -29,7 +29,7 @@ public class MessageListAdapter extends BaseAdapter {
 		this.mContext = context;
 		this.listModle = modle;
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 	}
 
 	@Override

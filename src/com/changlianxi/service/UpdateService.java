@@ -29,6 +29,7 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.changlianxi.R;
+import com.changlianxi.util.FileUtils;
 
 public class UpdateService extends Service {
 	private NotificationManager nm;
@@ -99,23 +100,20 @@ public class UpdateService extends Service {
 					long length = entity.getContentLength();
 					InputStream is = entity.getContent();
 					if (is != null) {
-						File rootFile = new File(
-								Environment.getExternalStorageDirectory(),
+						File destDir = new File(FileUtils.getRootDir(),
 								"/clx/download");
-						if (!rootFile.exists() && !rootFile.isDirectory())
-							rootFile.mkdir();
-
-						tempFile = new File(
-								Environment.getExternalStorageDirectory()
-										+ "/clx/download", url.substring(url
-										.lastIndexOf("/") + 1));
-						if (tempFile.exists())
+						if (!destDir.exists()) {
+							destDir.mkdirs();
+						}
+						tempFile = new File(FileUtils.getRootDir()
+								+ "/clx/download", url.substring(url
+								.lastIndexOf("/") + 1));
+						if (tempFile.exists()) {
 							tempFile.delete();
+						}
 						tempFile.createNewFile();
-
 						// 已读出流作为参数创建一个带有缓冲的输出流
 						BufferedInputStream bis = new BufferedInputStream(is);
-
 						// 创建一个新的写入流，讲读取到的图像数据写入到文件中
 						FileOutputStream fos = new FileOutputStream(tempFile);
 						// 已写入流作为参数创建一个带有缓冲的写入流

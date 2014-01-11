@@ -54,7 +54,7 @@ public class MyAdapter extends BaseAdapter {
 		Collections.sort(sectionList);
 		sections = new String[sectionList.size()];
 		sectionList.toArray(sections);
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 	}
 
