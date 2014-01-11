@@ -11,7 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.DialogPopWindow;
 import com.changlianxi.popwindow.DialogPopWindow.OnButtonOnclick;

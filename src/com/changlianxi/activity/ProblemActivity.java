@@ -9,6 +9,7 @@ import android.view.View.OnClickListener;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.changlianxi.R;
 
 /**
  * 常见问题

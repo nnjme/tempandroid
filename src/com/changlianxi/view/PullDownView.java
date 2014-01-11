@@ -13,7 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.view.ScrollOverListView.OnScrollOverListener;
 
 /**
@@ -181,10 +181,6 @@ public class PullDownView extends LinearLayout implements OnScrollOverListener {
 
 	}
 
-	public void setHeadBb(int colorID) {
-		mListView.setParentLayBg(colorID);
-	}
-
 	private Handler mUIHandler = new Handler() {
 
 		@Override
@@ -259,6 +255,14 @@ public class PullDownView extends LinearLayout implements OnScrollOverListener {
 			mOnPullDownListener.onRefresh();
 		}
 		return false;
+	}
+
+	public void Refresh() {
+		if (ScrollOverListView.canRefleash) {
+			ScrollOverListView.canRefleash = false;
+			mOnPullDownListener.onRefresh();
+		}
+		mListView.setRefush();
 	}
 
 	/** 隐藏头部 禁用下拉更新 **/

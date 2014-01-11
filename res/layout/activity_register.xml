@@ -6,35 +6,15 @@
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
-    <LinearLayout
-        android:id="@+id/layLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/back2"
-        android:gravity="center"
-        android:orientation="vertical" >
-
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dip"
-            android:layout_marginTop="10dip"
-            android:src="@drawable/have_login" /> <!-- <TextView -->
-        <!-- android:id="@+id/textView1" -->
-        <!-- android:layout_width="wrap_content" -->
-        <!-- android:layout_height="wrap_content" -->
-        <!-- android:text="已有账号，登录" -->
-        <!-- android:textColor="@color/white" -->
-        <!-- android:textSize="25dip" /> -->
-
-    </LinearLayout>
+    <include
+        android:id="@+id/titlebar"
+        android:layout_width="fill_parent"
+        layout="@layout/title_bar" />
 
     <com.changlianxi.view.MyViewGroup
         android:id="@+id/regisGroup"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="30dip" >
+        android:layout_height="fill_parent" >
     </com.changlianxi.view.MyViewGroup>
 
 </LinearLayout>

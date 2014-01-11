@@ -17,7 +17,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.util.DateUtils;
 
 public class ScrollOverListView extends ListView implements OnScrollListener {
@@ -512,7 +512,6 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 			break;
 
 		case REFRESHING:
-
 			headView.setPadding(0, 0, 0, 0);
 			progressBar.setVisibility(View.VISIBLE);
 			arrowImageView.clearAnimation();
@@ -533,5 +532,11 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 			Log.v(TAG, "当前状态，done");
 			break;
 		}
+	}
+
+	public void setRefush() {
+		state = REFRESHING;
+		changeHeaderViewByState();
+
 	}
 }

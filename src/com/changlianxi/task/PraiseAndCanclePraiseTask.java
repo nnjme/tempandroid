@@ -44,6 +44,9 @@ public class PraiseAndCanclePraiseTask extends
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		String rt = "";
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("cid", cid);

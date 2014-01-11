@@ -17,7 +17,7 @@
         <ImageView
             android:id="@+id/back"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="fill_parent"
             android:paddingLeft="@dimen/scale30dip"
             android:paddingRight="@dimen/scale29dip"
             android:src="@drawable/icon_return" />

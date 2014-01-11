@@ -21,6 +21,16 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/menutxt"
-        android:src="@drawable/angle_left" />
+        android:src="@drawable/angle_left"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/notifyPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/scale13dip"
+        android:layout_toRightOf="@+id/menutxt"
+        android:src="@drawable/icon_list_news"
+        android:visibility="gone" />
 
 </RelativeLayout>

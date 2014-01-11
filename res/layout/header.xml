@@ -16,6 +16,7 @@
         android:hint="搜索成员"
         android:paddingLeft="48dip"
         android:singleLine="true"
+        android:textSize="@dimen/scale42sp"
         android:textColor="@color/a3" >
     </com.changlianxi.view.SearchEditText>
 

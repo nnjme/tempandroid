@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;

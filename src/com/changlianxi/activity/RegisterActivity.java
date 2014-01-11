@@ -2,6 +2,7 @@ package com.changlianxi.activity;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.changlianxi.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +23,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -50,7 +52,6 @@ import com.umeng.analytics.MobclickAgent;
 public class RegisterActivity extends BaseActivity implements OnClickListener,
 		PostCallBack {
 	private EditText spinner;
-	private LinearLayout layLogin;
 	private MyViewGroup rGroup;
 	private View reg1, reg2, reg3, emailReg1, emilReg2;// 注册1、2、3界面和邮箱注意1、2界面
 	private LayoutInflater flater;
@@ -69,12 +70,14 @@ public class RegisterActivity extends BaseActivity implements OnClickListener,
 	private TextView emailTxt;// 邮箱注册界面的email显示控件
 	private EditText code;// 注册界面的输入验证码edittext
 	private Button emBtFinish;// 邮箱注册界面的完成验证按钮
-	private TextView txtQh;// 注册界面显示区号的textveiw如显示+86等
 	private Button btGetCode;// 注册界面重新获取验证码按钮
 	private int second = 60;// 用于重新获取验证码时间倒计时
 	private TextView txtShowNum;// 注册界面显示用来注册的手机号
 	private Dialog progressDialog;
 	private String type = "";// 1 验证码处理 2 设置密码处理3 重新获取验证码处理
+	private TextView title;
+	private LinearLayout layBg;
+	private ImageView back;
 	private Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -128,8 +131,6 @@ public class RegisterActivity extends BaseActivity implements OnClickListener,
 	 * 初始化控件
 	 */
 	private void initView() {
-		layLogin = (LinearLayout) findViewById(R.id.layLogin);
-		layLogin.setOnClickListener(this);
 		rGroup = (MyViewGroup) findViewById(R.id.regisGroup);
 		params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT);
@@ -151,14 +152,18 @@ public class RegisterActivity extends BaseActivity implements OnClickListener,
 		emailNum = (EditText) emailReg1.findViewById(R.id.emailnum);
 		emailEdit = (EditText) emailReg1.findViewById(R.id.emailEdit);
 		emailNum.setInputType(InputType.TYPE_CLASS_NUMBER);
+		title = (TextView) findViewById(R.id.titleTxt);
+		title.setText("创建账号");
+		layBg = (LinearLayout) findViewById(R.id.bg);
+		layBg.setBackgroundResource(R.drawable.back_trans6);
+		back = (ImageView) findViewById(R.id.back);
+		back.setOnClickListener(this);
 	}
 
 	/**
 	 * 初始化注册界面1的控件
 	 */
 	private void initReg1View() {
-		txtQh = (TextView) reg1.findViewById(R.id.txtQH);
-		txtQh.setText("+86");
 		btnext = (Button) reg1.findViewById(R.id.next);
 		btnext.setOnClickListener(this);
 		ediNum = (EditText) reg1.findViewById(R.id.num);
@@ -201,10 +206,9 @@ public class RegisterActivity extends BaseActivity implements OnClickListener,
 		PostAsyncTask task = null;
 		Map<String, Object> map = null;
 		switch (v.getId()) {
-		case R.id.layLogin:
+		case R.id.back:
 			finish();
-			overridePendingTransition(R.anim.slide_down_out,
-					R.anim.register_down_out);
+			Utils.rightOut(this);
 			break;
 		case R.id.next:
 			String txtNum = ediNum.getText().toString().replace("-", "");

@@ -3,6 +3,9 @@ package com.changlianxi.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,6 +13,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask.Status;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -25,18 +31,25 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.AddCircleMemberActivity;
 import com.changlianxi.activity.CircleActivity;
-import com.changlianxi.activity.R;
 import com.changlianxi.activity.UserInfoActivity;
 import com.changlianxi.adapter.CircleAdapter;
 import com.changlianxi.adapter.CircleSearchAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.MemberModle;
+import com.changlianxi.task.GetCieclesNotifyTask;
+import com.changlianxi.task.GetCieclesNotifyTask.GetCirclesNotify;
 import com.changlianxi.task.GetCircleListTask;
 import com.changlianxi.task.GetCircleListTask.GetCircleList;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.PushMessageReceiver;
+import com.changlianxi.util.PushMessageReceiver.MessagePrompt;
+import com.changlianxi.util.ResolutionPushJson;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.BounceScrollView.OnRefreshComplete;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
@@ -48,29 +61,50 @@ import com.changlianxi.view.FlipperLayout.OnOpenListener;
  * 
  */
 public class Home implements OnClickListener, OnRefreshComplete,
-		OnItemClickListener {
+		OnItemClickListener, MessagePrompt {
 	private Context mcontext;
 	private View mHome;
 	private LinearLayout mMenu;
 	private OnOpenListener mOnOpenListener;
-	private static List<CircleModle> listModle = new ArrayList<CircleModle>();
+	private List<CircleModle> listModle = new ArrayList<CircleModle>();
+	private List<CircleModle> listPrompt = new ArrayList<CircleModle>();// 圈子提醒数
 	private GrowthImgGridView gView;
-	private static CircleAdapter adapter;
+	private CircleAdapter adapter;
 	private BounceScrollView scrollView;
 	private EditText search;
-	private static Dialog progressDialog;
-	public static ImageView imgPromte;
+	private Dialog progressDialog;
+	private ImageView imgPromte;
 	private ListView searchListView;
 	private List<MemberModle> searchListModle = new ArrayList<MemberModle>();// 搜索时使用
 	private CircleSearchAdapter searchAdapter;
+	private GetCieclesNotifyTask notifyTask;
+	private GetCircleListTask task;
+	private boolean prompt;
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				setListener();
+				listModle = DBUtils.getCircleList();
+				listPrompt = DBUtils.getCirclePtompt();
+				// listPrompt = listModle;
+				showAdapter();
+				break;
 
-	public Home(Context context) {
+			default:
+				break;
+			}
+		}
+	};
+
+	public Home(Context context, boolean prompt) {
+		this.prompt = prompt;
 		mcontext = context;
 		mHome = LayoutInflater.from(context).inflate(R.layout.home, null);
+		PushMessageReceiver.setMessagePrompt(this);
 		findViewById();
-		setListener();
-		listModle = DBUtils.getCircleList();
-		showAdapter();
+		mHandler.sendEmptyMessageDelayed(0, 100);
 	}
 
 	private void showAdapter() {
@@ -91,10 +125,9 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		}
 	}
 
-	public static void getServerCircleLists() {
-		GetCircleListTask task = new GetCircleListTask();
+	private void getServerCircleLists() {
+		task = new GetCircleListTask();
 		task.setTaskCallBack(new GetCircleList() {
-
 			@Override
 			public void getCircleList(List<CircleModle> modles) {
 				if (progressDialog != null) {
@@ -107,9 +140,240 @@ public class Home implements OnClickListener, OnRefreshComplete,
 				listModle.clear();
 				listModle.addAll(modles);
 				adapter.setData(listModle);
+				String cids = "";
+				for (int i = 0; i < modles.size() - 1; i++) {
+					cids += modles.get(i).getCirID() + ",";
+				}
+				notifyTask = new GetCieclesNotifyTask(SharedUtils.getString(
+						"exitTime",
+						DateUtils.phpTime(System.currentTimeMillis())), cids
+						.substring(0, cids.length() - 1));
+				notifyTask.setTaskCallBack(new GetCirclesNotify() {
+					@Override
+					public void getCirclesNotify(String result) {
+						if (result == null) {
+							return;
+						}
+						getPromptCount(result);
+					}
+				});
+				notifyTask.execute();
 			}
 		});
 		task.execute();
+	}
+
+	private void getPromptCount(String result) {
+		try {
+			JSONArray array = new JSONArray(result);
+			for (int i = 0; i < array.length(); i++) {
+				if (listModle.get(i).isNew()) {
+					continue;
+				}
+				String str = array.getString(i);
+				getCount(i, str);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		adapter.setData(listModle);
+		listPrompt = null;
+
+	}
+
+	/**
+	 * 推送消息提示
+	 */
+	public void pushPormpt(String cid, int count, String type) {
+		for (int i = 0; i < listModle.size() - 1; i++) {
+			if (cid.equals(listModle.get(i).getCirID())) {
+				listModle.get(i).setPromptCount(
+						listModle.get(i).getPromptCount() + count);
+				if (type.equals(ResolutionPushJson.COMMENT_TYPE)) {
+					listModle.get(i).setNewCommentCount(
+							listModle.get(i).getNewCommentCount() + count);
+				} else if (type.equals(ResolutionPushJson.NEW_TYPE)) {
+					listModle.get(i).setNewDynamicCount(
+							listModle.get(i).getNewDynamicCount() + count);
+				} else if (type.equals(ResolutionPushJson.GROWTH_TYPE)) {
+					listModle.get(i).setNewGrowthCount(
+							listModle.get(i).getNewGrowthCount() + count);
+				} else if (type.equals(ResolutionPushJson.CHAT_TYPE)) {
+					listModle.get(i).setNewChatCount(
+							listModle.get(i).getNewChatCount() + count);
+				}
+				break;
+			}
+		}
+		adapter.setData(listModle);
+	}
+
+	/**
+	 * 更新圈子名称
+	 * 
+	 * @param cid
+	 * @param cirName
+	 */
+	public void upDateCirName(String cid, String cirName) {
+		for (int i = 0; i < listModle.size(); i++) {
+			if (cid.equals(listModle.get(i).getCirID())) {
+				listModle.get(i).setCirName(cirName);
+				adapter.setData(listModle);
+				break;
+			}
+		}
+
+	}
+
+	public void cancleTask() {
+		if (notifyTask != null && notifyTask.getStatus() == Status.RUNNING) {
+			notifyTask.cancel(true); // 如果Task还在运行，则先取消它
+		}
+		if (task != null && task.getStatus() == Status.RUNNING) {
+			task.cancel(true); // 如果Task还在运行，则先取消它
+		}
+	}
+
+	/**
+	 * 获取各个界面的提示数量
+	 * 
+	 * @param position
+	 * @param str
+	 * @return
+	 */
+	private void getCount(int position, String str) {
+
+		String countArray[] = str.split(",");
+		int count = 0;
+		int newMemberCount = 0;// 新成员数
+		int newGrowthCount = 0;// 新成长数、
+		int newChatCount = 0;// 新聊天数、
+		int newDynamicCount = 0;// 新动态数、
+		int newCommentCount = 0;// 新评论数。
+		newMemberCount = Integer.valueOf(countArray[0]);
+		newGrowthCount = Integer.valueOf(countArray[1]);
+		newChatCount = Integer.valueOf(countArray[2]);
+		newDynamicCount = Integer.valueOf(countArray[3]);
+		newCommentCount = Integer.valueOf(countArray[4]);
+		count = newMemberCount + newGrowthCount + newChatCount
+				+ newDynamicCount + newCommentCount;
+		listModle.get(position).setPromptCount(count);
+		listModle.get(position).setNewChatCount(newChatCount);
+		listModle.get(position).setNewCommentCount(newCommentCount);
+		listModle.get(position).setNewDynamicCount(newDynamicCount);
+		listModle.get(position).setNewGrowthCount(newGrowthCount);
+		listModle.get(position).setNewMemberCount(newMemberCount);
+		getLoaclPrompt(listModle.get(position).getCirID(), position);
+
+	}
+
+	private void getLoaclPrompt(String cid, int position) {
+		if (listPrompt == null) {
+			return;
+		}
+		for (int i = 0; i < listPrompt.size(); i++) {
+			if (cid.equals(listPrompt.get(i).getCirID())) {
+				listModle.get(position).setNewChatCount(
+						listModle.get(position).getNewChatCount()
+								+ listPrompt.get(i).getNewChatCount());
+				listModle.get(position).setNewCommentCount(
+						listModle.get(position).getNewCommentCount()
+								+ listPrompt.get(i).getNewCommentCount());
+				listModle.get(position).setNewDynamicCount(
+						listModle.get(position).getNewDynamicCount()
+								+ listPrompt.get(i).getNewDynamicCount());
+				listModle.get(position).setNewGrowthCount(
+						listModle.get(position).getNewGrowthCount()
+								+ listPrompt.get(i).getNewGrowthCount());
+				listModle.get(position).setNewMemberCount(
+						listModle.get(position).getNewMemberCount()
+								+ listPrompt.get(i).getNewMemberCount());
+				listModle.get(position).setPromptCount(
+						listModle.get(position).getPromptCount()
+								+ listPrompt.get(i).getPromptCount());
+
+				continue;
+			}
+		}
+
+	}
+
+	/**
+	 * 减少提示数量
+	 * 
+	 * @param cid
+	 * @param count
+	 * @param position
+	 *            0新成员数1 新成长数2新聊天数3新动态树4 新评论数
+	 */
+	public void remorePromptCount(String cid, int count, int position) {
+		for (int i = 0; i < listModle.size() - 1; i++) {
+			if (cid.equals(listModle.get(i).getCirID())) {
+				switch (position) {
+				case 0:
+					listModle.get(i).setNewMemberCount(0);
+					break;
+				case 1:
+					listModle.get(i).setNewGrowthCount(0);
+					break;
+				case 2:
+					listModle.get(i).setNewChatCount(0);
+					break;
+				case 3:
+					listModle.get(i).setNewDynamicCount(0);
+					break;
+				case 4:
+					listModle.get(i).setNewCommentCount(0);
+					break;
+				default:
+					break;
+				}
+				int countPrompet = listModle.get(i).getPromptCount();
+				listModle.get(i).setPromptCount(countPrompet - count);
+				break;
+			}
+		}
+		adapter.setData(listModle);
+	}
+
+	/**
+	 * 保存提示数量
+	 */
+	public void savePromptCount() {
+
+		int newMemberCount = 0;// 新成员数
+		int newGrowthCount = 0;// 新成长数、
+		int newChatCount = 0;// 新聊天数、
+		int newDynamicCount = 0;// 新动态数、
+		int newCommentCount = 0;// 新评论数。
+		int promptCount = 0;
+		for (int i = 0; i < listModle.size() - 1; i++) {
+			String cid = listModle.get(i).getCirID();
+			promptCount = listModle.get(i).getPromptCount();
+			if (promptCount <= 0) {
+				continue;
+			}
+			newChatCount = listModle.get(i).getNewChatCount();
+			newCommentCount = listModle.get(i).getNewCommentCount();
+			newDynamicCount = listModle.get(i).getNewDynamicCount();
+			newGrowthCount = listModle.get(i).getNewGrowthCount();
+			newMemberCount = listModle.get(i).getNewMemberCount();
+			updateDB(cid, newMemberCount, newGrowthCount, newChatCount,
+					newDynamicCount, newCommentCount, promptCount);
+		}
+	}
+
+	private void updateDB(String cid, int newMemberCount, int newGrowthCount,
+			int newChatCount, int newDynamicCount, int newCommentCount,
+			int promptCount) {
+		ContentValues cv = new ContentValues();
+		cv.put("newMemberCount", newMemberCount);
+		cv.put("newGrowthCount", newGrowthCount);
+		cv.put("newChatCount", newChatCount);
+		cv.put("newDynamicCount", newDynamicCount);
+		cv.put("newCommentCount", newCommentCount);
+		cv.put("promptCount", promptCount);
+		DBUtils.updateInfo("circlelist", cv, "cirID=?", new String[] { cid });
 	}
 
 	/**
@@ -117,7 +381,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * 
 	 * @param modle
 	 */
-	public static void refreshCircleList(CircleModle modle) {
+	public void refreshCircleList() {
 		getServerCircleLists();
 	}
 
@@ -127,7 +391,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * @param cirID
 	 * @param flag
 	 */
-	public static void acceptOrRefuseInvite(String cirID, boolean flag) {
+	public void acceptOrRefuseInvite(String cirID, boolean flag) {
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
 		values.put("isNew", String.valueOf(flag));
@@ -143,7 +407,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * 
 	 * @param cirID
 	 */
-	public static void exitCircle(String cirID) {
+	public void exitCircle(String cirID) {
 		int position = findCirPosition(cirID);
 		listModle.remove(position);
 		adapter.setData(listModle);
@@ -156,7 +420,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * @param cirID
 	 * @return
 	 */
-	private static int findCirPosition(String cirID) {
+	private int findCirPosition(String cirID) {
 		for (int i = 0; i < listModle.size(); i++) {
 			if (cirID.equals(listModle.get(i).getCirID())) {
 				return i;
@@ -179,6 +443,13 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		search.addTextChangedListener(new EditWather());
 		imgPromte = (ImageView) mHome.findViewById(R.id.imgNews);
 		searchListView = (ListView) mHome.findViewById(R.id.searchListView);
+		if (prompt) {
+			imgPromte.setVisibility(View.VISIBLE);
+		}
+	}
+
+	public void setVisibleImgPrompt() {
+		imgPromte.setVisibility(View.VISIBLE);
 	}
 
 	private void setListener() {
@@ -212,8 +483,18 @@ public class Home implements OnClickListener, OnRefreshComplete,
 				it.putExtra("is_New", listModle.get(position).isNew());
 				it.putExtra("inviterID", listModle.get(position).getInviterID());
 				it.putExtra("cirID", listModle.get(position).getCirID());
+				it.putExtra("newGrowthCount", listModle.get(position)
+						.getNewGrowthCount());
+				it.putExtra("newChatCount", listModle.get(position)
+						.getNewChatCount());
+				it.putExtra("newDynamicCount", listModle.get(position)
+						.getNewDynamicCount());
+				it.putExtra("newCommentCount", listModle.get(position)
+						.getNewCommentCount());
 				mcontext.startActivity(it);
 				Utils.leftOutRightIn(mcontext);
+				remorePromptCount(listModle.get(position).getCirID(), listModle
+						.get(position).getNewMemberCount(), 0);
 
 			}
 		});
@@ -293,7 +574,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * 
 	 * @return
 	 */
-	private static CircleModle newCircle() {
+	private CircleModle newCircle() {
 		CircleModle modle = new CircleModle();
 		modle.setCirIcon("addroot");
 		modle.setNew(false);
@@ -309,11 +590,23 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		it.putExtra("pid", searchListModle.get(arg2).getId());
 		it.putExtra("uid", searchListModle.get(arg2).getUid());
 		it.putExtra("username", searchListModle.get(arg2).getName());
-		it.putExtra("userlistname", "circle"
-				+ searchListModle.get(arg2).getCid() + "userlist");
 		it.putExtra("iconImg", searchListModle.get(arg2).getImg());
 		mcontext.startActivity(it);
 		Utils.leftOutRightIn(mcontext);
+	}
+
+	@Override
+	public void messagePrompt(boolean messagePrompt) {
+	}
+
+	@Override
+	public void myCardPrompt(boolean myCardPrompt) {
+
+	}
+
+	@Override
+	public void homePrompt(boolean rompt) {
+		setVisibleImgPrompt();
 
 	}
 

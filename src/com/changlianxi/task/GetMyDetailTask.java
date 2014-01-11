@@ -52,6 +52,9 @@ public class GetMyDetailTask extends AsyncTask<String, Integer, String> {
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		uid = SharedUtils.getString("uid", "");
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", uid);

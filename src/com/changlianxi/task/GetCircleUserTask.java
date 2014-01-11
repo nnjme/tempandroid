@@ -29,11 +29,9 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 	private GetCircleUserList callBack;
 	private List<MemberModle> listModles = new ArrayList<MemberModle>();// 存储成员列表
 	private String cid;
-	private String circleName;
 
-	public GetCircleUserTask(String cid, String circleName) {
+	public GetCircleUserTask(String cid) {
 		this.cid = cid;
-		this.circleName = circleName;
 	}
 
 	public void setTaskCallBack(GetCircleUserList callBack) {
@@ -43,6 +41,9 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
@@ -53,7 +54,7 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 			JSONObject jsonobject = new JSONObject(result);
 			JSONArray jsonarray = jsonobject.getJSONArray("members");
 			if (jsonarray != null) {
-				DBUtils.clearTableData(circleName);// 清空本地表 保存最新数据
+				DBUtils.delUserListByCid(cid);
 			}
 			for (int i = 0; i < jsonarray.length(); i++) {
 				JSONObject object = (JSONObject) jsonarray.opt(i);
@@ -74,8 +75,9 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 				}
 				modle.setId(id);
 				modle.setName(name);
-				modle.setEmployer(employer == null ? employer : "");
-				modle.setImg(StringUtils.JoinString(logo, "_100x100"));
+				modle.setEmployer(employer.equals("null") ? "" : employer);
+				// modle.setImg(StringUtils.JoinString(logo, "_100x100"));
+				modle.setImg(logo);
 				modle.setSort_key(sortkey);
 				modle.setUid(uid);
 				modle.setMobileNum(mobileNum);
@@ -83,7 +85,7 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 				modle.setAuth(auth.equals("1") ? true : false);
 				modle.setLocation(location);
 				listModles.add(modle);
-				DBUtils.insertCircleUser(cid, circleName, id, uid, name,
+				DBUtils.insertCircleUser(cid, id, uid, name,
 						StringUtils.JoinString(logo, "_100x100"), employer,
 						mobileNum, auth, location, sortkey, pinyin);
 			}

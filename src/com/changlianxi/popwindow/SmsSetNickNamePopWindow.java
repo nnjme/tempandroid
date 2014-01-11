@@ -9,7 +9,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.PopupWindow;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 /**
  * 短信邀请界面 设置昵称弹出框

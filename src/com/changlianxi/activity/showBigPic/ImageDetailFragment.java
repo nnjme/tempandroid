@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.util.LoadImageTask;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;

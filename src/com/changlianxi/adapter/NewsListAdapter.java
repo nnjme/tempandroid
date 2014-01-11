@@ -20,7 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.NewsModle;
 import com.changlianxi.task.PostAsyncTask;
@@ -53,7 +53,7 @@ public class NewsListAdapter extends BaseAdapter {
 		this.listModle = listModle;
 		inflater = LayoutInflater.from(mCotext);
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 	}
 
 	@Override
@@ -100,38 +100,51 @@ public class NewsListAdapter extends BaseAdapter {
 		ViewHolderInvite holderInvite = null;
 		ViewHolderOther holderOther = null;
 		int type = getItemViewType(position);
-		switch (type) {
-		case TYPE_1:
-			convertView = inflater.inflate(R.layout.news_invitate1, parent,
-					false);
-			holderInvite = new ViewHolderInvite();
-			holderInvite.avatarInvite = (ImageView) convertView
-					.findViewById(R.id.avatarInvite);
-			holderInvite.contentInvite = (TextView) convertView
-					.findViewById(R.id.contentInvite);
-			holderInvite.timeInvite = (TextView) convertView
-					.findViewById(R.id.timeInvite);
-			holderInvite.btnAgree = (Button) convertView
-					.findViewById(R.id.btnAgree);
-			holderInvite.btnNotAgree = (Button) convertView
-					.findViewById(R.id.btnNotAgree);
-			convertView.setTag(holderInvite);
-			break;
-		case TYPE_2:
-			convertView = inflater.inflate(R.layout.news_list_item, parent,
-					false);
-			holderOther = new ViewHolderOther();
-			holderOther.avatar = (ImageView) convertView
-					.findViewById(R.id.avatar);
-			holderOther.content = (TextView) convertView
-					.findViewById(R.id.content);
-			holderOther.time = (TextView) convertView.findViewById(R.id.time);
-			convertView.setTag(holderOther);
-			break;
-		default:
-			break;
+		if (convertView == null) {
+			switch (type) {
+			case TYPE_1:
+				convertView = inflater.inflate(R.layout.news_invitate1, parent,
+						false);
+				holderInvite = new ViewHolderInvite();
+				holderInvite.avatarInvite = (ImageView) convertView
+						.findViewById(R.id.avatarInvite);
+				holderInvite.contentInvite = (TextView) convertView
+						.findViewById(R.id.contentInvite);
+				holderInvite.timeInvite = (TextView) convertView
+						.findViewById(R.id.timeInvite);
+				holderInvite.btnAgree = (Button) convertView
+						.findViewById(R.id.btnAgree);
+				holderInvite.btnNotAgree = (Button) convertView
+						.findViewById(R.id.btnNotAgree);
+				convertView.setTag(holderInvite);
+				break;
+			case TYPE_2:
+				convertView = inflater.inflate(R.layout.news_list_item, parent,
+						false);
+				holderOther = new ViewHolderOther();
+				holderOther.avatar = (ImageView) convertView
+						.findViewById(R.id.avatar);
+				holderOther.content = (TextView) convertView
+						.findViewById(R.id.content);
+				holderOther.time = (TextView) convertView
+						.findViewById(R.id.time);
+				convertView.setTag(holderOther);
+				break;
+			default:
+				break;
+			}
+		} else {
+			switch (type) {
+			case TYPE_1:
+				holderInvite = (ViewHolderInvite) convertView.getTag();
+				break;
+			case TYPE_2:
+				holderOther = (ViewHolderOther) convertView.getTag();
+				break;
+			default:
+				break;
+			}
 		}
-
 		switch (type) {
 		case TYPE_1:
 			holderInvite.contentInvite.setText(Html.fromHtml(replaceUser(
@@ -235,7 +248,7 @@ public class NewsListAdapter extends BaseAdapter {
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("token", SharedUtils.getString("token", ""));
 			map.put("cid", cid);
-			map.put("pid", DBUtils.getPidByUid("circle" + cid, pid));
+			map.put("pid", DBUtils.getPidByUid(pid));
 		}
 
 		@Override
@@ -261,20 +274,23 @@ public class NewsListAdapter extends BaseAdapter {
 			task.setTaskCallBack(new PostCallBack() {
 				@Override
 				public void taskFinish(String result) {
+					System.out.println("result:::::" + result);
 					pd.dismiss();
 					try {
 						JSONObject object = new JSONObject(result);
 						int rt = object.getInt("rt");
 						if (rt == 1) {
-							String detail = object.getString("detail");
-							listModle.get(position).setNeed_approve("0");
-							listModle.get(position).setDetail(detail);
-							notifyData();
+							String detail = "";
 							if (type.equals("agree")) {
+								detail = object.getString("detail");
+
 								Utils.showToast("已同意");
 							} else {
 								Utils.showToast("已忽略");
 							}
+							listModle.get(position).setNeed_approve("0");
+							listModle.get(position).setDetail(detail);
+							notifyData();
 						} else {
 							String err = object.getString("err");
 							Utils.showToast(ErrorCodeUtil.convertToChines(err));

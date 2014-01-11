@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -27,7 +27,7 @@ public class CircleSearchAdapter extends BaseAdapter {
 	public CircleSearchAdapter(Context context, List<MemberModle> listModle) {
 		this.mContext = context;
 		this.listModle = listModle;
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 	}
 

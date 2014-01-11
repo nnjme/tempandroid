@@ -67,7 +67,8 @@
                                 android:id="@+id/editname"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:background="@null" >
+                                android:background="@null"
+                                android:singleLine="true" >
                             </EditText>
                         </LinearLayout>
 
@@ -83,6 +84,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:singleLine="true"
                                 android:text="昵称："
                                 android:textColor="#a0a0a0"
                                 android:textSize="15sp" />
@@ -91,7 +93,8 @@
                                 android:id="@+id/nickname"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:background="@null" >
+                                android:background="@null"
+                                android:singleLine="true" >
                             </EditText>
                         </LinearLayout>
                     </LinearLayout>
@@ -128,7 +131,8 @@
                         android:layout_height="wrap_content"
                         android:background="@null"
                         android:inputType="number"
-                        android:maxLength="13" >
+                        android:maxLength="13"
+                        android:singleLine="true" >
                     </EditText>
                 </LinearLayout>
 
@@ -152,7 +156,8 @@
                         android:id="@+id/editemail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@null" >
+                        android:background="@null"
+                        android:singleLine="true" >
                     </EditText>
                 </LinearLayout>
 

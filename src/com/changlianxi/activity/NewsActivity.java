@@ -7,6 +7,7 @@ import java.util.List;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,17 +15,16 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.adapter.NewsListAdapter;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.GetNewsList;
 import com.changlianxi.modle.NewsModle;
 import com.changlianxi.task.GetNewsListTask;
 import com.changlianxi.util.DateUtils;
-import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.PullDownView;
 import com.changlianxi.view.PullDownView.OnPullDownListener;
@@ -51,15 +51,18 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 	private String end = "";
 	private boolean loadMore;// 是否加载更多
 	private boolean isRefresh;// 是否下拉刷新
-	private boolean isShowPd = true;// 是否显示进度框
-	private LinearLayout newsWarn;
-	private TextView newsCount;
+	// private LinearLayout newsWarn;
+	// private TextView newsCount;
+	private GetNewsListTask task;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case 0:
-				newsWarn.setVisibility(View.GONE);
+				// newsWarn.setVisibility(View.GONE);
+				break;
+			case 1:
+				getNewsListFromDB();
 				break;
 			default:
 				break;
@@ -76,7 +79,7 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 		end = DateUtils.phpTime(System.currentTimeMillis());
 		findViewByID();
 		setListener();
-		getNewsListFromDB();
+		mHandler.sendEmptyMessageDelayed(1, 50);
 	}
 	/**设置页面统计
 	 * 
@@ -101,8 +104,8 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 		adapter = new NewsListAdapter(this, listModle);
 		mListView = mPullDownView.getListView();
 		mListView.setSelector(new ColorDrawable(Color.TRANSPARENT));
-		newsWarn = (LinearLayout) findViewById(R.id.newsWarn);
-		newsCount = (TextView) findViewById(R.id.newsCount);
+		// newsWarn = (LinearLayout) findViewById(R.id.newsWarn);
+		// newsCount = (TextView) findViewById(R.id.newsCount);
 	}
 
 	private void setListener() {
@@ -110,17 +113,21 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 		cirName.setText(txtCirName);
 		mPullDownView.setOnPullDownListener(this);
 		mListView.setAdapter(adapter);
-		mPullDownView.notifyDidMore();
-		mPullDownView.setFooterVisible(false);
+		mPullDownView.setHideFooter();
+
 	}
 
 	private void getNewsListFromDB() {
 		listModle = DBUtils.getNewsList(cid);
 		if (listModle.size() > 0) {
+			if (listModle.size() > 19) {
+				mPullDownView.setShowFooter();
+			}
 			adapter.setData(listModle);
-			isShowPd = false;
-			return;
+			mPullDownView.notifyDidMore();
+			// return;
 		}
+		mPullDownView.Refresh();
 		getSeverNewsList();
 	}
 
@@ -134,14 +141,9 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 		map.put("cid", cid);
 		map.put("start", start);
 		map.put("end", end);
-		GetNewsListTask task = new GetNewsListTask(this, map, "/news/ilist",
-				cid);
+		task = new GetNewsListTask(this, map, "/news/ilist", cid);
 		task.setTaskCallBack(this);
 		task.execute();
-		if (isShowPd) {
-			pd = DialogUtil.getWaitDialog(this, "请稍后");
-			pd.show();
-		}
 
 	}
 
@@ -175,17 +177,21 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 			// listModle.clear();
 			// listModle = list;
 			list.remove(0);
-			list.addAll(list);
+			list.addAll(0, list);
+			// newsWarn.setVisibility(View.VISIBLE);
+			// newsCount.setText(list.size() + "条新动态");
+			// mHandler.sendEmptyMessageDelayed(0, 1000);
 		} else if (loadMore) {
 			list.remove(0);
 			listModle.addAll(listModle.size(), list);
 		} else {
 			listModle = list;
 		}
+		if (listModle.size() > 19) {
+			mPullDownView.setShowFooter();
+		}
 		adapter.setData(listModle);
-		newsWarn.setVisibility(View.VISIBLE);
-		newsCount.setText(list.size() + "条新动态");
-		mHandler.sendEmptyMessageDelayed(0, 1000);
+
 	}
 
 	/** 刷新事件接口 这里要注意的是获取更多完 要关闭 刷新的进度条RefreshComplete() **/
@@ -193,7 +199,6 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 	public void onRefresh() {
 		isRefresh = true;
 		loadMore = false;
-		isShowPd = false;
 		if (listModle.size() > 0) {
 			start = DateUtils.phpTime(DateUtils.convertToDate(listModle.get(0)
 					.getCreatedTime()));
@@ -208,7 +213,6 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public void onMore() {
 		loadMore = true;
-		isShowPd = false;
 		isRefresh = false;
 		start = "0";
 		end = DateUtils.phpTime(DateUtils.convertToDate(listModle.get(
@@ -229,8 +233,13 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 	}
 
 	@Override
-	protected void onStop() {
-		for (int i = 0; i < listModle.size(); i++) {
+	protected void onDestroy() {
+		if (task != null && task.getStatus() == Status.RUNNING) {
+			task.cancel(true); // 如果Task还在运行，则先取消它
+		}
+		DBUtils.delNewsList(cid);
+		int size = listModle.size() > 20 ? 20 : listModle.size();
+		for (int i = 0; i < size; i++) {
 			NewsModle modle = listModle.get(i);
 			DBUtils.insertNews(cid, modle.getId(), modle.getUser1(),
 					modle.getUser2(), modle.getPerson2(),
@@ -239,7 +248,7 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 					modle.getUser2Name(), modle.getAvatarUrl(),
 					modle.getNeed_approve());
 		}
-		super.onStop();
+		super.onDestroy();
 	}
 
 }

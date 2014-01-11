@@ -24,6 +24,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
@@ -38,6 +39,7 @@ import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
@@ -311,7 +313,7 @@ public class CreateCircleActivity extends BaseActivity implements
 		modle.setCirIcon(cirIconPath);
 		modle.setCirID(cid);
 		modle.setCirName(editCirName.getText().toString());
-		Home.refreshCircleList(modle);
+		BroadCast.sendBroadCast(this, Constants.REFRESH_CIRCLE_LIST);// 发送广播更新圈子列表
 	}
 
 	@Override

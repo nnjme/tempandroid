@@ -21,6 +21,7 @@ import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.umeng.analytics.MobclickAgent;
+import com.changlianxi.R;
 
 public class RegisterFinishActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
@@ -56,11 +57,16 @@ public class RegisterFinishActivity extends BaseActivity implements
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.startUse:
+			String name = editNC.getText().toString();
+			if (name.replace(" ", "").length() == 0) {
+				Utils.showToast("姓名不能为空");
+				return;
+			}
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("uid", SharedUtils.getString("uid", ""));
 			map.put("f", "name");
 			map.put("token", SharedUtils.getString("token", ""));
-			map.put("v", editNC.getText().toString());
+			map.put("v", name);
 			PostAsyncTask task = new PostAsyncTask(this, map,
 					"/users/isetUserInfo");
 			task.setTaskCallBack(this);

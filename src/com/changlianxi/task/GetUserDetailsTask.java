@@ -50,6 +50,9 @@ public class GetUserDetailsTask extends AsyncTask<String, Integer, String> {
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("cid", cid);
 		map.put("uid", SharedUtils.getString("uid", ""));
@@ -118,25 +121,31 @@ public class GetUserDetailsTask extends AsyncTask<String, Integer, String> {
 		info.setId(id);
 		info.setType(key);
 		String typekey = "";
-		for (int i = 0; i < UserInfoUtils.basicStr.length; i++) {
-			if (key.equals(UserInfoUtils.basicStr[i])) {
+		for (int i = 0; i < UserInfoUtils.basicUserStr.length; i++) {
+			if (key.equals(UserInfoUtils.basicUserStr[i])) {
 				typekey = UserInfoUtils.convertToChines(key);
 				info.setKey(typekey);
+				info.setTitleKey("基本信息");
 				basicList.add(info);
 			}
 		}
 		if (Arrays.toString(UserInfoUtils.socialStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
+			info.setTitleKey("社交账号");
+
 			socialList.add(info);
 		} else if (Arrays.toString(UserInfoUtils.contactStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
+			info.setTitleKey("联系方式");
+
 			contactList.add(info);
 
 		} else if (Arrays.toString(UserInfoUtils.addressStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
+			info.setTitleKey("通讯地址");
 			addressList.add(info);
 
 		} else if (Arrays.toString(UserInfoUtils.eduStr).contains(key)) {
@@ -144,12 +153,14 @@ public class GetUserDetailsTask extends AsyncTask<String, Integer, String> {
 			info.setKey(typekey);
 			info.setStartDate(start);
 			info.setEndDate(end);
+			info.setTitleKey("教育经历");
 			eduList.add(info);
 		} else if (Arrays.toString(UserInfoUtils.workStr).contains(key)) {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
 			info.setStartDate(start);
 			info.setEndDate(end);
+			info.setTitleKey("工作经历");
 			workList.add(info);
 		}
 

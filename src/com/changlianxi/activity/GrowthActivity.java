@@ -6,8 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.app.Dialog;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Intent;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -18,13 +22,16 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.GrowthCommentActivity.RecordOperation;
 import com.changlianxi.adapter.GrowthAdapter;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.task.GetGrowthListTask;
 import com.changlianxi.task.GetGrowthListTask.GroGrowthList;
+import com.changlianxi.util.BroadCast;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
-import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.PullDownView;
 import com.changlianxi.view.PullDownView.OnPullDownListener;
@@ -42,7 +49,6 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	private List<GrowthModle> listData = new ArrayList<GrowthModle>();
 	private PullDownView mPullDownView;
 	private ListView mListView;
-	private Dialog progressDialog;
 	private GrowthAdapter adapter;
 	private ImageView btnRelease;// 发布成长按钮
 	private String circleName;
@@ -52,6 +58,10 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	private String end = "";
 	private boolean loadMore;// 是否加载更多
 	private boolean isRefresh;// 是否下拉刷新
+	private TextView promptCount;
+	private int commentCount;
+	private boolean firstLoad = true;
+	private GetGrowthListTask task;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -60,16 +70,18 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		end = DateUtils.phpTime(System.currentTimeMillis());
 		cid = getIntent().getStringExtra("cirID");
 		circleName = getIntent().getStringExtra("cirName");
-		mPullDownView = (PullDownView) findViewById(R.id.PullDownlistView);
-		mListView = mPullDownView.getListView();
+		commentCount = getIntent().getIntExtra("commentCount", 0);
+		initView();
+		setListener();
+		listData = DBUtils.getGrowthList(cid);
+		setAdapter();
+	}
+
+	private void setAdapter() {
 		adapter = new GrowthAdapter(this, listData);
 		mListView.setAdapter(adapter);
-		// mListView.setCacheColorHint(0);
-		btnRelease = (ImageView) findViewById(R.id.btnRelease);
-		txtCirName = (TextView) findViewById(R.id.circleName);
-		txtCirName.setText(circleName);
-		btback = (ImageView) findViewById(R.id.back);
-		setListener();
+		mPullDownView.Refresh();
+		end = DateUtils.phpTime(System.currentTimeMillis());
 		getGrowthList();
 	}
 	/**设置页面统计
@@ -91,9 +103,26 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	
 	@Override
 	protected void onRestart() {
+		isRefresh = false;
+		loadMore = false;
+		listData.clear();
 		end = DateUtils.phpTime(System.currentTimeMillis());
 		getGrowthList();
 		super.onRestart();
+	}
+
+	private void initView() {
+		mPullDownView = (PullDownView) findViewById(R.id.PullDownlistView);
+		mListView = mPullDownView.getListView();
+		btnRelease = (ImageView) findViewById(R.id.btnRelease);
+		txtCirName = (TextView) findViewById(R.id.circleName);
+		txtCirName.setText(circleName);
+		btback = (ImageView) findViewById(R.id.back);
+		promptCount = (TextView) findViewById(R.id.promptCount);
+		if (commentCount > 0) {
+			promptCount.setVisibility(View.VISIBLE);
+			promptCount.setText(commentCount + "条回复消息");
+		}
 	}
 
 	private void setListener() {
@@ -104,6 +133,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		btback.setOnClickListener(this);
 		btnRelease.setOnClickListener(this);
 		mListView.setOnItemClickListener(this);
+		promptCount.setOnClickListener(this);
 
 	}
 
@@ -114,32 +144,43 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("start", start);
 		map.put("end", end);
-		GetGrowthListTask task = new GetGrowthListTask(map);
+		task = new GetGrowthListTask(map);
 		task.setTaskCallBack(this);
 		task.execute();
-		if (listData.size() == 0) {
-			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
-			progressDialog.show();
-		}
+
 	}
 
 	@Override
 	public void onClick(View v) {
+		Intent it = new Intent();
 		switch (v.getId()) {
 		case R.id.btnRelease:
-			Intent it = new Intent();
 			it.setClass(this, ReleaseGrowthActivity.class);
 			it.putExtra("cid", cid);
 			it.putExtra("type", "add");
 			startActivityForResult(it, 2);
 			getParent().overridePendingTransition(R.anim.in_from_right,
 					R.anim.out_to_left);
-			// startActivity(it);
 			break;
 		case R.id.back:
 			finish();
 			this.getParent().overridePendingTransition(R.anim.right_in,
 					R.anim.right_out);
+			break;
+		case R.id.promptCount:
+			it.setClass(this, CommentsListActivity.class);
+			it.putExtra("cid", cid);
+			startActivity(it);
+			getParent().overridePendingTransition(R.anim.in_from_right,
+					R.anim.out_to_left);
+			promptCount.setVisibility(View.GONE);
+			// Home.remorePromptCount(cid, commentCount, 4);
+			Intent intent = new Intent();
+			intent.setAction(Constants.REMOVE_PROMPT_COUNT);
+			intent.putExtra("promptCount", commentCount);
+			intent.putExtra("position", 4);
+			intent.putExtra("cid", cid);
+			BroadCast.sendBroadCast(this, intent);
 			break;
 		default:
 			break;
@@ -148,12 +189,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 
 	@Override
 	public void getGrowthList(List<GrowthModle> list) {
-		if (progressDialog != null) {
-			try {
-				progressDialog.dismiss();
-			} catch (Exception e) {
-			}
-		}
+		firstLoad = false;
 		mPullDownView.notifyDidMore();
 		mPullDownView.RefreshComplete();
 		if (list.size() == 0) {
@@ -204,25 +240,13 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == 2 && data != null) {
-			boolean flag = data.getBooleanExtra("flag", false);
-			if (flag) {
-				end = DateUtils.phpTime(System.currentTimeMillis());
-				// 发布完记录 重新加载数据
-				getGrowthList();
-			}
-		} else if (requestCode == 3 && data != null) {
-
-		}
-	}
-
-	@Override
 	public void onRefresh() {
 		isRefresh = true;
 		loadMore = false;
 		end = DateUtils.phpTime(System.currentTimeMillis());
+		if (firstLoad) {
+			return;
+		}
 		getGrowthList();
 	}
 
@@ -245,5 +269,36 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		}
 		return super.onKeyDown(keyCode, event);
 
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (task != null && task.getStatus() == Status.RUNNING) {
+			task.cancel(true); // 如果Task还在运行，则先取消它
+		}
+		DBUtils.delGrowthById(cid);
+		int size = listData.size() > 20 ? 20 : listData.size();
+		for (int i = 0; i < size; i++) {
+			GrowthModle modle = listData.get(i);
+			JSONArray jsonAry = new JSONArray();
+			JSONObject jsonObj = new JSONObject();
+
+			try {
+				for (int j = 0; j < modle.getImgModle().size(); j++) {
+					jsonObj.put("img", modle.getImgModle().get(j).getImg());
+					jsonAry.put(jsonObj);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			DBUtils.saveGrowth(cid, modle.getName(), modle.getPersonImg(),
+					modle.getId(), modle.getUid(), modle.getContent(),
+					modle.getLocation(), modle.getHappen(), modle.getPublish(),
+					modle.getPraise(), modle.getComment(),
+					modle.isIspraise() == true ? 1 : 0, jsonAry.toString());
+
+		}
+		super.onDestroy();
 	}
 }

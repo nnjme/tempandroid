@@ -3,17 +3,19 @@ package com.changlianxi.activity;
 import android.app.Activity;
 import android.app.ActivityGroup;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TabHost;
+import android.widget.TextView;
 
-import com.changlianxi.util.SharedUtils;
+import com.changlianxi.R;
+import com.changlianxi.util.BroadCast;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.Utils;
 import com.umeng.analytics.MobclickAgent;
 
@@ -25,9 +27,10 @@ import com.umeng.analytics.MobclickAgent;
  */
 @SuppressWarnings("deprecation")
 public class CircleActivity extends ActivityGroup implements OnClickListener {
-	private Button cy, lt, dt, cz;
+	private TextView cy, lt, dt, cz;
+	private TextView ltPrompt, dtPrompt, czPrompt;
+	private RelativeLayout layCY, layLT, layDT, layCZ;
 	private TabHost mTabHost;// 用来承载activity的TabHost
-	public static LinearLayout btParent;
 	private String id = "";
 	private Intent intent;
 	private Intent gintent;// 成长itent
@@ -39,6 +42,13 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private String type = "";// push 推送跳转
 	private static Activity context;
 	private String inviterID = "";
+	private int newGrowthCount = 0;// 新成长数、
+	private int newChatCount = 0;// 新聊天数、
+	private int newDynamicCount = 0;// 新动态数、
+	private int newCommentCount = 0;// 新评论数。
+	private boolean firstLT = true;
+	private boolean firstDT = true;
+	private boolean firstCZ = true;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,11 +63,15 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		ciecleName = getIntent().getStringExtra("name");
 		isNew = getIntent().getBooleanExtra("is_New", false);
 		inviterID = getIntent().getStringExtra("inviterID");
+		newGrowthCount = getIntent().getIntExtra("newGrowthCount", 0);
+		newChatCount = getIntent().getIntExtra("newChatCount", 0);
+		newDynamicCount = getIntent().getIntExtra("newDynamicCount", 0);
+		newCommentCount = getIntent().getIntExtra("newCommentCount", 0);
 		initIntent();
 		initview();
 		if (type.equals("push")) {
-			mTabHost.setCurrentTab(1);
-			setSelectColor(lt);
+			mTabHost.setCurrentTab(2);
+			setSelectColor(lt, cy, dt, cz);
 			return;
 		}
 		mTabHost.setCurrentTab(0);
@@ -65,27 +79,54 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	
 
 	private void initview() {
-		btParent = (LinearLayout) findViewById(R.id.btParent);
-		cy = (Button) findViewById(R.id.cy);
-		lt = (Button) findViewById(R.id.lt);
-		cy.setOnClickListener(this);
-		lt.setOnClickListener(this);
-		cz = (Button) findViewById(R.id.cz);
-		cz.setOnClickListener(this);
-		dt = (Button) findViewById(R.id.dt);
-		dt.setOnClickListener(this);
+		cy = (TextView) findViewById(R.id.cy);
+		lt = (TextView) findViewById(R.id.lt);
+		cz = (TextView) findViewById(R.id.cz);
+		dt = (TextView) findViewById(R.id.dt);
+		ltPrompt = (TextView) findViewById(R.id.ltPrompt);
+		dtPrompt = (TextView) findViewById(R.id.dtPrompt);
+		czPrompt = (TextView) findViewById(R.id.czPrompt);
+		layCY = (RelativeLayout) findViewById(R.id.layCY);
+		layCZ = (RelativeLayout) findViewById(R.id.layCZ);
+		layDT = (RelativeLayout) findViewById(R.id.layDT);
+		layLT = (RelativeLayout) findViewById(R.id.layLT);
+		layCY.setOnClickListener(this);
+		layCZ.setOnClickListener(this);
+		layDT.setOnClickListener(this);
+		layLT.setOnClickListener(this);
 		btnMore = (LinearLayout) findViewById(R.id.more);
 		btnMore.setOnClickListener(this);
 		mTabHost = (TabHost) findViewById(R.id.tabhost);
 		mTabHost.setup(this.getLocalActivityManager());
 		mTabHost.addTab(mTabHost.newTabSpec("chengyuan")
 				.setIndicator("chengyuan").setContent(intent));
-		mTabHost.addTab(mTabHost.newTabSpec("lt").setIndicator("lt")
-				.setContent(chatIntent));
 		mTabHost.addTab(mTabHost.newTabSpec("cz").setIndicator("cz")
 				.setContent(gintent));
+		mTabHost.addTab(mTabHost.newTabSpec("lt").setIndicator("lt")
+				.setContent(chatIntent));
 		mTabHost.addTab(mTabHost.newTabSpec("dt").setIndicator("dt")
 				.setContent(newsIntent));
+		setPrompt();
+	}
+
+	private void setPrompt() {
+		if (newChatCount > 0) {
+			ltPrompt.setVisibility(View.VISIBLE);
+			ltPrompt.setText(newChatCount + "");
+		}
+		if (newGrowthCount + newCommentCount > 0) {
+			czPrompt.setVisibility(View.VISIBLE);
+			czPrompt.setText(newGrowthCount + newCommentCount + "");
+		}
+		if (newDynamicCount > 0) {
+			dtPrompt.setVisibility(View.VISIBLE);
+			dtPrompt.setText(newDynamicCount + "");
+		}
+	}
+
+	private void hidePrompt(View v) {
+		v.setVisibility(View.GONE);
+
 	}
 
 	private void initIntent() {
@@ -99,6 +140,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		gintent.setClass(this, GrowthActivity.class);
 		gintent.putExtra("cirID", id);
 		gintent.putExtra("cirName", ciecleName);
+		gintent.putExtra("commentCount", newCommentCount);
 		chatIntent = new Intent();
 		chatIntent.setClass(this, ChatActivity.class);
 		chatIntent.putExtra("cirID", id);
@@ -109,16 +151,12 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		newsIntent.putExtra("cirName", ciecleName);
 	}
 
-	private void setSelectColor(View v) {
-		for (int i = 0; i < btParent.getChildCount() - 2; i++) {
-			Button bt = (Button) btParent.getChildAt(i);
-			if (bt.getId() == v.getId()) {
-				bt.setTextColor(Color.BLACK);
-			} else {
-				bt.setTextColor(getResources().getColor(
-						R.color.default_font_color));
-			}
-		}
+	private void setSelectColor(TextView v1, TextView v2, TextView v3,
+			TextView v4) {
+		v1.setTextColor(getResources().getColor(R.color.black));
+		v2.setTextColor(getResources().getColor(R.color.tabfond));
+		v3.setTextColor(getResources().getColor(R.color.tabfond));
+		v4.setTextColor(getResources().getColor(R.color.tabfond));
 
 	}
 
@@ -131,21 +169,38 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.cy:
+		case R.id.layCY:
 			mTabHost.setCurrentTab(0);
-			setSelectColor(v);
+			setSelectColor(cy, lt, dt, cz);
 			break;
-		case R.id.lt:
-			mTabHost.setCurrentTab(1);
-			setSelectColor(v);
-			break;
-		case R.id.cz:
+		case R.id.layLT:
+			if (firstLT) {
+				sendBroad(id, newChatCount, 2);
+
+			}
 			mTabHost.setCurrentTab(2);
-			setSelectColor(v);
+			setSelectColor(lt, cy, dt, cz);
+			firstLT = false;
+			hidePrompt(ltPrompt);
 			break;
-		case R.id.dt:
+		case R.id.layCZ:
+			if (firstCZ) {
+				sendBroad(id, newGrowthCount, 1);
+
+			}
+			mTabHost.setCurrentTab(1);
+			setSelectColor(cz, lt, dt, cy);
+			firstCZ = false;
+			hidePrompt(czPrompt);
+			break;
+		case R.id.layDT:
+			if (firstDT) {
+				sendBroad(id, newDynamicCount, 3);
+			}
 			mTabHost.setCurrentTab(3);
-			setSelectColor(v);
+			setSelectColor(dt, lt, cy, cz);
+			firstDT = false;
+			hidePrompt(dtPrompt);
 			break;
 		case R.id.more:
 			Intent intent = new Intent();
@@ -153,7 +208,6 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 			intent.putExtra("cid", id);
 			startActivityForResult(intent, 1);
 			overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
-
 			break;
 		default:
 			break;
@@ -178,6 +232,15 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 		//MobclickAgent.onPause(this);
+	}
+	
+	private void sendBroad(String cid, int promptCount, int position) {
+		Intent intent = new Intent(Constants.REMOVE_PROMPT_COUNT);
+		intent.putExtra("promptCount", promptCount);
+		intent.putExtra("position", position);
+		intent.putExtra("cid", cid);
+		BroadCast.sendBroadCast(this, intent);
+
 	}
 
 	@Override

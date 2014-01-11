@@ -17,11 +17,10 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.baidu.android.pushservice.PushConstants;
 import com.baidu.android.pushservice.PushManager;
+import com.changlianxi.R;
 import com.changlianxi.inteface.PushOnBind;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
@@ -44,13 +43,13 @@ import com.umeng.analytics.MobclickAgent;
  */
 public class LoginActivity extends Activity implements OnClickListener,
 		PushOnBind, PostCallBack {
-	private RelativeLayout btReg;// 去往注册界面按钮
+	private Button btReg;// 去往注册界面按钮
 	private Button btLogin;// 登录按钮
 	private EditText ediNum;// 手机号码输入框
 	private EditText ediPassword;// 密码输入框
 	private String uid = "";// 成功后才有，代表用户ID
 	private String token = "";
-	private TextView btFindWd;// 找回密码按钮
+	private Button btFindWd;// 找回密码按钮
 	private Dialog dialog;
 
 	@Override
@@ -94,9 +93,9 @@ public class LoginActivity extends Activity implements OnClickListener,
 	 * 初始化控件
 	 */
 	private void initView() {
-		btFindWd = (TextView) findViewById(R.id.findpd);
+		btFindWd = (Button) findViewById(R.id.findpd);
 		btFindWd.setOnClickListener(this);
-		btReg = (RelativeLayout) findViewById(R.id.btregister);
+		btReg = (Button) findViewById(R.id.btregister);
 		btReg.setOnClickListener(this);
 		btLogin = (Button) findViewById(R.id.btlogin);
 		btLogin.setOnClickListener(this);
@@ -144,9 +143,8 @@ public class LoginActivity extends Activity implements OnClickListener,
 			Intent intent = new Intent();
 			intent.setClass(this, RegisterActivity.class);
 			startActivity(intent);
-			// activity切换动画显示 一定要放到startactivity 或finish()之后
-			overridePendingTransition(R.anim.register_up_in,
-					R.anim.slide_down_out);
+			Utils.leftOutRightIn(this);
+
 			break;
 		case R.id.btlogin:
 			if (!Utils.isNetworkAvailable()) {
@@ -172,6 +170,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 			Intent find = new Intent();
 			find.setClass(this, FindPasswordActivity.class);
 			startActivity(find);
+			Utils.leftOutRightIn(this);
 			break;
 		default:
 			break;

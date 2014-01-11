@@ -45,6 +45,7 @@ import com.changlianxi.util.Utils;
 import com.changlianxi.view.GrowthImgGridView;
 import com.changlianxi.view.RoundAngleImageView;
 import com.umeng.analytics.MobclickAgent;
+import com.changlianxi.R;
 
 public class ReleaseGrowthActivity extends BaseActivity implements
 		OnClickListener, UpLoadPic, OnItemClickListener {
@@ -139,6 +140,10 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btnUpload:
+			if (content.getText().toString().replace(" ", "").length() == 0) {
+				Utils.showToast("请输入内容");
+				break;
+			}
 			new UpDataTask().execute(content.getText().toString(), time
 					.getText().toString(), location.getText().toString());
 			break;

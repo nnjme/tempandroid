@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:android_custom="http://schemas.android.com/apk/res/com.changlianxi.activity"
+    xmlns:android_custom="http://schemas.android.com/apk/res/com.changlianxi"
     android:id="@+id/LinearLayout_popupwindow"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"

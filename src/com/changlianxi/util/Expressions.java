@@ -1,6 +1,6 @@
 package com.changlianxi.util;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class Expressions {
 

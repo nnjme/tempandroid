@@ -18,7 +18,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 /**
  * 成员排序

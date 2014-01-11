@@ -52,6 +52,7 @@ import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
+import com.changlianxi.R;
 
 /**
  * 成长详情及评论界面
@@ -91,6 +92,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 	private ImageLoader imageLoader;
 	private LinearLayout layParise;
 	private ImageView oneImg;
+	private LinearLayout layEdit;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -101,11 +103,11 @@ public class GrowthCommentActivity extends BaseActivity implements
 		pisition = getIntent().getIntExtra("position", 0);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
-		initView();
 		cid = modle.getCid();
 		gid = modle.getId();
 		uid = modle.getUid();
-		MemberInfoModle md = DBUtils.selectNameAndImgByID("circle" + cid, uid);
+		initView();
+		MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
 		if (md != null) {
 			name.setText(md.getName());
 			String path = md.getAvator();
@@ -169,7 +171,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 			content.setVisibility(View.GONE);
 		}
 		if (average == 1) {
-			String imgPath = modle.getImgModle().get(pisition).getImg_200();
+			String imgPath = modle.getImgModle().get(0).getImg_200();
 			oneImg.setVisibility(View.VISIBLE);
 			gridView.setVisibility(View.GONE);
 			imageLoader.displayImage(imgPath, oneImg, options);
@@ -191,11 +193,14 @@ public class GrowthCommentActivity extends BaseActivity implements
 		praise.setText("赞（" + modle.getPraise() + "）");
 		listview = (ListView) findViewById(R.id.listView);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
-		titleTxt.setText("成长");
+		titleTxt.setText("成长详情");
 		scorll = (ScrollView) findViewById(R.id.scroll);
 		layParise = (LinearLayout) findViewById(R.id.layParise);
 		layParise.setOnClickListener(this);
-
+		layEdit = (LinearLayout) findViewById(R.id.layedit);
+		if (!isPermission(uid)) {
+			layEdit.setVisibility(View.GONE);
+		}
 	}
 
 	/**
@@ -313,7 +318,6 @@ public class GrowthCommentActivity extends BaseActivity implements
 			pd.dismiss();
 			if (result.equals("1")) {
 				Utils.showToast("删除成功！");
-				// dismiss();
 				finish();
 				Utils.rightOut(GrowthCommentActivity.this);
 				callBack.delRecord(pisition);
@@ -387,7 +391,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 	 */
 	private void setNameAndImg(String tableName, String id, ViewHolder holder) {
 		MemberInfoModle modle = new MemberInfoModle();
-		modle = DBUtils.selectNameAndImgByID(tableName, id);
+		modle = DBUtils.selectNameAndImgByID(id);
 		String name = modle.getName();
 		String path = modle.getAvator();
 		holder.name.setText(name);

@@ -43,6 +43,9 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		// File file = new File(picPath);
 		File file = BitmapUtils.getImageFile(picPath);
 		if (file == null) {

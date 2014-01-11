@@ -13,8 +13,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.activity.R;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.modle.MessageModle;
 import com.changlianxi.util.DateUtils;
@@ -29,7 +29,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 public class MessageAdapter extends BaseAdapter {
 	private Context mContext;
 	private List<MessageModle> listModle;
-	private DisplayImageOptions options;
+	private DisplayImageOptions optionsAvatar;
 	private ImageLoader imageLoader;
 	private LoadImageTask myLoad;
 	private LoadHttpImage loadImg;
@@ -37,7 +37,7 @@ public class MessageAdapter extends BaseAdapter {
 	public MessageAdapter(Context context, List<MessageModle> listModle) {
 		this.mContext = context;
 		this.listModle = listModle;
-		options = CLXApplication.getOptions();
+		optionsAvatar = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 		myLoad = new LoadImageTask();
 		loadImg = new LoadHttpImage();
@@ -102,7 +102,9 @@ public class MessageAdapter extends BaseAdapter {
 				holder.selfImg.setVisibility(View.VISIBLE);
 				holder.selfContent.setVisibility(View.GONE);
 				if (content.startsWith("http")) {
-					loadImg.loadImag(content, holder.selfImg,50,50);
+					loadImg.loadImag(content, holder.selfImg, 50, 50);
+					// imageLoader.displayImage(content, holder.selfImg,
+					// options);
 
 				} else {
 					myLoad.loadBitmap(content, holder.selfImg, true);
@@ -114,9 +116,10 @@ public class MessageAdapter extends BaseAdapter {
 					.setText(EmojiParser.demojizedText(content + " "));
 			String path = listModle.get(position).getAvatar();
 			if (path == null || path.equals("")) {
-				holder.selfAvatar.setImageResource(R.drawable.hand_pic);
+				holder.selfAvatar.setImageResource(R.drawable.head_bg);
 			} else {
-				imageLoader.displayImage(path, holder.selfAvatar, options);
+				imageLoader
+						.displayImage(path, holder.selfAvatar, optionsAvatar);
 			}
 		} else {
 			if (type == 0) {
@@ -125,7 +128,8 @@ public class MessageAdapter extends BaseAdapter {
 			} else if (type == 1) {
 				holder.otherImg.setVisibility(View.VISIBLE);
 				holder.otherContent.setVisibility(View.GONE);
-				loadImg.loadImag(content, holder.otherImg,50,50);
+				loadImg.loadImag(content, holder.otherImg, 50, 50);
+				// imageLoader.displayImage(content, holder.otherImg, options);
 
 			}
 			holder.selfLayout.setVisibility(View.GONE);
@@ -137,7 +141,8 @@ public class MessageAdapter extends BaseAdapter {
 			if (path.equals("") || path == null) {
 				holder.otherAvatar.setImageResource(R.drawable.head_bg);
 			} else {
-				imageLoader.displayImage(path, holder.otherAvatar, options);
+				imageLoader.displayImage(path, holder.otherAvatar,
+						optionsAvatar);
 			}
 		}
 		holder.selfImg.setOnClickListener(new ImageOnClick(

@@ -30,15 +30,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/icon_list" />
-
-                <ImageView
-                    android:id="@+id/imgNews"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="15dip"
-                    android:layout_marginLeft="5dip"
-                    android:src="@drawable/icon_list_news"
-                    android:visibility="gone" />
             </LinearLayout>
 
             <ImageView
@@ -55,6 +46,18 @@
                 android:text="私信"
                 android:textColor="@color/white"
                 android:textSize="@dimen/scale42sp" />
+
+            <TextView
+                android:id="@+id/messageCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/scale20dip"
+                android:background="@drawable/icon_news_number"
+                android:gravity="center"
+                android:text="5"
+                android:textColor="@color/white"
+                android:textSize="@dimen/scale26sp"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 
@@ -64,12 +67,13 @@
         android:background="@color/white"
         android:orientation="vertical" >
 
-        <com.changlianxi.view.MyListView
+        <ListView
             android:id="@+id/listView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:cacheColorHint="#00000000"
-            android:divider="@null" />
+            android:divider="#dadada"
+            android:dividerHeight="0.2dip" />
     </LinearLayout>
 
 </LinearLayout>

@@ -8,19 +8,17 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.view.View;
 
 import com.baidu.android.pushservice.PushConstants;
+import com.changlianxi.R;
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.CircleActivity;
 import com.changlianxi.activity.MessageActivity;
-import com.changlianxi.activity.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.PushChat;
 import com.changlianxi.inteface.PushMessages;
 import com.changlianxi.inteface.PushOnBind;
 import com.changlianxi.modle.MessageModle;
-import com.changlianxi.view.Home;
 
 /**
  * Push消息处理receiver
@@ -29,6 +27,8 @@ public class PushMessageReceiver extends BroadcastReceiver {
 	public static PushMessages pushMessage;
 	public static PushChat pushChat;
 	private static PushOnBind pushBind;
+	private static MessagePrompt callBack;
+	private static MessagePrompt callBackMenu;
 	public static int mNewNum = 0;// 通知栏新消息条目，我只是用了一个全局变量，
 	public static final int NOTIFY_ID = 0x000;
 
@@ -81,45 +81,53 @@ public class PushMessageReceiver extends BroadcastReceiver {
 	 * @param strJson
 	 */
 	private void resolutionJson(String strJson) {
+		if (strJson == null) {
+			return;
+		}
+
 		try {
 			JSONObject json = new JSONObject(strJson);
 			String type = json.getString("t");
+			// boolean isBackHome = SharedUtils.getBoolean("isBackHome", false);
+			boolean isBackHome = Utils.isTopActivity(CLXApplication
+					.getInstance());
 			if (type.equals("CHAT")) {
-
-				// CLXApplication.saveChatModle(strJson);
 				MessageModle modle = Utils.getChatModle(strJson);
 				if (modle != null) {
 					DBUtils.saveChatMessage(modle);
 				}
-				if (pushChat != null) {
-					pushChat.getPushChat(strJson);
+				if (isBackHome) {
+					showNotify(strJson, "chat");// 后台运行时提醒
 					return;
 				}
-				if (SharedUtils.getBoolean("isBackHome", false)) {
-					showNotify(strJson, "chat");// 后台运行时提醒
+				if (pushChat == null) {
+					ResolutionPushJson.resolutionJson(strJson);
+				} else {
+					pushChat.getPushChat(strJson);
 				}
+
 			} else if (type.equals("MESSAGE")) {
 				MessageModle modle = Utils.getChatModle(strJson);
 				if (modle != null) {
 					DBUtils.saveMessage(modle, modle.getUid());
 				}
 				if (pushMessage == null) {
-					showNotify(strJson, "message");
-				}
-				if (pushMessage != null) {
+					if (isBackHome) {
+						showNotify(strJson, "message");
+					} else {
+						callBack.homePrompt(true);
+						callBackMenu.messagePrompt(true);
+					}
+				} else
 					pushMessage.getPushMessages(strJson);
-					Home.imgPromte.setVisibility(View.VISIBLE);
-				}
-			} else if (type.equals("NEW_CIRCLE")) {
-				// Utils.showToast("新的圈子邀请");
+
 			} else if (type.equals("MY_EDIT")) {
-				// Utils.showToast("有人修改了您的资料");
-			} else if (type.equals("NEW_GROWTH")) {
-				// Utils.showToast("圈子中有新的成长发布");
-			} else if (type.equals("NEW_NEWS")) {
-				// Utils.showToast("圈子中有新的动态");
-			} else if (type.equals("GROWTH_COMMENT")) {
-				// Utils.showToast("成长中有跟你相关的评论");
+				if (!isBackHome) {
+					callBack.homePrompt(true);
+					callBackMenu.myCardPrompt(true);
+				}
+			} else {
+				ResolutionPushJson.resolutionJson(strJson);
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -165,7 +173,6 @@ public class PushMessageReceiver extends BroadcastReceiver {
 		notification.setLatestEventInfo(CLXApplication.getInstance(),
 				(CharSequence) modle.getName() + " (" + mNewNum + "条新消息)",
 				(CharSequence) modle.getContent(), contentIntent);
-
 		application.getNotificationManager().notify(NOTIFY_ID, notification);// 通知一下才会生效哦
 	}
 
@@ -181,4 +188,35 @@ public class PushMessageReceiver extends BroadcastReceiver {
 		pushBind = bind;
 	}
 
+	public static void setMessagePrompt(MessagePrompt back) {
+		callBack = back;
+	}
+
+	public static void setMessagePromptMenu(MessagePrompt back) {
+		callBackMenu = back;
+	}
+
+	public interface MessagePrompt {
+		/***
+		 * 首页提醒
+		 * 
+		 * @param rompt
+		 */
+		void homePrompt(boolean rompt);
+
+		/**
+		 * 私信提醒
+		 * 
+		 * @param messagePrompt
+		 */
+		void messagePrompt(boolean messagePrompt);
+
+		/**
+		 * 我的名片提醒
+		 * 
+		 * @param myCardPrompt
+		 */
+		void myCardPrompt(boolean myCardPrompt);
+
+	}
 }

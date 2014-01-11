@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.EditText;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 
 public class SearchEditText extends EditText {
 	/**

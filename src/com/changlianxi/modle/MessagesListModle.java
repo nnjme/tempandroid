@@ -13,7 +13,7 @@ public class MessagesListModle {
 	private String type;// 私信类型
 	private String msg;// 私信内容，依据不同类型，内容含义不一样
 	private String time;// 私信发送时间
-	private String newCount;// 未读私信数量
+	private int newCount;// 未读私信数量
 	private String userName;// 发送者姓名
 	private String cirName;// 发送者所属圈子名称
 	private String avatar = "";
@@ -90,11 +90,11 @@ public class MessagesListModle {
 		this.time = time;
 	}
 
-	public String getNewCount() {
+	public int getNewCount() {
 		return newCount;
 	}
 
-	public void setNewCount(String newCount) {
+	public void setNewCount(int newCount) {
 		this.newCount = newCount;
 	}
 

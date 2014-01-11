@@ -69,11 +69,28 @@
     <dimen name="scale12dip">6dip</dimen>
     <dimen name="scale128dip">60dip</dimen>
     <dimen name="scale43sp">20sp</dimen>
+    <dimen name="scale46sp">22sp</dimen>
+    <dimen name="scale66sp">31sp</dimen>
     <dimen name="scale159dip">74dip</dimen>
     <dimen name="scale398dip">186dip</dimen>
     <dimen name="scale89dip">42dip</dimen>
     <dimen name="scale130dip">61dip</dimen>
     <dimen name="scale280dip">131dip</dimen>
     <dimen name="scale115dip">54dip</dimen>
-
+    <dimen name="scale125dip">59dip</dimen>
+    <dimen name="scale107dip">50dip</dimen>
+    <dimen name="scale34dip">16dip</dimen>
+    <dimen name="scale129dip">60dip</dimen>
+    <dimen name="scale44dip">21dip</dimen>
+    <dimen name="scale69dip">32dip</dimen>
+    <dimen name="scale39dip">18dip</dimen>
+    <dimen name="scale36dip">17dip</dimen>
+    <dimen name="scale228dip">107dip</dimen>
+    <dimen name="scale52dip">24dip</dimen>
+    <dimen name="scale278dip">130dip</dimen>
+    <dimen name="scale55dip">26dip</dimen>
+    <dimen name="scale56dip">26dip</dimen>
+    <dimen name="scale390dip">188dip</dimen>
+    <dimen name="scale170dip">80dip</dimen>
+    
 </resources>

@@ -2,15 +2,17 @@ package com.changlianxi.view;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
+import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.FlipperLayout.OnOpenListener;
-import com.changlianxi.view.MyCardShow1.OnButtonClickListener;
+import com.changlianxi.view.MyCardShow.OnButtonClickListener;
 import com.changlianxi.view.MyDetailChange.OnBackClick;
 
 public class MyCard implements OnButtonClickListener, OnBackClick {
@@ -18,7 +20,7 @@ public class MyCard implements OnButtonClickListener, OnBackClick {
 	private View mCard;
 	private OnOpenListener mOnOpenListener;
 	private MyViewGroup rGroup;
-	public MyCardShow1 cardShow;
+	public MyCardShow cardShow;
 	private MyDetailChange cardChange;
 
 	/**
@@ -30,7 +32,11 @@ public class MyCard implements OnButtonClickListener, OnBackClick {
 		this.mContext = context;
 		mCard = LayoutInflater.from(context).inflate(R.layout.mycard, null);
 		findViewById();
-		cardShow = new MyCardShow1(mContext);
+		init();
+	}
+
+	public void init() {
+		cardShow = new MyCardShow(mContext);
 		cardShow.setOnBack(this);
 		rGroup.addView(cardShow.getView());
 	}
@@ -72,6 +78,10 @@ public class MyCard implements OnButtonClickListener, OnBackClick {
 			cv.put("changed", "0");
 			DBUtils.updateInfo(Constants.MYDETAIL, cv, "uid=?",
 					new String[] { SharedUtils.getString("uid", "") });
+			Intent intent = new Intent();
+			intent.setAction(Constants.MYCARD_PROMPT);
+			intent.putExtra("prompt", false);
+			BroadCast.sendBroadCast(mContext, intent);
 		}
 	}
 }

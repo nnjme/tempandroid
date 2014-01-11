@@ -43,6 +43,9 @@ public class IinviteUserTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		for (int i = 0; i < contactsList.size(); i++) {
 			BuildJson(contactsList.get(i).getName(), contactsList.get(i)
 					.getNum());

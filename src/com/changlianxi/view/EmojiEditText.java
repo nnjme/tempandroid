@@ -164,8 +164,8 @@ public class EmojiEditText extends EditText {
 								getContext().getPackageName());
 						Drawable emoji = getContext().getResources()
 								.getDrawable(id);
-						emoji.setBounds(0, 0, emoji.getIntrinsicWidth(),
-								emoji.getIntrinsicHeight());
+						emoji.setBounds(0, 0, emoji.getIntrinsicWidth() / 2,
+								emoji.getIntrinsicHeight() / 2);
 						ImageSpan imageSpan = new ImageSpan(emoji,
 								ImageSpan.ALIGN_BASELINE);
 						spannable.setSpan(imageSpan, tagStartPosition, tagEnd,

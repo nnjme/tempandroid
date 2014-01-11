@@ -33,19 +33,34 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="10dip" >
 
-        <ImageView
+        <LinearLayout
             android:id="@+id/icon_sms"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dip"
-            android:src="@drawable/icon_sms" />
+            android:paddingBottom="5dip"
+            android:paddingLeft="5dip"
+            android:paddingTop="5dip" >
 
-        <ImageView
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dip"
+                android:src="@drawable/icon_sms" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/icon_call"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:src="@drawable/icon_tel" />
+            android:paddingBottom="5dip"
+            android:paddingLeft="10dip"
+            android:paddingTop="5dip" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/icon_tel" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

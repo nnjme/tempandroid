@@ -16,18 +16,20 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleIdetailModle;
 import com.changlianxi.task.GetCircleIdetailTask;
 import com.changlianxi.task.GetCircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.util.BroadCast;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
-import com.changlianxi.view.Home;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
@@ -171,6 +173,7 @@ public class CircleInfoActivity extends BaseActivity implements
 		if (creatorID.equals(SharedUtils.getString("uid", ""))) {
 			btnDissolve.setVisibility(View.VISIBLE);
 			edit.setVisibility(View.VISIBLE);
+			btnExit.setVisibility(View.GONE);
 		} else {
 			btnExit.setVisibility(View.VISIBLE);
 		}
@@ -196,7 +199,13 @@ public class CircleInfoActivity extends BaseActivity implements
 					circleLogo.setImageBitmap(bmp);
 				}
 				circleName.setText(cirName);
+				titleName.setText(cirName);
 				circleDescription.setText(circleDescriptionStr);
+				Intent intent = new Intent();
+				intent.setAction(Constants.UPDECIRNAME);
+				intent.putExtra("cirName", cirName);
+				intent.putExtra("cid", cid);
+				BroadCast.sendBroadCast(this, intent);
 			}
 		}
 	}
@@ -228,29 +237,6 @@ public class CircleInfoActivity extends BaseActivity implements
 		isSelf(modle.getCreator());
 		setvalue(modle.getName(), modle.getLogo(), modle.getDescription(),
 				modle.getMembersTotal() + "", modle.getMembersVerified() + "");
-		// circleDescription.setText(modle.getDescription());
-		// circleName.setText(modle.getName());
-		// titleName.setText(modle.getName());
-		// String logo = StringUtils.JoinString(modle.getLogo(), "_200x200");
-		// imageLoader.displayImage(logo, circleLogo, options);
-		// int father = 0;// 会长数量
-		// int mather = 0;// 副会长数量
-		// for (int i = 0; i < modle.getRolesModle().size(); i++) {
-		// if (modle.getRolesModle().get(i).getRoleName().equals("Father")) {
-		// father++;
-		// }
-		// }
-		// mather = modle.getRolesModle().size() - father;
-		// String numfather = "会长<font color=\"#fd7a00\">" + father
-		// + "</font>人<br>";
-		// String nummather = "副会长<font color=\"#fd7a00\">" + mather +
-		// "</font>人";
-		// circleRoles.setText(Html.fromHtml(numfather + nummather));
-		// String total = "<font color=\"#fd7a00\">" + modle.getMembersTotal()
-		// + "</font>人";
-		// String unverified = " （<font color=\"#fd7a00\">"
-		// + modle.getMembersVerified() + "</font>认证成员）";
-		// circleMemberCount.setText(Html.fromHtml(total + unverified));
 	}
 
 	private void setCount(String total, String veriofied) {
@@ -284,7 +270,11 @@ public class CircleInfoActivity extends BaseActivity implements
 	}
 
 	private void exitSuccess() {
-		Home.exitCircle(cid);
+		// Home.exitCircle(cid);
+		Intent acIntent = new Intent();
+		acIntent.setAction(Constants.EXIT_CIRCLE);
+		acIntent.putExtra("cid", cid);
+		BroadCast.sendBroadCast(this, acIntent);
 		Intent intent = new Intent();
 		intent.putExtra("flag", true);
 		setResult(1, intent);

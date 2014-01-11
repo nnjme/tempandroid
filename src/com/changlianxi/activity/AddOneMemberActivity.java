@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.SmsPrevieModle;
@@ -150,7 +151,7 @@ public class AddOneMemberActivity extends BaseActivity implements
 		addInfo.addView(view);
 		TextView txt = (TextView) view.findViewById(R.id.zhiwuName);
 		EditText edit = (EditText) view.findViewById(R.id.zhiwu);
-		txt.setText(str + ":");
+		txt.setText(str + "£º");
 		setTag(str, edit);
 
 	}

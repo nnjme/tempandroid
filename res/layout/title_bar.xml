@@ -5,6 +5,7 @@
     android:orientation="vertical" >
 
     <LinearLayout
+        android:id="@+id/bg"
         android:layout_width="fill_parent"
         android:layout_height="@dimen/scale110dip"
         android:background="@drawable/top_bg"
@@ -14,7 +15,7 @@
         <ImageView
             android:id="@+id/back"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="fill_parent"
             android:paddingLeft="@dimen/scale30dip"
             android:paddingRight="@dimen/scale29dip"
             android:src="@drawable/icon_return" />

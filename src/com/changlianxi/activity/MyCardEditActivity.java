@@ -14,13 +14,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -34,9 +41,15 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.changlianxi.R;
+import com.changlianxi.db.DBUtils;
+import com.changlianxi.db.DataBase;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.Info;
 import com.changlianxi.modle.MyCardAvatar;
@@ -49,6 +62,7 @@ import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
@@ -58,7 +72,10 @@ import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 
+@TargetApi(16)
 public class MyCardEditActivity extends BaseActivity implements
 		OnClickListener, PostCallBack, UpLoadPic {
 	private ListView basicListView;
@@ -84,6 +101,7 @@ public class MyCardEditActivity extends BaseActivity implements
 	private CircularImage avatar;
 	private EditText editName;
 	private String strName;
+	private String strOldName;
 	private String avatarURL;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
@@ -99,7 +117,6 @@ public class MyCardEditActivity extends BaseActivity implements
 	private ImageView addressAdd;
 	private ImageView eduAdd;
 	private ImageView workAdd;
-	private Bundle bundle;
 	private SelectPicPopwindow pop;
 	private RelativeLayout avatarLay;
 	private String selectPicPath = "";
@@ -107,55 +124,155 @@ public class MyCardEditActivity extends BaseActivity implements
 	private MyCardAvatar modle;
 	private Calendar cal = Calendar.getInstance();
 	private String nameID;
+	private DataBase dbase = DataBase.getInstance();
+	private SQLiteDatabase db = dbase.getWritableDatabase();
+	private RelativeLayout layTop;
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 0:
+				for (int i = basicList.size() - 1; i >= 0; i--) {
+					String type = basicList.get(i).getType();
+					if (type.equals("D_NAME")) {
+						nameID = basicList.get(i).getId();
+						basicList.remove(i);
+					}
+				}
+				setValuesAdapter();
+				break;
+			case 1:
+				getData();
+				break;
+			default:
+				break;
+			}
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_info_edit);
-		getData();
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
 		modle = new MyCardAvatar();
+		pid = DBUtils.getPidByUid(SharedUtils.getString("uid", ""));
+		strName = getIntent().getStringExtra("name");
+		avatarURL = getIntent().getStringExtra("avatar");
+		strOldName = strName;
+		if (!avatarURL.startsWith("http")) {
+			avatarURL = "file://" + avatarURL;
+		}
 		initView();
 		initData();
-		setValuesAdapter();
 		setListener();
+		mHandler.sendEmptyMessageDelayed(1, 100);
+
 	}
+
 	/**设置页面统计
 	 * 
 	 */
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void getData() {
-		bundle = getIntent().getExtras();
-		pid = getIntent().getStringExtra("pid");
-		strName = getIntent().getStringExtra("name");
-		avatarURL = getIntent().getStringExtra("avatar");
-		basicList = (List<Info>) bundle.getSerializable("basicList");
-		contactList = (List<Info>) bundle.getSerializable("contactList");
-		socialList = (List<Info>) bundle.getSerializable("socialList");
-		addressList = (List<Info>) bundle.getSerializable("addressList");
-		eduList = (List<Info>) bundle.getSerializable("eduList");
-		workList = (List<Info>) bundle.getSerializable("workList");
-		for (int i = basicList.size() - 1; i >= 0; i--) {
-			String type = basicList.get(i).getType();
-			if (type.equals("D_NAME")) {
-				nameID = basicList.get(i).getId();
-				basicList.remove(i);
+		new Thread() {
+			public void run() {
+				getMyDetails();
+				mHandler.sendEmptyMessage(0);
+			}
+		}.start();
+
+	}
+
+	/**
+	 * 获取成员资料信息
+	 * 
+	 * @param view
+	 * @param pid
+	 */
+	private void getMyDetails() {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		Cursor cursor = db.query(Constants.MYDETAIL, null, null, null, null,
+				null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				String tid = cursor.getString(cursor.getColumnIndex("tid"));
+				String key = cursor.getString(cursor.getColumnIndex("key"));
+				String value = cursor.getString(cursor.getColumnIndex("value"));
+				String start = cursor.getString(cursor
+						.getColumnIndex("startDate"));
+				String end = cursor.getString(cursor.getColumnIndex("endDate"));
+				valuesClassification(tid, key, value, start, end);
+				cursor.moveToNext();
 			}
 		}
+		cursor.close();
+	}
+
+	/**
+	 * 数据分类
+	 * 
+	 * @param id
+	 * @param key
+	 * @param value
+	 */
+	public void valuesClassification(String id, String key, String value,
+			String start, String end) {
+		Info info = new Info();
+		info.setValue(value);
+		info.setId(id);
+		info.setType(key);
+		String typekey = "";
+		for (int i = 0; i < UserInfoUtils.basicStr.length; i++) {
+			if (key.equals(UserInfoUtils.basicStr[i])) {
+				typekey = UserInfoUtils.convertToChines(key);
+				info.setKey(typekey);
+				basicList.add(info);
+			}
+		}
+		if (Arrays.toString(UserInfoUtils.socialStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			socialList.add(info);
+		} else if (Arrays.toString(UserInfoUtils.contactStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			contactList.add(info);
+
+		} else if (Arrays.toString(UserInfoUtils.addressStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			addressList.add(info);
+
+		} else if (Arrays.toString(UserInfoUtils.eduStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			info.setStartDate(start);
+			info.setEndDate(end);
+			eduList.add(info);
+		} else if (Arrays.toString(UserInfoUtils.workStr).contains(key)) {
+			typekey = UserInfoUtils.convertToChines(key);
+			info.setKey(typekey);
+			info.setStartDate(start);
+			info.setEndDate(end);
+			workList.add(info);
+		}
+
 	}
 
 	public void initData() {
@@ -165,13 +282,14 @@ public class MyCardEditActivity extends BaseActivity implements
 	}
 
 	private void initView() {
+		layTop = (RelativeLayout) findViewById(R.id.top);
 		layParent = (RelativeLayout) findViewById(R.id.parent);
 		back = (ImageView) findViewById(R.id.back);
 		avatar = (CircularImage) findViewById(R.id.avatar);
 		editName = (EditText) findViewById(R.id.editName);
 		editName.setText(strName);
 		editName.setEnabled(true);
-		imageLoader.displayImage(avatarURL, avatar, options);
+		setAvatar();
 		btnSave = (Button) findViewById(R.id.btnSave);
 		basicListView = (ListView) findViewById(R.id.basicListView);
 		contactListView = (ListView) findViewById(R.id.contactListView);
@@ -223,12 +341,46 @@ public class MyCardEditActivity extends BaseActivity implements
 		eduAdd.setOnClickListener(new BtnAddClick(4));
 		workAdd.setOnClickListener(new BtnAddClick(5));
 		avatarLay.setOnClickListener(this);
+	}
+
+	private void setAvatar() {
+		imageLoader.loadImage(avatarURL, options, new ImageLoadingListener() {
+
+			@Override
+			public void onLoadingStarted(String arg0, View arg1) {
+
+			}
+
+			@Override
+			public void onLoadingFailed(String arg0, View arg1, FailReason arg2) {
+
+			}
+
+			@SuppressLint("NewApi")
+			@Override
+			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
+				if (bmp == null) {
+					avatar.setImageResource(R.drawable.pic);
+					return;
+				}
+				avatar.setImageBitmap(bmp);
+				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+
+			}
+
+			@Override
+			public void onLoadingCancelled(String arg0, View arg1) {
+
+			}
+		});
 
 	}
 
 	class ValueAdapter extends BaseAdapter {
 		List<Info> valuesList = new ArrayList<Info>();
 		String tag;
+		final int TYPE_1 = 0;
+		final int TYPE_2 = 1;
 
 		public ValueAdapter(List<Info> datalist, String strTag) {
 			valuesList = datalist;
@@ -241,8 +393,23 @@ public class MyCardEditActivity extends BaseActivity implements
 		}
 
 		@Override
-		public Object getItem(int position) {
-			return null;
+		public int getItemViewType(int position) {
+			String key = valuesList.get(position).getKey();
+			if (key.equals("性別")) {
+				return TYPE_1;
+			} else {
+				return TYPE_2;
+			}
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			return 2;
+		}
+
+		@Override
+		public Object getItem(int arg0) {
+			return valuesList.get(arg0);
 		}
 
 		@Override
@@ -253,74 +420,215 @@ public class MyCardEditActivity extends BaseActivity implements
 		@Override
 		public View getView(final int position, View convertView,
 				ViewGroup parent) {
-			ViewHolderValues holderValues = null;
-
-			convertView = LayoutInflater.from(MyCardEditActivity.this).inflate(
-					R.layout.user_info_edit_list_item_key_value, null);
-			holderValues = new ViewHolderValues();
-			holderValues.btnDel = (ImageView) convertView
-					.findViewById(R.id.btnDel);
-			holderValues.btnDel.setTag(tag);
-			holderValues.key = (TextView) convertView.findViewById(R.id.key);
-			holderValues.value = (EditText) convertView
-					.findViewById(R.id.value);
-			holderValues.btnDel.setOnClickListener(new BtnDelClick(position,
-					(String) holderValues.btnDel.getTag()));
-			String key = valuesList.get(position).getKey();
-			final int editType = valuesList.get(position).getEditType();
-			if (Arrays.toString(UserInfoUtils.contacChinesetStr).contains(key)) {
-				holderValues.value.setInputType(InputType.TYPE_CLASS_NUMBER);
-			} else if (Arrays.toString(UserInfoUtils.socialChineseStr)
-					.contains(key)) {
-				holderValues.value
-						.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
-			} else if (key.equals("生日")) {
-				holderValues.value.setFocusable(false);
-				holderValues.value.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						showDateDialog(valuesList, position, "生日", editType);
-					}
-				});
+			ViewHolder1 holder1 = null;
+			ViewHolder2 holder2 = null;
+			int type = getItemViewType(position);
+			if (convertView == null) {
+				switch (type) {
+				case TYPE_1:
+					holder1 = new ViewHolder1();
+					convertView = LayoutInflater.from(MyCardEditActivity.this)
+							.inflate(R.layout.user_info_edit_gendar, null);
+					holder1.btnDel = (ImageView) convertView
+							.findViewById(R.id.btnDel);
+					holder1.key = (TextView) convertView.findViewById(R.id.key);
+					holder1.gendarGroup = (RadioGroup) convertView
+							.findViewById(R.id.gendarRradioGroup);
+					holder1.radioBoy = (RadioButton) convertView
+							.findViewById(R.id.radioboy);
+					holder1.radioGirl = (RadioButton) convertView
+							.findViewById(R.id.radiogirl);
+					convertView.setTag(holder1);
+					break;
+				case TYPE_2:
+					convertView = LayoutInflater
+							.from(MyCardEditActivity.this)
+							.inflate(
+									R.layout.user_info_edit_list_item_key_value,
+									null);
+					holder2 = new ViewHolder2();
+					holder2.btnDel = (ImageView) convertView
+							.findViewById(R.id.btnDel);
+					holder2.btnDel.setTag(tag);
+					holder2.key = (TextView) convertView.findViewById(R.id.key);
+					holder2.value = (EditText) convertView
+							.findViewById(R.id.value);
+					convertView.setTag(holder2);
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (type) {
+				case TYPE_1:
+					holder1 = (ViewHolder1) convertView.getTag();
+					break;
+				case TYPE_2:
+					holder2 = (ViewHolder2) convertView.getTag();
+					break;
+				default:
+					break;
+				}
 			}
-			holderValues.key.setText(key);
-			holderValues.value.addTextChangedListener(new TextWatcher() {
-
-				@Override
-				public void onTextChanged(CharSequence s, int start,
-						int before, int count) {
-					// TODO Auto-generated method stub
-
+			String key = valuesList.get(position).getKey();
+			switch (type) {
+			case TYPE_1:
+				holder1.btnDel.setTag(tag);
+				holder1.btnDel.setOnClickListener(new BtnDelClick(position,
+						(String) holder1.btnDel.getTag()));
+				holder1.key.setText(valuesList.get(position).getKey());
+				if (valuesList.get(position).getValue().equals("1")) {
+					holder1.radioBoy.setChecked(true);
+				} else if (valuesList.get(position).getValue().equals("2")) {
+					holder1.radioGirl.setChecked(true);
 				}
-
-				@Override
-				public void beforeTextChanged(CharSequence s, int start,
-						int count, int after) {
-
+				holder1.gendarGroup
+						.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+							@Override
+							public void onCheckedChanged(RadioGroup group,
+									int checkedId) {
+								// 获取变更后的选中项的ID
+								int radioButtonId = group
+										.getCheckedRadioButtonId();
+								if (valuesList.get(position).getEditType() != 2) {
+									valuesList.get(position).setEditType(3);
+								}
+								if (radioButtonId == R.id.radioboy) {
+									valuesList.get(position).setValue("1");
+								} else if (radioButtonId == R.id.radiogirl) {
+									valuesList.get(position).setValue("2");
+								}
+							}
+						});
+				break;
+			case TYPE_2:
+				holder2.btnDel.setTag(tag);
+				holder2.btnDel.setOnClickListener(new BtnDelClick(position,
+						(String) holder2.btnDel.getTag()));
+				int editType = valuesList.get(position).getEditType();
+				if (Arrays.toString(UserInfoUtils.contacChinesetStr).contains(
+						key)) {
+					holder2.value.setInputType(InputType.TYPE_CLASS_NUMBER);
+				} else if (Arrays.toString(UserInfoUtils.socialChineseStr)
+						.contains(key)) {
+					holder2.value
+							.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
+				} else if (key.equals("生日")) {
+					holder2.value.setFocusable(false);
+					holder2.value.setOnClickListener(new OnTimeClick("生日",
+							valuesList, position, editType));
 				}
-
-				@Override
-				public void afterTextChanged(Editable s) {
-					if (editType == 2) {
-						valuesList.get(position).setValue(s.toString());
-					} else {
-						String values = valuesList.get(position).getValue();
-						if (!values.equals(s.toString())) {
-							valuesList.get(position).setValue(s.toString());
-							valuesList.get(position).setEditType(3);
-						}
-					}
-				}
-			});
-			holderValues.value.setText(valuesList.get(position).getValue());
+				holder2.key.setText(key);
+				holder2.value.addTextChangedListener(new EditTextWatcher(
+						valuesList, position, editType));
+				holder2.value.setText(valuesList.get(position).getValue());
+				break;
+			default:
+				break;
+			}
+			// ViewHolderValues holderValues = null;
+			// String key = valuesList.get(position).getKey();
+			// if (key.equals("性別")) {
+			// holderValues = new ViewHolderValues();
+			// convertView = LayoutInflater.from(MyCardEditActivity.this)
+			// .inflate(R.layout.user_info_edit_gendar, null);
+			// holderValues.btnDel = (ImageView) convertView
+			// .findViewById(R.id.btnDel);
+			// holderValues.btnDel.setTag(tag);
+			// holderValues.key = (TextView) convertView
+			// .findViewById(R.id.key);
+			// holderValues.btnDel.setOnClickListener(new BtnDelClick(
+			// position, (String) holderValues.btnDel.getTag()));
+			// holderValues.key.setText(valuesList.get(position).getKey());
+			// holderValues.gendarGroup = (RadioGroup) convertView
+			// .findViewById(R.id.gendarRradioGroup);
+			// holderValues.radioBoy = (RadioButton) convertView
+			// .findViewById(R.id.radioboy);
+			// holderValues.radioGirl = (RadioButton) convertView
+			// .findViewById(R.id.radiogirl);
+			// if (valuesList.get(position).getValue().equals("1")) {
+			// holderValues.radioBoy.setChecked(true);
+			// } else if (valuesList.get(position).getValue().equals("2")) {
+			// holderValues.radioGirl.setChecked(true);
+			// }
+			// holderValues.gendarGroup
+			// .setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			// @Override
+			// public void onCheckedChanged(RadioGroup group,
+			// int checkedId) {
+			// // 获取变更后的选中项的ID
+			// int radioButtonId = group
+			// .getCheckedRadioButtonId();
+			// if (valuesList.get(position).getEditType() != 2) {
+			// valuesList.get(position).setEditType(3);
+			// }
+			// if (radioButtonId == R.id.radioboy) {
+			// valuesList.get(position).setValue("1");
+			// } else if (radioButtonId == R.id.radiogirl) {
+			// valuesList.get(position).setValue("2");
+			// }
+			// }
+			// });
+			// } else {
+			// convertView = LayoutInflater.from(MyCardEditActivity.this)
+			// .inflate(R.layout.user_info_edit_list_item_key_value,
+			// null);
+			// holderValues = new ViewHolderValues();
+			// holderValues.btnDel = (ImageView) convertView
+			// .findViewById(R.id.btnDel);
+			// holderValues.btnDel.setTag(tag);
+			// holderValues.key = (TextView) convertView
+			// .findViewById(R.id.key);
+			// holderValues.value = (EditText) convertView
+			// .findViewById(R.id.value);
+			// holderValues.btnDel.setTag(tag);
+			// holderValues.btnDel.setOnClickListener(new BtnDelClick(
+			// position, (String) holderValues.btnDel.getTag()));
+			// int editType = valuesList.get(position).getEditType();
+			// if (Arrays.toString(UserInfoUtils.contacChinesetStr).contains(
+			// key)) {
+			// holderValues.value
+			// .setInputType(InputType.TYPE_CLASS_NUMBER);
+			// } else if (Arrays.toString(UserInfoUtils.socialChineseStr)
+			// .contains(key)) {
+			// holderValues.value
+			// .setInputType(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
+			// } else if (key.equals("生日")) {
+			// holderValues.value.setFocusable(false);
+			// holderValues.value.setOnClickListener(new OnTimeClick("生日",
+			// valuesList, position, editType));
+			// }
+			// holderValues.key.setText(key);
+			// holderValues.value.addTextChangedListener(new EditTextWatcher(
+			// valuesList, position, editType));
+			// holderValues.value.setText(valuesList.get(position).getValue());
+			// }
 			return convertView;
 		}
+	}
+
+	class ViewHolder1 {
+		TextView key;
+		RadioButton radioBoy;
+		RadioGroup gendarGroup;
+		RadioButton radioGirl;
+		ImageView btnDel;
+	}
+
+	class ViewHolder2 {
+		TextView key;
+		EditText value;
+		ImageView btnDel;
 	}
 
 	class ViewHolderValues {
 		TextView key;
 		EditText value;
 		ImageView btnDel;
+		RadioGroup gendarGroup;
+		RadioButton radioBoy;
+		RadioButton radioGirl;
+
 	}
 
 	class EduValueAdapter extends BaseAdapter {
@@ -351,19 +659,25 @@ public class MyCardEditActivity extends BaseActivity implements
 		public View getView(final int position, View convertView,
 				ViewGroup parent) {
 			EduHolderValues holderValues = null;
-			convertView = LayoutInflater.from(MyCardEditActivity.this).inflate(
-					R.layout.info_edu_word__edit_item, null);
-			holderValues = new EduHolderValues();
-			holderValues.btnDel = (ImageView) convertView
-					.findViewById(R.id.btnDel);
+			if (convertView == null) {
+				convertView = LayoutInflater.from(MyCardEditActivity.this)
+						.inflate(R.layout.info_edu_word__edit_item, null);
+				holderValues = new EduHolderValues();
+				holderValues.btnDel = (ImageView) convertView
+						.findViewById(R.id.btnDel);
+				holderValues.key = (TextView) convertView
+						.findViewById(R.id.key);
+				holderValues.value = (EditText) convertView
+						.findViewById(R.id.value);
+				holderValues.startTime = (EditText) convertView
+						.findViewById(R.id.startTime);
+				holderValues.endTime = (EditText) convertView
+						.findViewById(R.id.endTime);
+				convertView.setTag(holderValues);
+			} else {
+				holderValues = (EduHolderValues) convertView.getTag();
+			}
 			holderValues.btnDel.setTag(tag);
-			holderValues.key = (TextView) convertView.findViewById(R.id.key);
-			holderValues.value = (EditText) convertView
-					.findViewById(R.id.value);
-			holderValues.startTime = (EditText) convertView
-					.findViewById(R.id.startTime);
-			holderValues.endTime = (EditText) convertView
-					.findViewById(R.id.endTime);
 			holderValues.btnDel.setOnClickListener(new BtnDelClick(position,
 					(String) holderValues.btnDel.getTag()));
 			holderValues.key.setText(valuesList.get(position).getKey());
@@ -379,25 +693,37 @@ public class MyCardEditActivity extends BaseActivity implements
 			holderValues.startTime.setText(valuesList.get(position)
 					.getStartDate());
 			holderValues.endTime.setText(valuesList.get(position).getEndDate());
-			final int editType = valuesList.get(position).getEditType();
-			holderValues.value.addTextChangedListener(new EduTextWatcher(
+			int editType = valuesList.get(position).getEditType();
+			holderValues.value.addTextChangedListener(new EditTextWatcher(
 					valuesList, position, editType));
-			holderValues.endTime.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					showDateDialog(valuesList, position, "endTime", editType);
-				}
-			});
-			holderValues.startTime.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					showDateDialog(valuesList, position, "startTime", editType);
-
-				}
-			});
+			holderValues.endTime.setOnClickListener(new OnTimeClick("endTime",
+					valuesList, position, editType));
+			holderValues.startTime.setOnClickListener(new OnTimeClick(
+					"startTime", valuesList, position, editType));
 			return convertView;
 		}
+	}
+
+	class OnTimeClick implements OnClickListener {
+		String type = "";
+		List<Info> valuesList;
+		int position;
+		int editType;
+
+		public OnTimeClick(String type, List<Info> valuesList, int position,
+				int editType) {
+			this.type = type;
+			this.valuesList = valuesList;
+			this.position = position;
+			this.editType = editType;
+		}
+
+		@Override
+		public void onClick(View v) {
+			showDateDialog(valuesList, position, type, editType);
+
+		}
+
 	}
 
 	// 日期选择对话框的 DateSet 事件监听器
@@ -440,6 +766,14 @@ public class MyCardEditActivity extends BaseActivity implements
 		SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
 		String date = df.format(cal.getTime());
 		if (tag.equals("startTime")) {
+			String endTime = valuesList.get(position).getEndDate();
+			if (!endTime.equals("")) {
+				if (!DateUtils.compareDate(valuesList.get(position)
+						.getStartDate(), date)) {
+					Utils.showToast("开始时间要小于结束时间");
+					return;
+				}
+			}
 			if (editType == 2) {
 				valuesList.get(position).setStartDate(date);
 			} else {
@@ -450,6 +784,14 @@ public class MyCardEditActivity extends BaseActivity implements
 				}
 			}
 		} else if (tag.equals("endTime")) {
+			String startTime = valuesList.get(position).getStartDate();
+			if (!startTime.equals("")) {
+				if (DateUtils.compareDate(valuesList.get(position)
+						.getStartDate(), date)) {
+					Utils.showToast("结束时间要大于开始时间");
+					return;
+				}
+			}
 			if (editType == 2) {
 				valuesList.get(position).setEndDate(date);
 			} else {
@@ -475,12 +817,12 @@ public class MyCardEditActivity extends BaseActivity implements
 		workAdapter.notifyDataSetChanged();
 	}
 
-	class EduTextWatcher implements TextWatcher {
+	class EditTextWatcher implements TextWatcher {
 		List<Info> valuesList;
 		int position;
 		int editType;
 
-		public EduTextWatcher(List<Info> valuesList, int position, int type) {
+		public EditTextWatcher(List<Info> valuesList, int position, int type) {
 			this.valuesList = valuesList;
 			this.position = position;
 			this.editType = type;
@@ -831,23 +1173,55 @@ public class MyCardEditActivity extends BaseActivity implements
 		}
 	}
 
+	private void insertDB(String key, String value, String start, String end) {
+		ContentValues cv = new ContentValues();
+		cv.put("key", key);
+		cv.put("value", value);
+		cv.put("personID", pid);
+		cv.put("startDate", start);
+		cv.put("endDate", end);
+		db.insert(Constants.MYDETAIL, null, cv);
+	}
+
+	private void upDateDB(ContentValues cv, String tid) {
+		db.update(Constants.MYDETAIL, cv, "tID=?", new String[] { tid });
+	}
+
 	/**
 	 * 构建上传的字符串
 	 */
 	private void BuildJson() {
-		if (!strName.equals(editName.getText().toString())) {
-			BuildEditJson("D_NAME", editName.getText().toString(), nameID);
+		String naem = editName.getText().toString();
+		if (!naem.equals(strOldName)) {
+			BuildEditJson("D_NAME", naem, nameID);
+			ContentValues values = new ContentValues();
+			values.put("userName", naem);
+			DBUtils.updateInfo(Constants.USERLIST_TABLE, values, "userID=?",
+					new String[] { SharedUtils.getString("uid", "") });
 		}
 		for (int i = 0; i < basicList.size(); i++) {
 			int editType = basicList.get(i).getEditType();
 			if (editType == 2) {
 				String keyType = basicList.get(i).getType();
 				String value = basicList.get(i).getValue();
+				if (value.equals("")) {
+					Utils.showToast(basicList.get(i).getKey() + "不能为空");
+					return;
+				}
+				insertDB(keyType, value, "", "");
 				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = basicList.get(i).getType();
 				String value = basicList.get(i).getValue();
-				BuildEditJson(keyType, value, basicList.get(i).getId());
+				String tid = basicList.get(i).getId();
+				if (value.equals("")) {
+					Utils.showToast(basicList.get(i).getKey() + "不能为空");
+					return;
+				}
+				ContentValues cv = new ContentValues();
+				cv.put("value", value);
+				upDateDB(cv, tid);
+				BuildEditJson(keyType, value, tid);
 			}
 		}
 		for (int i = 0; i < contactList.size(); i++) {
@@ -855,11 +1229,24 @@ public class MyCardEditActivity extends BaseActivity implements
 			if (editType == 2) {
 				String keyType = contactList.get(i).getType();
 				String value = contactList.get(i).getValue();
+				if (value.equals("")) {
+					Utils.showToast(contactList.get(i).getKey() + "不能为空");
+					return;
+				}
+				insertDB(keyType, value, "", "");
 				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = contactList.get(i).getType();
 				String value = contactList.get(i).getValue();
-				BuildEditJson(keyType, value, contactList.get(i).getId());
+				if (value.equals("")) {
+					Utils.showToast(contactList.get(i).getKey() + "不能为空");
+					return;
+				}
+				String tid = contactList.get(i).getId();
+				ContentValues cv = new ContentValues();
+				cv.put("value", value);
+				upDateDB(cv, tid);
+				BuildEditJson(keyType, value, tid);
 			}
 
 		}
@@ -868,52 +1255,110 @@ public class MyCardEditActivity extends BaseActivity implements
 			if (editType == 2) {
 				String keyType = socialList.get(i).getType();
 				String value = socialList.get(i).getValue();
+				if (value.equals("")) {
+					Utils.showToast(socialList.get(i).getKey() + "不能为空");
+					return;
+				}
+				insertDB(keyType, value, "", "");
 				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = socialList.get(i).getType();
 				String value = socialList.get(i).getValue();
-				BuildEditJson(keyType, value, socialList.get(i).getId());
+				if (value.equals("")) {
+					Utils.showToast(socialList.get(i).getKey() + "不能为空");
+					return;
+				}
+				String tid = socialList.get(i).getId();
+				ContentValues cv = new ContentValues();
+				cv.put("value", value);
+				upDateDB(cv, tid);
+				BuildEditJson(keyType, value, tid);
 			}
-
 		}
 		for (int i = 0; i < addressList.size(); i++) {
 			int editType = addressList.get(i).getEditType();
 			if (editType == 2) {
 				String keyType = addressList.get(i).getType();
 				String value = addressList.get(i).getValue();
+				if (value.equals("")) {
+					Utils.showToast(addressList.get(i).getKey() + "不能为空");
+					return;
+				}
+				insertDB(keyType, value, "", "");
 				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = addressList.get(i).getType();
 				String value = addressList.get(i).getValue();
-				BuildEditJson(keyType, value, addressList.get(i).getId());
+				if (value.equals("")) {
+					Utils.showToast(addressList.get(i).getKey() + "不能为空");
+					return;
+				}
+				String tid = addressList.get(i).getId();
+				ContentValues cv = new ContentValues();
+				cv.put("value", value);
+				upDateDB(cv, tid);
+				BuildEditJson(keyType, value, tid);
 			}
 
 		}
+
 		for (int i = 0; i < eduList.size(); i++) {
 			int editType = eduList.get(i).getEditType();
 			String keyType = eduList.get(i).getType();
 			String value = eduList.get(i).getValue();
 			String start = eduList.get(i).getStartDate();
 			String end = eduList.get(i).getEndDate();
+			if (value.equals("")) {
+				Utils.showToast(eduList.get(i).getKey() + "不能为空");
+				return;
+			}
+			if (start.equals("")) {
+				Utils.showToast(eduList.get(i).getKey() + "的开始时间不能为空");
+				return;
+			}
+			if (end.equals("")) {
+				Utils.showToast(eduList.get(i).getKey() + "的结束时间不能为空");
+				return;
+			}
 			if (editType == 2) {
+				insertDB(keyType, value, start, end);
 				BuildAddEduAndWorkJson(keyType, value, start, end);
 			} else if (editType == 3) {
-				BuildEditEduAndWorkJson(keyType, value, eduList.get(i).getId(),
-						start, end);
+				String tid = eduList.get(i).getId();
+				ContentValues cv = new ContentValues();
+				cv.put("value", value);
+				upDateDB(cv, tid);
+				BuildEditEduAndWorkJson(keyType, value, tid, start, end);
 			}
 		}
 		for (int i = 0; i < workList.size(); i++) {
 			int editType = workList.get(i).getEditType();
-			if (editType == 2) {
-				String keyType = workList.get(i).getType();
-				String value = workList.get(i).getValue();
-				BuildAddJson(keyType, value);
-			} else if (editType == 3) {
-				String keyType = workList.get(i).getType();
-				String value = workList.get(i).getValue();
-				BuildEditJson(keyType, value, workList.get(i).getId());
+			String keyType = workList.get(i).getType();
+			String value = workList.get(i).getValue();
+			String start = workList.get(i).getStartDate();
+			String end = workList.get(i).getEndDate();
+			if (value.equals("")) {
+				Utils.showToast(workList.get(i).getKey() + "不能为空");
+				return;
 			}
-
+			if (start.equals("")) {
+				Utils.showToast(workList.get(i).getKey() + "的开始时间不能为空");
+				return;
+			}
+			if (end.equals("")) {
+				Utils.showToast(workList.get(i).getKey() + "的结束时间不能为空");
+				return;
+			}
+			if (editType == 2) {
+				insertDB(keyType, value, start, end);
+				BuildAddEduAndWorkJson(keyType, value, start, end);
+			} else if (editType == 3) {
+				String tid = workList.get(i).getId();
+				ContentValues cv = new ContentValues();
+				cv.put("value", value);
+				upDateDB(cv, tid);
+				BuildEditEduAndWorkJson(keyType, value, tid, start, end);
+			}
 		}
 		upLoadEditDetails();
 	}
@@ -923,6 +1368,8 @@ public class MyCardEditActivity extends BaseActivity implements
 			Intent it = new Intent();
 			Bundle bundle = new Bundle();
 			bundle.putParcelable("avatar", modle.getBitmap());
+			it.putExtra("avatarPath", selectPicPath);
+			it.putExtra("name", editName.getText().toString());
 			it.putExtras(bundle);
 			setResult(2, it);
 			finish();
@@ -934,6 +1381,7 @@ public class MyCardEditActivity extends BaseActivity implements
 		map.put("pid", pid);
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("person", jsonAry.toString());
+
 		dialog = DialogUtil.getWaitDialog(this, "请稍后");
 		dialog.show();
 		PostAsyncTask task = new PostAsyncTask(this, map, "/people/imyEdit");
@@ -968,6 +1416,8 @@ public class MyCardEditActivity extends BaseActivity implements
 			}
 			modle.setBitmap(bitmap);
 			avatar.setImageBitmap(bitmap);
+			layTop.setBackground(BitmapUtils.convertBimapToDrawable(bitmap));
+
 			upLoadAvatar();
 		}
 
@@ -996,6 +1446,8 @@ public class MyCardEditActivity extends BaseActivity implements
 			Intent it = new Intent();
 			Bundle bundle = new Bundle();
 			bundle.putParcelable("avatar", modle.getBitmap());
+			it.putExtra("avatarPath", selectPicPath);
+			it.putExtra("name", editName.getText().toString());
 			it.putExtras(bundle);
 			setResult(2, it);
 			finish();
@@ -1046,6 +1498,7 @@ public class MyCardEditActivity extends BaseActivity implements
 			bundle.putSerializable("eduList", (Serializable) eduList);
 			bundle.putSerializable("workList", (Serializable) workList);
 			it.putExtra("name", editName.getText().toString());
+			it.putExtra("avatarPath", selectPicPath);
 			it.putExtras(bundle);
 			setResult(2, it);
 			finish();

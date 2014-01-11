@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.util.Utils;
 import com.umeng.analytics.MobclickAgent;
 

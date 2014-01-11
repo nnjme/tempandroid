@@ -210,4 +210,25 @@ public class DateUtils {
 		return false;
 
 	}
+
+	/**
+	 * 编辑资料时选择日期使用
+	 * 
+	 * @param starTime
+	 * @param endTime
+	 * @return
+	 */
+	public static boolean compareDate(String starTime, String endTime) {
+		SimpleDateFormat dfs = new SimpleDateFormat("yyyy.MM.dd");
+		boolean flag = false;
+		try {
+			Date begin = dfs.parse(starTime);
+			Date end = dfs.parse(endTime);
+			flag = end.before(begin);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return flag;
+
+	}
 }

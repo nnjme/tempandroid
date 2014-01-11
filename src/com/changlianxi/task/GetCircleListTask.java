@@ -38,6 +38,9 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
@@ -70,16 +73,14 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 					modle.setNew(false);
 				}
 				modle.setInviterID(inviter);
-				modle.setCirImg(1);
 				modle.setCirID(id);
 				modle.setCirIcon(StringUtils.JoinString(logo, "_200x200"));
 				modle.setCirName(name);
 				serverListModle.add(modle);
 				insertData(id, name, StringUtils.JoinString(logo, "_200x200"),
-						String.valueOf(modle.isNew()));
-				DBUtils.creatTable("circle" + id);
-				GetCircleUserTask task = new GetCircleUserTask(id, "circle"
-						+ id);
+						String.valueOf(isNew));
+				// DBUtils.creatTable("circle" + id);
+				GetCircleUserTask task = new GetCircleUserTask(id);
 				task.execute();
 			}
 		} catch (JSONException e) {

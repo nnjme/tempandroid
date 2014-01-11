@@ -30,17 +30,25 @@ public class CircleListParser implements IParser {
 			String logo = obj.getString("logo");
 			String name = obj.getString("name");
 			String isNew = obj.getString("is_new");
-			// TODO inviter uid
+			String myInvitor = obj.getString("inviter");
+			String editState = obj.getString("edit_state");
 
-			Circle c = new Circle(id, name, "", logo); // TODO description //
-														// TODO logo size
+			Circle c = new Circle(id, name);
+			c.setLogo(logo);
+			c.setMyInvitor(myInvitor);
 			c.setNew(isNew.equals("1"));
 			c.setStatus(Status.OLD);
 			circles.add(c);
+			if ("mod".equals(editState)) {
+				c.setStatus(Status.UPDATE);
+			} else if ("del".equals(editState)) {
+				c.setStatus(Status.DEL);
+			} 
+			// else : others status is new
 		}
 
 		Result ret = new Result();
-		ret.setData(new CircleList(circles)); // TODO other info of CircleList
+		ret.setData(new CircleList(circles));
 		return ret;
 	}
 

@@ -43,6 +43,9 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
+		if (isCancelled()) {
+			return null;
+		}
 		String result = HttpUrlHelper.postData(map, url);
 		try {
 			JSONObject jsonobject = new JSONObject(result);
@@ -63,15 +66,15 @@ public class GetNewsListTask extends AsyncTask<String, Integer, String> {
 				String user1Name = "";
 				String user2Name = "";
 				String avatarURL = "";
-				MemberInfoModle infomodle = DBUtils.findMemberInfo("circle"
-						+ usercid, user1, person2, user2, usercid);
+				MemberInfoModle infomodle = DBUtils.findMemberInfo(user1,
+						person2, user2, usercid);
 				user1Name = infomodle.getName();
 				avatarURL = infomodle.getAvator();
 				modle.setUser1Name(user1Name);
 				modle.setAvatarUrl(avatarURL);
 				if (!user2.equals("0") || !person2.equals("0")) {
-					MemberInfoModle user2modle = DBUtils.findMemberInfo(
-							"circle" + usercid, user2, person2, user2, usercid);
+					MemberInfoModle user2modle = DBUtils.findMemberInfo(user2,
+							person2, user2, usercid);
 					user2Name = user2modle.getName();
 					modle.setUser2Name(user2Name);
 				}

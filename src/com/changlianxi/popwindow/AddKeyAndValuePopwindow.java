@@ -17,7 +17,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.changlianxi.activity.R;
+import com.changlianxi.R;
 import com.changlianxi.util.WigdtContorl;
 
 /**

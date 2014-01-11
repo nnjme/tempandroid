@@ -39,7 +39,9 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 
 	@Override
 	protected String doInBackground(String... params) {
-
+		if (isCancelled()) {
+			return null;
+		}
 		String result = HttpUrlHelper.postData(map, "/growth/ilist");
 		try {
 			JSONObject jsonobject = new JSONObject(result);
@@ -71,11 +73,9 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 					im.setImg_100(StringUtils.JoinString(img, "_100x100"));
 					im.setImg_60(StringUtils.JoinString(img, "_60x60"));
 					im.setImg_500(StringUtils.JoinString(img, "_500x500"));
-
 					imgModle.add(im);
 				}
-				MemberInfoModle md = DBUtils.selectNameAndImgByID("circle"
-						+ cid, uid);
+				MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
 				modle.setName(md.getName());
 				modle.setPersonImg(md.getAvator());
 				if (isPraise.equals("1")) {

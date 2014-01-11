@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white" >
+
+    <RelativeLayout
+        android:id="@+id/top"
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/scale390dip"
+        android:background="@drawable/header_boxbg" >
+
+        <ImageView
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="18dp"
+            android:paddingLeft="18dp"
+            android:paddingRight="18dip"
+            android:src="@drawable/icon_return" />
+
+        <RelativeLayout
+            android:id="@+id/avatarLay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp" >
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="92dip"
+                android:layout_height="92dip"
+                android:layout_centerInParent="true"
+                android:src="@drawable/header_bg" />
+
+            <com.changlianxi.view.CircularImage
+                android:id="@+id/avatar"
+                android:layout_width="82.5dip"
+                android:layout_height="82.5dip"
+                android:layout_centerInParent="true" />
+
+            <ImageView
+                android:id="@+id/avatarRelace"
+                android:layout_width="82.5dip"
+                android:layout_height="82.5dip"
+                android:layout_centerInParent="true"
+                android:background="@drawable/replace"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dip"
+            android:layout_marginTop="10dip"
+            android:background="@drawable/header_btn"
+            android:paddingBottom="7dip"
+            android:paddingLeft="12dip"
+            android:paddingRight="13dip"
+            android:paddingTop="7dip"
+            android:text="保存"
+            android:textColor="@color/white"
+            android:textSize="17sp" />
+
+        <EditText
+            android:id="@+id/editName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/avatarLay"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="18dip"
+            android:layout_marginRight="18dip"
+            android:layout_marginTop="12dip"
+            android:background="@drawable/input_bg"
+            android:enabled="false"
+            android:gravity="center"
+            android:hint="编辑用户姓名"
+            android:paddingBottom="10dip"
+            android:paddingTop="10dip"
+            android:textColor="#737373"
+            android:textSize="15sp" >
+        </EditText>
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/editListView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/top"
+        android:background="@color/white"
+        android:divider="#d1d1d1"
+        android:dividerHeight="0.2dip"
+        android:scrollbars="none" >
+    </ListView>
+
+</RelativeLayout>

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,7 +16,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.changlianxi.modle.CircleIdetailModle;
 import com.changlianxi.modle.CircleModle;
-import com.changlianxi.modle.Info;
+import com.changlianxi.modle.GrowthImgModle;
+import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.modle.MessageModle;
@@ -25,6 +27,7 @@ import com.changlianxi.util.Constants;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.MyComparator;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.StringUtils;
 
 /**
  * 数据库操作类
@@ -47,10 +50,9 @@ public class DBUtils {
 	 * @param employer
 	 * @param sortkey
 	 */
-	public static void insertCircleUser(String cid, String circleName,
-			String pid, String uid, String name, String img, String employer,
-			String mobileNum, String auth, String location, String sortkey,
-			String pinyinFir) {
+	public static void insertCircleUser(String cid, String pid, String uid,
+			String name, String img, String employer, String mobileNum,
+			String auth, String location, String sortkey, String pinyinFir) {
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
 		values.put("cid", cid);
@@ -64,7 +66,70 @@ public class DBUtils {
 		values.put("location", location);
 		values.put("sortkey", sortkey);
 		values.put("pinyinFir", pinyinFir);
-		insertData(circleName, values);
+		insertData(Constants.USERLIST_TABLE, values);
+	}
+
+	/**
+	 * 根据cid删除用户
+	 * 
+	 * @param cid
+	 */
+	public static void delUserListByCid(String cid) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		db.delete(Constants.USERLIST_TABLE, "cid=?", new String[] { cid });
+	}
+
+	/**
+	 * 从数据库获取存储用户列表
+	 * 
+	 * @return
+	 */
+	public static List<MemberModle> getUserListByCid(String cid) {
+		if (!db.isOpen()) {
+			db = dbase.getReadableDatabase();
+		}
+		List<MemberModle> data = new ArrayList<MemberModle>();
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "cid='" + cid
+				+ "'", null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				String pid = cursor
+						.getString(cursor.getColumnIndex("personID"));
+				String uid = cursor.getString(cursor.getColumnIndex("userID"));
+				String name = cursor.getString(cursor
+						.getColumnIndex("userName"));
+				String imgAdd = cursor.getString(cursor
+						.getColumnIndex("userImg"));
+				String employer = cursor.getString(cursor
+						.getColumnIndex("employer"));
+				String sortkey = cursor.getString(cursor
+						.getColumnIndex("sortkey"));
+				String mobile = cursor.getString(cursor
+						.getColumnIndex("mobileNum"));
+				String auth = cursor.getString(cursor.getColumnIndex("auth"));
+				String location = cursor.getString(cursor
+						.getColumnIndex("location"));
+				MemberModle modle = new MemberModle();
+				modle.setUid(uid);
+				modle.setId(pid);
+				modle.setEmployer(employer.equals("null") ? "" : employer);
+				modle.setName(name);
+				modle.setSort_key(sortkey.toUpperCase());
+				modle.setImg(imgAdd);
+				modle.setMobileNum(mobile);
+				modle.setAuth(auth.equals("1") ? true : false);
+				modle.setLocation(location);
+				data.add(modle);
+				cursor.moveToNext();
+			}
+		}
+		cursor.close();
+		MyComparator compartor = new MyComparator();
+		Collections.sort(data, compartor);
+		return data;
 	}
 
 	/**
@@ -114,11 +179,11 @@ public class DBUtils {
 	 */
 	public static List<CircleModle> getCircleList() {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		List<CircleModle> data = new ArrayList<CircleModle>();
-		Cursor cursor = db.query("circlelist", null, null, null, null, null,
-				null);
+		Cursor cursor = db.query(Constants.CIRCLELIST_TABLE, null, null, null,
+				null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			for (int i = 0; i < cursor.getCount(); i++) {
@@ -127,10 +192,12 @@ public class DBUtils {
 						.getString(cursor.getColumnIndex("cirName"));
 				String imgAdd = cursor.getString(cursor
 						.getColumnIndex("cirImg"));
+				String isNew = cursor.getString(cursor.getColumnIndex("isNew"));
 				CircleModle modle = new CircleModle();
 				modle.setCirID(id);
 				modle.setCirName(name);
 				modle.setCirIcon(imgAdd);
+				modle.setNew(isNew.equals("1") ? true : false);
 				data.add(modle);
 				cursor.moveToNext();
 			}
@@ -140,58 +207,44 @@ public class DBUtils {
 	}
 
 	/**
-	 * 从数据库获取存储用户列表
-	 * 
-	 * @return
+	 * 获取圈子提醒数
 	 */
-	public static List<MemberModle> getUserList(String cirname) {
+	public static List<CircleModle> getCirclePtompt() {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-		List<MemberModle> data = new ArrayList<MemberModle>();
-		try {
-			Cursor cursor = db.query(cirname, null, null, null, null, null,
-					null);
-			if (cursor.getCount() > 0) {
-				cursor.moveToFirst();
-				for (int i = 0; i < cursor.getCount(); i++) {
-					String pid = cursor.getString(cursor
-							.getColumnIndex("personID"));
-					String uid = cursor.getString(cursor
-							.getColumnIndex("userID"));
-					String name = cursor.getString(cursor
-							.getColumnIndex("userName"));
-					String imgAdd = cursor.getString(cursor
-							.getColumnIndex("userImg"));
-					String employer = cursor.getString(cursor
-							.getColumnIndex("employer"));
-					String sortkey = cursor.getString(cursor
-							.getColumnIndex("sortkey"));
-					String mobile = cursor.getString(cursor
-							.getColumnIndex("mobileNum"));
-					String auth = cursor.getString(cursor
-							.getColumnIndex("auth"));
-					String location = cursor.getString(cursor
-							.getColumnIndex("location"));
-					MemberModle modle = new MemberModle();
-					modle.setUid(uid);
-					modle.setId(pid);
-					modle.setEmployer(employer == null ? employer : "");
-					modle.setName(name);
-					modle.setSort_key(sortkey.toUpperCase());
-					modle.setImg(imgAdd);
-					modle.setMobileNum(mobile);
-					modle.setAuth(auth.equals("1") ? true : false);
-					modle.setLocation(location);
-					data.add(modle);
-					cursor.moveToNext();
-				}
+		List<CircleModle> data = new ArrayList<CircleModle>();
+		Cursor cursor = db.query("circlelist", null, null, null, null, null,
+				null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				String id = cursor.getString(cursor.getColumnIndex("cirID"));
+				int newMemberCount = cursor.getInt(cursor
+						.getColumnIndex("newMemberCount"));
+				int newGrowthCount = cursor.getInt(cursor
+						.getColumnIndex("newGrowthCount"));
+				int newChatCount = cursor.getInt(cursor
+						.getColumnIndex("newChatCount"));
+				int newDynamicCount = cursor.getInt(cursor
+						.getColumnIndex("newDynamicCount"));
+				int newCommentCount = cursor.getInt(cursor
+						.getColumnIndex("newCommentCount"));
+				int promptCount = cursor.getInt(cursor
+						.getColumnIndex("promptCount"));
+				CircleModle modle = new CircleModle();
+				modle.setCirID(id);
+				modle.setNewChatCount(newChatCount);
+				modle.setNewCommentCount(newCommentCount);
+				modle.setNewDynamicCount(newDynamicCount);
+				modle.setNewGrowthCount(newGrowthCount);
+				modle.setNewMemberCount(newMemberCount);
+				modle.setPromptCount(promptCount);
+				data.add(modle);
+				cursor.moveToNext();
 			}
-			cursor.close();
-			MyComparator compartor = new MyComparator();
-			Collections.sort(data, compartor);
-		} catch (Exception e) {
 		}
+		cursor.close();
 		return data;
 	}
 
@@ -262,43 +315,12 @@ public class DBUtils {
 			modle.setCreator(creator);
 			modle.setMembersTotal(Integer.valueOf(cirMmembersTotal));
 			modle.setMembersVerified(Integer.valueOf(cirMembersVerified));
-
 		} else {
 			cursor.close();
 			return null;
 		}
 		cursor.close();
 		return modle;
-	}
-
-	/**
-	 * 查找圈子成员信息
-	 * 
-	 * @param userlistNmae圈子成员表名
-	 * @param pid成员ID
-	 * @return
-	 */
-	public static List<Info> getUserInfo(String userlistNmae, String pid) {
-		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
-		}
-		List<Info> listInfo = new ArrayList<Info>();
-		Cursor cursor = db.query(userlistNmae, null, "personID='" + pid + "'",
-				null, null, null, null);
-		if (cursor.getCount() > 0) {
-			cursor.moveToFirst();
-			for (int i = 0; i < cursor.getCount(); i++) {
-				String key = cursor.getString(cursor.getColumnIndex("key"));
-				String value = cursor.getString(cursor.getColumnIndex("value"));
-				Info info = new Info();
-				info.setKey(key);
-				info.setValue(value);
-				listInfo.add(info);
-				cursor.moveToNext();
-			}
-		}
-		cursor.close();
-		return listInfo;
 	}
 
 	/**
@@ -330,17 +352,17 @@ public class DBUtils {
 	 * @param id
 	 * @return
 	 */
-	public static MemberInfoModle selectNameAndImgByID(String tabName, String id) {
+	public static MemberInfoModle selectNameAndImgByID(String id) {
 		if (!db.isOpen()) {
 			db = dbase.getWritableDatabase();
 		}
-
+		//
 		MemberInfoModle modle = new MemberInfoModle();
-		if (!tabbleIsExist(tabName)) {
-			return modle;
-		}
-		Cursor cursor = db.query(tabName, null, "userID='" + id + "'", null,
-				null, null, null);
+		// if (!tabbleIsExist(tabName)) {
+		// return modle;
+		// }
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "userID='"
+				+ id + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			String name = cursor.getString(cursor.getColumnIndex("userName"));
@@ -362,8 +384,8 @@ public class DBUtils {
 	 * @param pid
 	 * @return
 	 */
-	public static MemberInfoModle findMemberInfo(String tabName, String uid,
-			String pid2, String uid2, String cid) {
+	public static MemberInfoModle findMemberInfo(String uid, String pid2,
+			String uid2, String cid) {
 		if (!db.isOpen()) {
 			db = dbase.getWritableDatabase();
 		}
@@ -372,8 +394,8 @@ public class DBUtils {
 			modle = getUserInfoServer(cid, uid2, pid2);
 			return modle;
 		}
-		Cursor cursor = db.query(tabName, null, "userID='" + uid + "'", null,
-				null, null, null);
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "userID='"
+				+ uid + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			String name = cursor.getString(cursor.getColumnIndex("userName"));
@@ -392,13 +414,13 @@ public class DBUtils {
 	 * 
 	 * @param uid
 	 */
-	public static String getPidByUid(String tableName, String uid) {
+	public static String getPidByUid(String uid) {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
 		String pid = "0";
-		Cursor cursor = db.query(tableName, null, "userID='" + uid + "'", null,
-				null, null, null);
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "userID='"
+				+ uid + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			pid = cursor.getString(cursor.getColumnIndex("personID"));
@@ -465,12 +487,12 @@ public class DBUtils {
 	 * @param uid
 	 * @return
 	 */
-	public static boolean isAuth(String tableName, String uid) {
+	public static boolean isAuth(String uid) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
-		Cursor cursor = db.query(tableName, null, "userID='" + uid + "'", null,
-				null, null, null);
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "userID='"
+				+ uid + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			String auth = cursor.getString(cursor.getColumnIndex("auth"));
@@ -491,11 +513,11 @@ public class DBUtils {
 	 */
 	public static CircleModle findCircleInfoById(String cirID) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		CircleModle modle = new CircleModle();
-		Cursor cursor = db.query("circlelist", null, "cirID='" + cirID + "'",
-				null, null, null, null);
+		Cursor cursor = db.query(Constants.CIRCLELIST_TABLE, null, "cirID='"
+				+ cirID + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			String name = cursor.getString(cursor.getColumnIndex("cirName"));
@@ -517,7 +539,7 @@ public class DBUtils {
 	 */
 	public static String getCircleNameById(String cirID) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		String cirName = "";
 		Cursor cursor = db.query("circlelist", null, "cirID='" + cirID + "'",
@@ -540,13 +562,13 @@ public class DBUtils {
 	 * @param uid
 	 * @return
 	 */
-	public static String getUserNameByUid(String circleTable, String uid) {
+	public static String getUserNameByUid(String uid) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		String name = "";
-		Cursor cursor = db.query(circleTable, null, "userID='" + uid + "'",
-				null, null, null, null);
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "userID='"
+				+ uid + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			name = cursor.getString(cursor.getColumnIndex("userName"));
@@ -567,7 +589,7 @@ public class DBUtils {
 	 */
 	public static String getMyName(String uid) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		String name = "";
 		Cursor cursor = db.query(Constants.MYDETAIL, null, "uid='" + uid + "'",
@@ -610,7 +632,8 @@ public class DBUtils {
 		if (!db.isOpen()) {
 			db = dbase.getWritableDatabase();
 		}
-		db.update("circlelist", cv, "cirID=?", new String[] { cirID });
+		db.update(Constants.CIRCLELIST_TABLE, cv, "cirID=?",
+				new String[] { cirID });
 
 	}
 
@@ -624,23 +647,6 @@ public class DBUtils {
 	}
 
 	/**
-	 * 创建表圈子所对应的表
-	 */
-	public static void creatTable(String circleName) {
-		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
-		}
-		// 创建圈子所对应的表
-		db.execSQL("CREATE TABLE IF NOT EXISTS "
-				+ circleName
-				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,cid varchar,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,mobileNum varchar,sortkey varchar,pinyinFir varchar,auth varchar,location varchar)");
-		db.execSQL("create table IF NOT EXISTS "
-				+ circleName
-				+ "userlist"
-				+ "( _id integer PRIMARY KEY AUTOINCREMENT ,tID varchar,personID varchar,key varchar, value varchar,startDate varchar,endDate)");
-	}
-
-	/**
 	 * 模糊查询
 	 * 
 	 * @param tableName
@@ -648,54 +654,171 @@ public class DBUtils {
 	public static List<MemberModle> fuzzyQuery(String str) {
 		List<MemberModle> listModle = new ArrayList<MemberModle>();
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
-		Cursor curCircle = db.query("circlelist", null, null, null, null, null,
-				null);
+		// Cursor curCircle = db.query("circlelist", null, null, null, null,
+		// null,
+		// null);
 		Cursor cur = null;
-		if (curCircle.getCount() > 0) {
-			curCircle.moveToFirst();
-			for (int i = 0; i < curCircle.getCount(); i++) {
-				String cirID = curCircle.getString(curCircle
-						.getColumnIndex("cirID"));
-				cur = db.query(
-						"circle" + cirID,
-						new String[] { "userName", "userImg", "cid",
-								"personID", "sortkey", "pinyinFir", "mobileNum" },
-						"userName like ?  or sortkey like ? or pinyinFir like ? or mobileNum like ?",
-						new String[] { "%" + str + "%", "%" + str + "%",
-								"%" + str + "%", "%" + str + "%" }, null, null,
-						null);
-				if (cur.getCount() > 0) {
-					cur.moveToFirst();
-					for (int j = 0; j < cur.getCount(); j++) {
-						MemberModle modle = new MemberModle();
-						String name = cur.getString(cur
-								.getColumnIndex("userName"));
-						String img = cur.getString(cur
-								.getColumnIndex("userImg"));
-						String cid = cur.getString(cur.getColumnIndex("cid"));
-						String pid = cur.getString(cur
-								.getColumnIndex("personID"));
-						String mobileNum = cur.getString(cur
-								.getColumnIndex("mobileNum"));
-						String circleName = getCircleNameById(cid);
-						modle.setCircleName(circleName);
-						modle.setImg(img);
-						modle.setName(name);
-						modle.setId(pid);
-						modle.setCid(cid);
-						modle.setMobileNum(mobileNum);
-						listModle.add(modle);
-						cur.moveToNext();
-					}
-				}
-				curCircle.moveToNext();
+		// if (curCircle.getCount() > 0) {
+		// curCircle.moveToFirst();
+		// for (int i = 0; i < curCircle.getCount(); i++) {
+		// String cirID = curCircle.getString(curCircle
+		// .getColumnIndex("cirID"));
+		cur = db.query(
+				Constants.USERLIST_TABLE,
+				new String[] { "userName", "userImg", "cid", "personID",
+						"sortkey", "pinyinFir", "mobileNum" },
+				"userName like ?  or sortkey like ? or pinyinFir like ? or mobileNum like ?",
+				new String[] { "%" + str + "%", "%" + str + "%",
+						"%" + str + "%", "%" + str + "%" }, null, null, null);
+		if (cur.getCount() > 0) {
+			cur.moveToFirst();
+			for (int j = 0; j < cur.getCount(); j++) {
+				MemberModle modle = new MemberModle();
+				String name = cur.getString(cur.getColumnIndex("userName"));
+				String img = cur.getString(cur.getColumnIndex("userImg"));
+				String cid = cur.getString(cur.getColumnIndex("cid"));
+				String pid = cur.getString(cur.getColumnIndex("personID"));
+				String mobileNum = cur.getString(cur
+						.getColumnIndex("mobileNum"));
+				String circleName = getCircleNameById(cid);
+				modle.setCircleName(circleName);
+				modle.setImg(img);
+				modle.setName(name);
+				modle.setId(pid);
+				modle.setCid(cid);
+				modle.setMobileNum(mobileNum);
+				listModle.add(modle);
+				cur.moveToNext();
 			}
 		}
+		// curCircle.moveToNext();
+		// }
+		// }
 		cur.close();
-		curCircle.close();
+		// curCircle.close();
 		return listModle;
+
+	}
+
+	/************************* 成长操作******************************* **/
+	/**
+	 * 保存成长记录
+	 * 
+	 * @param cid
+	 * @param name
+	 * @param avatar
+	 * @param growthID
+	 * @param uid
+	 * @param content
+	 * @param location
+	 * @param happen
+	 * @param praise
+	 * @param comment
+	 * @param img
+	 */
+	public static void saveGrowth(String cid, String name, String avatar,
+			String growthID, String uid, String content, String location,
+			String happen, String publish, int praise, int comment,
+			int isparise, String img) {
+		ContentValues values = new ContentValues();
+		values.put("cid", cid);
+		values.put("name", name);
+		values.put("avatar", avatar);
+		values.put("growthID", growthID);
+		values.put("uid", uid);
+		values.put("content", content);
+		values.put("location", location);
+		values.put("happen", happen);
+		values.put("publish", publish);
+		values.put("praise", praise);
+		values.put("comment", comment);
+		values.put("isparise", isparise);
+		values.put("img", img);
+		insertData(Constants.GROWTH_TABLE, values);
+
+	}
+
+	public static void delGrowthById(String cid) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		db.delete(Constants.GROWTH_TABLE, "cid=?", new String[] { cid });
+	}
+
+	/**
+	 * 获取成长记录
+	 * 
+	 * @param cid
+	 * @return
+	 */
+	public static List<GrowthModle> getGrowthList(String cid) {
+		List<GrowthModle> listMode = new ArrayList<GrowthModle>();
+		Cursor cursor = db.query(Constants.GROWTH_TABLE, null, "cid='" + cid
+				+ "'", null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				GrowthModle modle = new GrowthModle();
+				String name = cursor.getString(cursor.getColumnIndex("name"));
+				String avatar = cursor.getString(cursor
+						.getColumnIndex("avatar"));
+				String growthID = cursor.getString(cursor
+						.getColumnIndex("growthID"));
+				String uid = cursor.getString(cursor.getColumnIndex("uid"));
+				String content = cursor.getString(cursor
+						.getColumnIndex("content"));
+				String location = cursor.getString(cursor
+						.getColumnIndex("location"));
+				String happen = cursor.getString(cursor
+						.getColumnIndex("happen"));
+				String publish = cursor.getString(cursor
+						.getColumnIndex("publish"));
+				int praise = cursor.getInt(cursor.getColumnIndex("praise"));
+				int comment = cursor.getInt(cursor.getColumnIndex("comment"));
+				int isparise = cursor.getInt(cursor.getColumnIndex("isparise"));
+				String img = cursor.getString(cursor.getColumnIndex("img"));
+				try {
+					JSONArray json = new JSONArray(img);
+					List<GrowthImgModle> imgModle = new ArrayList<GrowthImgModle>();
+					for (int j = 0; j < json.length(); j++) {
+						GrowthImgModle m = new GrowthImgModle();
+						JSONObject imgObj = (JSONObject) json.opt(j);
+						String imgPath = imgObj.getString("img");
+						m.setImg(imgPath);
+						m.setImg_200(StringUtils
+								.JoinString(imgPath, "_200x200"));
+						m.setImg_100(StringUtils
+								.JoinString(imgPath, "_100x100"));
+						m.setImg_60(StringUtils.JoinString(imgPath, "_60x60"));
+						m.setImg_500(StringUtils
+								.JoinString(imgPath, "_500x500"));
+						imgModle.add(m);
+					}
+					modle.setImgModle(imgModle);
+
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				modle.setCid(cid);
+				modle.setComment(comment);
+				modle.setContent(content);
+				modle.setHappen(happen);
+				modle.setIspraise(isparise == 1 ? true : false);
+				modle.setUid(uid);
+				modle.setPublish(publish);
+				modle.setPraise(praise);
+				modle.setPersonImg(avatar);
+				modle.setName(name);
+				modle.setLocation(location);
+				modle.setId(growthID);
+				listMode.add(modle);
+				cursor.moveToNext();
+			}
+		}
+		cursor.close();
+		return listMode;
 
 	}
 
@@ -731,6 +854,9 @@ public class DBUtils {
 	 * @return
 	 */
 	public static List<NewsModle> getNewsList(String cid) {
+		if (!db.isOpen()) {
+			db = dbase.getReadableDatabase();
+		}
 		List<NewsModle> listMode = new ArrayList<NewsModle>();
 		Cursor cursor = db.query(Constants.NEWS_TABLE, null, "cid='" + cid
 				+ "'", null, null, null, null);
@@ -780,6 +906,18 @@ public class DBUtils {
 
 	}
 
+	/**
+	 * 根据cid删除动态列表信息
+	 * 
+	 * @param cirID
+	 */
+	public static void delNewsList(String cid) {
+		if (!db.isOpen()) {
+			db = dbase.getWritableDatabase();
+		}
+		db.delete(Constants.NEWS_TABLE, "cid=?", new String[] { cid });
+	}
+
 	/****************************************** 聊天操作****************************** ****/
 	/**
 	 * 将聊天记录存入数据库
@@ -813,10 +951,13 @@ public class DBUtils {
 	public static List<MessageModle> getChatMessage(String cid) {
 		List<MessageModle> listModle = new ArrayList<MessageModle>();
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
+		// String sql = "select * from " + Constants.CHATLIST_TABLE_NAME
+		// + "  where cid='" + cid + "'" + " Limit " + 20;
 		Cursor cursor = db.query(Constants.CHATLIST_TABLE_NAME, null, "cid='"
 				+ cid + "'", null, null, null, null);
+		// Cursor cursor = db.rawQuery(sql, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			for (int i = 0; i < cursor.getCount(); i++) {
@@ -854,7 +995,7 @@ public class DBUtils {
 	 */
 	public static void delCircleChatMessage(String cid) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		db.delete(Constants.CHATLIST_TABLE_NAME, "cid=?", new String[] { cid });
 	}
@@ -888,46 +1029,38 @@ public class DBUtils {
 	public static List<MessageModle> getMessage(String keyID) {
 		List<MessageModle> listModle = new ArrayList<MessageModle>();
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
-
-		try {
-			Cursor cursor = db.query(Constants.MESSAGELIST_TABLE_NAME, null,
-					"keyID='" + keyID + "'", null, null, null, null);
-			if (cursor.getCount() > 0) {
-				cursor.moveToFirst();
-				for (int i = 0; i < cursor.getCount(); i++) {
-					MessageModle modle = new MessageModle();
-					String name = cursor.getString(cursor
-							.getColumnIndex("name"));
-					String avatarURL = cursor.getString(cursor
-							.getColumnIndex("avatarURL"));
-					String time = cursor.getString(cursor
-							.getColumnIndex("time"));
-					String content = cursor.getString(cursor
-							.getColumnIndex("content"));
-					String ruid = cursor.getString(cursor
-							.getColumnIndex("ruid"));
-					String self = cursor.getString(cursor
-							.getColumnIndex("self"));
-					int type = cursor.getInt(cursor.getColumnIndex("type"));
-					modle.setAvatar(avatarURL);
-					modle.setContent(content);
-					modle.setSelf(self.equals("1") ? true : false);
-					modle.setTime(time);
-					modle.setName(name);
-					modle.setUid(ruid);
-					modle.setType(type);
-					listModle.add(modle);
-					cursor.moveToNext();
-				}
-			} else {
-				cursor.close();
+		Cursor cursor = db.query(Constants.MESSAGELIST_TABLE_NAME, null,
+				"keyID='" + keyID + "'", null, null, null, null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				MessageModle modle = new MessageModle();
+				String name = cursor.getString(cursor.getColumnIndex("name"));
+				String avatarURL = cursor.getString(cursor
+						.getColumnIndex("avatarURL"));
+				String time = cursor.getString(cursor.getColumnIndex("time"));
+				String content = cursor.getString(cursor
+						.getColumnIndex("content"));
+				String ruid = cursor.getString(cursor.getColumnIndex("ruid"));
+				String self = cursor.getString(cursor.getColumnIndex("self"));
+				int type = cursor.getInt(cursor.getColumnIndex("type"));
+				modle.setAvatar(avatarURL);
+				modle.setContent(content);
+				modle.setSelf(self.equals("1") ? true : false);
+				modle.setTime(time);
+				modle.setName(name);
+				modle.setUid(ruid);
+				modle.setType(type);
+				listModle.add(modle);
+				cursor.moveToNext();
 			}
-			ChatTimeComparator compartor = new ChatTimeComparator();
-			Collections.sort(listModle, compartor);// 按时间排序
-		} catch (Exception e) {
+		} else {
+			cursor.close();
 		}
+		ChatTimeComparator compartor = new ChatTimeComparator();
+		Collections.sort(listModle, compartor);// 按时间排序
 		return listModle;
 
 	}
@@ -953,7 +1086,7 @@ public class DBUtils {
 	 */
 	public static boolean tabbleIsExist(String tableName) {
 		if (!db.isOpen()) {
-			db = dbase.getWritableDatabase();
+			db = dbase.getReadableDatabase();
 		}
 		boolean result = false;
 		if (tableName == null) {
@@ -982,5 +1115,26 @@ public class DBUtils {
 		if (db != null) {
 			db.close();
 		}
+	}
+
+	/**
+	 * 获取个人名片提醒
+	 * 
+	 * @return
+	 */
+	public static boolean getMyCardPrompt() {
+		if (!db.isOpen()) {
+			db = dbase.getReadableDatabase();
+		}
+		String changed = "";
+		Cursor cursor = db.query(Constants.MYDETAIL, null, "uid='"
+				+ SharedUtils.getString("uid", "") + "'", null, null, null,
+				null);
+		if (cursor.getCount() > 0) {
+			cursor.moveToFirst();
+			changed = cursor.getString(cursor.getColumnIndex("changed"));
+		}
+		cursor.close();
+		return changed.equals("1") ? true : false;
 	}
 }
