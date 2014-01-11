@@ -59,6 +59,7 @@ public class CLXApplication extends Application {
 		initImageLoader();
 		super.onCreate();
 	}
+	
 
 	// 添加Activity到容器中
 	public static void addActivity(Activity activity) {

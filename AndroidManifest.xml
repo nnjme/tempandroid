@@ -234,6 +234,13 @@
         <meta-data
             android:name="api_key"
             android:value="QdCuL0S0CEP8TgTPrHb3FYmt" />
+         <meta-data
+            android:name="UMENG_APPKEY"
+            android:value="52cd2fac56240b493a00ad8c" >
+        </meta-data>
+        <meta-data
+            android:name="UMENG_CHANNEL"
+            android:value="123456789" />
         <!-- push service end -->
         <activity
             android:name=".ChangePassswordActivity"
@@ -276,5 +283,5 @@
             </intent-filter>
         </service>
     </application>
-
+	
 </manifest>

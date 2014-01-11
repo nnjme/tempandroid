@@ -16,6 +16,7 @@ import android.widget.ListView;
 import com.changlianxi.adapter.SmsAdaprter;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 短信预览界面
@@ -52,6 +53,21 @@ public class SmsPreviewActivity extends BaseActivity implements OnClickListener 
 		listview = (ListView) findViewById(R.id.listView1);
 		adapter = new SmsAdaprter(this, contactsList, title);
 		listview.setAdapter(adapter);
+	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
 
 	@Override

@@ -39,6 +39,7 @@ import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
+import com.umeng.analytics.MobclickAgent;
 
 public class CircleSettingActivity extends BaseActivity implements
 		OnClickListener, UpLoadPic {
@@ -84,7 +85,22 @@ public class CircleSettingActivity extends BaseActivity implements
 		btnSave.setOnClickListener(this);
 		getCircleInfo(cid);
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	/**
 	 * 获取修改圈子信息
 	 * 

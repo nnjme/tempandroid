@@ -21,6 +21,7 @@ import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 修改密码
@@ -45,7 +46,22 @@ public class ChangePassswordActivity extends BaseActivity implements
 		findViewByID();
 		setListener();
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	private void findViewByID() {
 		ok = (Button) findViewById(R.id.ok);
 		nowPasswrod = (EditText) findViewById(R.id.nowPassword);

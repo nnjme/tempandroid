@@ -23,6 +23,7 @@ import com.changlianxi.view.MyCard;
 import com.changlianxi.view.SetMenu;
 import com.changlianxi.view.SetMenu.onChangeViewListener;
 import com.changlianxi.view.Setting;
+import com.umeng.analytics.MobclickAgent;
 
 public class MainActivity extends Activity implements OnOpenListener {
 	/**
@@ -92,10 +93,23 @@ public class MainActivity extends Activity implements OnOpenListener {
 		super.onRestart();
 	}
 
+	/**
+	 * 数据统计
+	 */
 	@Override
-	protected void onResume() {
-		super.onResume();
-	}
+	    protected void onResume() {
+	    	// TODO Auto-generated method stub
+	    	super.onResume();
+	    MobclickAgent.onPageStart(getClass().getName() + "");
+	    MobclickAgent.onResume(this);
+	    }
+	    @Override
+	    protected void onPause() {
+	    	// TODO Auto-generated method stub
+	    	super.onPause();
+	    	MobclickAgent.onPageEnd(getClass().getName() + "");
+	    	MobclickAgent.onPause(this);
+	    }
 
 	@SuppressWarnings("unchecked")
 	@Override

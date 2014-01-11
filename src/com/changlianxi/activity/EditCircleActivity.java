@@ -38,6 +38,7 @@ import com.changlianxi.util.Utils;
 import com.changlianxi.view.Home;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 编辑圈子界面
@@ -78,7 +79,22 @@ public class EditCircleActivity extends BaseActivity implements
 		setListener();
 		getSercverData();
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	private void getSercverData() {
 		if (!Utils.isNetworkAvailable()) {
 			Utils.showToast("请检查网络");

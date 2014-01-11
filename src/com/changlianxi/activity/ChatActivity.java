@@ -68,6 +68,7 @@ import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyListView;
 import com.changlianxi.view.MyListView.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 
 public class ChatActivity extends BaseActivity implements OnClickListener,
 		OnItemClickListener, SendMessageAndChatCallBack, PushChat {
@@ -152,8 +153,20 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 	@Override
 	protected void onResume() {
 		super.onResume();
+		// MobclickAgent.onResume(this);
+		MobclickAgent.onPageStart(getClass().getName() + "");
 		CircleActivity
 				.setInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+	}
+
+	/**
+	 * 数据统计
+	 */
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+		// MobclickAgent.onPause(this);
 	}
 
 	private void getChatRecord() {

@@ -56,6 +56,7 @@ import com.changlianxi.view.QuickAlphabeticBar;
 import com.changlianxi.view.QuickAlphabeticBar.OnTouchingLetterChangedListener;
 import com.changlianxi.view.QuickAlphabeticBar.touchUp;
 import com.changlianxi.view.SearchEditText;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 从通讯录导入圈子程序界面
@@ -103,6 +104,21 @@ public class SelectContactsActivity extends BaseActivity implements
 		listview.setAdapter(adapter);
 		asyncQuery = new MyAsyncQueryHandler(getContentResolver());
 		init();
+	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
 
 	private void init() {

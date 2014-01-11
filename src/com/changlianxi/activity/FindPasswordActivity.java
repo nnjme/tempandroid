@@ -31,6 +31,7 @@ import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyViewGroup;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 找回密码界面包含多个子view
@@ -98,7 +99,22 @@ public class FindPasswordActivity extends BaseActivity implements
 		initFind2View();
 		initFind3View();
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	/**
 	 * 初始化找回密码界面1的控件
 	 */

@@ -39,6 +39,7 @@ import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyViewGroup;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 注册界面包含多个注册子view
@@ -106,6 +107,22 @@ public class RegisterActivity extends BaseActivity implements OnClickListener,
 						WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
 								| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_UNSPECIFIED);
 	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 
 	/**
 	 * 初始化控件

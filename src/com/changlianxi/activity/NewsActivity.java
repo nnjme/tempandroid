@@ -28,6 +28,7 @@ import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.PullDownView;
 import com.changlianxi.view.PullDownView.OnPullDownListener;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 动态界面
@@ -76,6 +77,21 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 		findViewByID();
 		setListener();
 		getNewsListFromDB();
+	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
 
 	private void findViewByID() {

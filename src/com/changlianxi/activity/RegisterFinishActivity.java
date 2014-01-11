@@ -20,6 +20,7 @@ import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 public class RegisterFinishActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
@@ -34,6 +35,21 @@ public class RegisterFinishActivity extends BaseActivity implements
 		btStartUse = (Button) findViewById(R.id.startUse);
 		btStartUse.setOnClickListener(this);
 		editNC = (EditText) findViewById(R.id.editNC);
+	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
 
 	@Override
@@ -57,6 +73,7 @@ public class RegisterFinishActivity extends BaseActivity implements
 			break;
 		}
 	}
+	
 
 	@Override
 	public void taskFinish(String result) {

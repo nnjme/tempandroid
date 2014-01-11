@@ -15,6 +15,7 @@ import android.widget.TabHost;
 
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 点击圈子之后进入的界面
@@ -61,6 +62,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		}
 		mTabHost.setCurrentTab(0);
 	}
+	
 
 	private void initview() {
 		btParent = (LinearLayout) findViewById(R.id.btParent);
@@ -166,12 +168,16 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	protected void onResume() {
 		SharedUtils.setBoolean("isBackHome", false);// 后台运行
 		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+		// MobclickAgent.onResume(this);
 	}
 
 	@Override
 	protected void onPause() {
 		SharedUtils.setBoolean("isBackHome", true);// 后台运行
 		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+		//MobclickAgent.onPause(this);
 	}
 
 	@Override
