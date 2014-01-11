@@ -159,11 +159,11 @@ public class Chat extends AbstractData {
 		}
 		Chat another = (Chat) data;
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (!this.id.equals(another.id)) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.circleId.equals(another.circleId)) {
+		if (!this.circleId.equals(another.circleId)) {
 			this.circleId = another.circleId;
 			isChange = true;
 		}
@@ -171,11 +171,11 @@ public class Chat extends AbstractData {
 			this.type = another.type;
 			isChange = true;
 		}
-		if (this.senderUid.equals(another.senderUid)) {
+		if (!this.senderUid.equals(another.senderUid)) {
 			this.senderUid = another.senderUid;
 			isChange = true;
 		}
-		if (this.content.equals(another.content)) {
+		if (!this.content.equals(another.content)) {
 			this.content = another.content;
 			isChange = true;
 		}

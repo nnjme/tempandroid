@@ -3,11 +3,10 @@ package com.changlianxi.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.changlianxi.db.Const;
-import com.changlianxi.db.DBUtils;
-
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.changlianxi.db.Const;
 
 public class ChatList extends AbstractData {
 	private long startTime = 0L; // in milliseconds
