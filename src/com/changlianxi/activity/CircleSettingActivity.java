@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.R;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
