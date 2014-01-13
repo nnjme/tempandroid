@@ -174,7 +174,7 @@ public class MainActivity extends Activity implements OnOpenListener {
 				mDesktop.setEidtAvatar(bmp);
 			}
 			if (basicList != null && contactList != null && socialList != null
-					&& addressList != null && eduList != null
+  && addressList != null && eduList != null
 					&& workList != null)
 				mCard.cardShow.notifyData(basicList, contactList, socialList,
 						addressList, eduList, workList);
