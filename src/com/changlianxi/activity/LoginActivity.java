@@ -68,6 +68,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 		}
 		initView();
 		PushMessageReceiver.setPushOnBind(this);
+		SharedUtils.setInt("imei", 1);
 	}
 
 	/**
