@@ -30,7 +30,7 @@ public class CircleListParser implements IParser {
 			String logo = obj.getString("logo");
 			String name = obj.getString("name");
 			String isNew = obj.getString("is_new");
-			String myInvitor = obj.getString("inviter");
+			String myInvitor = obj.getString("inviter"); 
 			String editState = obj.getString("edit_state");
 
 			Circle c = new Circle(id, name);
