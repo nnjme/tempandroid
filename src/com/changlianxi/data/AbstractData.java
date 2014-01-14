@@ -1,10 +1,16 @@
 package com.changlianxi.data;
 
 import com.changlianxi.db.DataBase;
+import com.changlianxi.modle.CircleModle;
 
 import android.database.sqlite.SQLiteDatabase;
 
-public abstract class AbstractData implements IData {
+public abstract class AbstractData extends CircleModle implements IData {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public static enum Status {
 		NEW, OLD, UPDATE, DEL

@@ -31,8 +31,8 @@ public class ApiRequest {
 			return ret;
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO logo
-			return Result.defContentErrorResult();
 		}
+		return Result.defContentErrorResult();
 	}
 
 	public static Result requestWithToken(String url, String uid, String token,

@@ -99,7 +99,7 @@ public class FlipperLayout extends ViewGroup {
 			}
 			break;
 		case MotionEvent.ACTION_MOVE:
-			mVelocityTracker.computeCurrentVelocity(1000,
+			mVelocityTracker.computeCurrentVelocity(500,
 					ViewConfiguration.getMaximumFlingVelocity());
 			if (mScrollState == SCROLL_STATE_ALLOW
 					&& getWidth() - (int) ev.getX() < mWidth) {
@@ -134,7 +134,7 @@ public class FlipperLayout extends ViewGroup {
 
 		case MotionEvent.ACTION_MOVE:
 			mOnClick = false;
-			mVelocityTracker.computeCurrentVelocity(1000,
+			mVelocityTracker.computeCurrentVelocity(500,
 					ViewConfiguration.getMaximumFlingVelocity());
 			if (mScrollState == SCROLL_STATE_ALLOW
 					&& Math.abs(mVelocityTracker.getXVelocity()) > 200) {
@@ -166,7 +166,7 @@ public class FlipperLayout extends ViewGroup {
 			break;
 
 		case MotionEvent.ACTION_MOVE:
-			mVelocityTracker.computeCurrentVelocity(1000,
+			mVelocityTracker.computeCurrentVelocity(500,
 					ViewConfiguration.getMaximumFlingVelocity());
 			mVelocityValue = (int) mVelocityTracker.getXVelocity();
 			getChildAt(1).scrollTo(-(int) event.getX(), 0);

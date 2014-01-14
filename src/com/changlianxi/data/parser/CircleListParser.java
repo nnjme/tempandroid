@@ -38,12 +38,14 @@ public class CircleListParser implements IParser {
 			c.setMyInvitor(myInvitor);
 			c.setNew(isNew.equals("1"));
 			c.setStatus(Status.OLD);
-			circles.add(c);
 			if ("mod".equals(editState)) {
 				c.setStatus(Status.UPDATE);
 			} else if ("del".equals(editState)) {
 				c.setStatus(Status.DEL);
-			} 
+			} else if("new".equals(editState)){
+				c.setStatus(Status.NEW);
+			}
+			circles.add(c);
 			// else : others status is new
 		}
 

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.activity.CLXApplication;
-import com.changlianxi.modle.CircleModle;
+import com.changlianxi.data.Circle;
 import com.changlianxi.util.StringUtils;
 import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -26,12 +26,12 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * 
  */
 public class CircleAdapter extends BaseAdapter {
-	private List<CircleModle> listmodle;
+	private List<Circle> listmodle;
 	private Context mcontext;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 
-	public CircleAdapter(Context context, List<CircleModle> listModle) {
+	public CircleAdapter(Context context, List<Circle> listModle) {
 		this.listmodle = listModle;
 		this.mcontext = context;
 		options = CLXApplication.getOptions();
@@ -47,7 +47,7 @@ public class CircleAdapter extends BaseAdapter {
 		return listmodle.size();
 	}
 
-	public void setData(List<CircleModle> modle) {
+	public void setData(List<Circle> modle) {
 		this.listmodle = modle;
 		notifyDataSetChanged();
 	}
@@ -81,7 +81,8 @@ public class CircleAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		String imgUrl = listmodle.get(position).getCirIcon();
+//		String imgUrl = listmodle.get(position).getCirIcon();
+		String imgUrl = listmodle.get(position).getLogo();
 		if (imgUrl.equals("")) {
 			holder.circleImg.setImageResource(R.drawable.pic);
 		} else if (!imgUrl.startsWith("http")) {
@@ -105,8 +106,10 @@ public class CircleAdapter extends BaseAdapter {
 				}
 			}
 		}
+//		holder.circleName.setText(StringUtils.ToDBC(listmodle.get(position)
+//				.getCirName()));
 		holder.circleName.setText(StringUtils.ToDBC(listmodle.get(position)
-				.getCirName()));
+				.getName()));
 		return convertView;
 	}
 

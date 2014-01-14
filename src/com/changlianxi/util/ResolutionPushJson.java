@@ -45,6 +45,10 @@ public class ResolutionPushJson {
 	}
 
 	private static void finish() {
+		int imei = SharedUtils.getInt("imei", 0);
+		if(imei == 1){
+			return;
+		}
 		SharedUtils.setString("uid", "");
 		SharedUtils.setString("token", "");
 		CLXApplication.exit(false);
@@ -52,7 +56,7 @@ public class ResolutionPushJson {
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.setClass(CLXApplication.getInstance(), LoginActivity.class);
 		CLXApplication.getInstance().startActivity(intent);
-	}
+ 	}
 
 	private static void sendBroad(String cid, int promptCount, String type) {
 		Intent intent = new Intent();

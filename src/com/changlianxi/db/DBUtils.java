@@ -14,8 +14,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.Circle;
 import com.changlianxi.modle.CircleIdetailModle;
-import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
@@ -177,11 +177,11 @@ public class DBUtils {
 	 * 
 	 * @return
 	 */
-	public static List<CircleModle> getCircleList() {
+	public static List<Circle> getCircleList() {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-		List<CircleModle> data = new ArrayList<CircleModle>();
+		List<Circle> data = new ArrayList<Circle>();
 		Cursor cursor = db.query(Constants.CIRCLELIST_TABLE, null, null, null,
 				null, null, null);
 		if (cursor.getCount() > 0) {
@@ -193,11 +193,11 @@ public class DBUtils {
 				String imgAdd = cursor.getString(cursor
 						.getColumnIndex("cirImg"));
 				String isNew = cursor.getString(cursor.getColumnIndex("isNew"));
-				CircleModle modle = new CircleModle();
+				Circle modle = new Circle();
 				modle.setCirID(id);
 				modle.setCirName(name);
 				modle.setCirIcon(imgAdd);
-				modle.setNew(isNew.equals("1") ? true : false);
+				modle.setNew("1".equals(isNew) ? true : false);
 				data.add(modle);
 				cursor.moveToNext();
 			}
@@ -209,11 +209,11 @@ public class DBUtils {
 	/**
 	 * 获取圈子提醒数
 	 */
-	public static List<CircleModle> getCirclePtompt() {
+	public static List<Circle> getCirclePtompt() {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-		List<CircleModle> data = new ArrayList<CircleModle>();
+		List<Circle> data = new ArrayList<Circle>();
 		Cursor cursor = db.query("circlelist", null, null, null, null, null,
 				null);
 		if (cursor.getCount() > 0) {
@@ -232,7 +232,7 @@ public class DBUtils {
 						.getColumnIndex("newCommentCount"));
 				int promptCount = cursor.getInt(cursor
 						.getColumnIndex("promptCount"));
-				CircleModle modle = new CircleModle();
+				Circle modle = new Circle();
 				modle.setCirID(id);
 				modle.setNewChatCount(newChatCount);
 				modle.setNewCommentCount(newCommentCount);
@@ -511,11 +511,11 @@ public class DBUtils {
 	 * 
 	 * @param cirID
 	 */
-	public static CircleModle findCircleInfoById(String cirID) {
+	public static Circle findCircleInfoById(String cirID) {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-		CircleModle modle = new CircleModle();
+		Circle modle = new Circle();
 		Cursor cursor = db.query(Constants.CIRCLELIST_TABLE, null, "cirID='"
 				+ cirID + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {

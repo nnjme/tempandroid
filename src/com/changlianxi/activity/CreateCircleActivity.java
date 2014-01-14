@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.data.Circle;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
@@ -309,7 +310,7 @@ public class CreateCircleActivity extends BaseActivity implements
 		values.put("cirName", editCirName.getText().toString());
 		values.put("cirImg", cirIconPath);
 		DBUtils.insertData("circlelist", values);
-		CircleModle modle = new CircleModle();
+		CircleModle modle = new Circle();
 		modle.setCirIcon(cirIconPath);
 		modle.setCirID(cid);
 		modle.setCirName(editCirName.getText().toString());

@@ -66,6 +66,7 @@ public class DataBase extends SQLiteOpenHelper {
 		db.execSQL("CREATE TABLE IF NOT EXISTS "
 				+ Constants.USERLIST_TABLE
 				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,cid varchar,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,mobileNum varchar,sortkey varchar,pinyinFir varchar,auth varchar,location varchar)");
+		initDB(db);
 	}
 
 	@Override
@@ -74,11 +75,12 @@ public class DataBase extends SQLiteOpenHelper {
 
 	}
 
-	// public void initDB(SQLiteDatabase db) {
-	// db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_TABLE_NAME
-	// + "( " + Const.CIRCLE_TABLE_STRUCTURE + " )");
-	// db.execSQL("create table IF NOT EXISTS " + Const.CHAT_TABLE_NAME + "( "
-	// + Const.CHAT_TABLE_STRUCTURE + " )");
-	// }
+	 public void initDB(SQLiteDatabase db) {
+	 db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_TABLE_NAME
+	 + "( " + Const.CIRCLE_TABLE_STRUCTURE + " )");
+	 db.execSQL("create table IF NOT EXISTS " + Const.CHAT_TABLE_NAME + "( "
+	 + Const.CHAT_TABLE_STRUCTURE + " )");
+	 db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_ROLE_TABLE_NAME + "(" + Const.CIRCLE_ROLE_TABLE_STRUCTURE +")");
+	 }
 
 }

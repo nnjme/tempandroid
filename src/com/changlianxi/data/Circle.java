@@ -57,7 +57,9 @@ public class Circle extends AbstractData {
 
 	// circle roles
 	private List<CircleRole> roles = new ArrayList<CircleRole>();
-
+	public Circle() {
+		// TODO Auto-generated constructor stub
+	}
 	public Circle(String id) {
 		this(id, "");
 	}
@@ -277,7 +279,7 @@ public class Circle extends AbstractData {
 		}
 
 		ContentValues cv = new ContentValues();
-		cv.put("cid", id);
+		cv.put("id", id);
 		cv.put("name", name);
 		cv.put("logo", logo);
 		cv.put("description", description);
