@@ -44,6 +44,7 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 		if (isCancelled()) {
 			return null;
 		}
+		
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));

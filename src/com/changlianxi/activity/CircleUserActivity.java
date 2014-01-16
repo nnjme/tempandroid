@@ -91,6 +91,7 @@ public class CircleUserActivity extends BaseActivity implements
 				initView();
 				setMyAdapter();
 				getServerList();
+				//filldata();
 				break;
 			default:
 				break;
@@ -98,6 +99,20 @@ public class CircleUserActivity extends BaseActivity implements
 		}
 	};
 
+	private void filldata(){
+		if (Utils.isNetworkAvailable()) {
+			if (listModles.size() == 0) {
+				progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
+				progressDialog.show();
+			}
+			task = new GetCircleUserTask(cid);
+			task.setTaskCallBack(this);
+			task.execute();
+		} else {
+			Utils.showToast("请检查网络");
+		}
+	}
+	
 	@SuppressLint("HandlerLeak")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

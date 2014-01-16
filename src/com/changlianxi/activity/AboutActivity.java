@@ -52,5 +52,5 @@ public class AboutActivity extends BaseActivity implements OnClickListener {
 			break;
 		}
 	}
-
+	
 }

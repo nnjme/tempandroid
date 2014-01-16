@@ -11,13 +11,16 @@ import org.json.JSONObject;
 
 import android.content.ContentValues;
 import android.os.AsyncTask;
+import android.util.Log;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.data.Circle;
 import com.changlianxi.data.CircleList;
 import com.changlianxi.data.IData;
 import com.changlianxi.data.parser.CircleListParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
+import com.changlianxi.data.request.RetError;
 import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleModle;
@@ -32,12 +35,13 @@ import com.changlianxi.util.Utils;
  * 
  * @author teeker_bin
  */
-public class GetCircleListTask extends AsyncTask<String, Integer, Result> {
+public class GetCircleListTask extends AsyncTask<String, Integer, RetError> {
 	private GetCircleList callBack;
 	private String errorCode;
 	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
 	private String rt = "";
-	private List<Circle> circles;
+	private List<Circle> circles = new ArrayList<Circle>();
+	private CircleList cl = null; // TODO
 	
 	private String url = "/circles/ilist/";
 
@@ -47,26 +51,18 @@ public class GetCircleListTask extends AsyncTask<String, Integer, Result> {
 
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
-	protected Result doInBackground(String... params) {
+	protected RetError doInBackground(String... params) {
 		if (isCancelled()) {
 			return null;
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("uid", SharedUtils.getString("uid", ""));
-		map.put("token", SharedUtils.getString("token", ""));
-		map.put("timestamp", 0);
-		//Result parse = ApiRequest.request(url+ SharedUtils.getString("uid", ""), map, new CircleListParser());
-		Result parse = ApiRequest.request(url+ SharedUtils.getString("uid", ""), map, new CircleListParser());
-		try {
-			CircleList data = (CircleList) parse.getData();
-			circles = data.getCircles();
-			data.write(DBUtils.db);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		CircleList circleList = new CircleList(circles);
 		
-//		// 你要执行的方法
+		circleList.read(DBUtils.db);
+		RetError retError = circleList.refresh(CLXApplication.circleListLastRefreshTime);
+		circleList.write(DBUtils.db);
+		
+		
+		// 你要执行的方法
 //		try {
 //			JSONObject jsonobject = new JSONObject(result);
 //			rt = jsonobject.getString("rt");
@@ -108,15 +104,21 @@ public class GetCircleListTask extends AsyncTask<String, Integer, Result> {
 //			e.printStackTrace();
 //			return null;
 //		}
-		return parse;
+//		
+		return retError;
 	}
 
 	@Override
-	protected void onPostExecute(Result result) {
+	protected void onPostExecute(RetError result) {
+		
+		if(result == null)
+			return;
 		// 任务结束
-		if (result.getStatus() == RetStatus.FAIL) {
-			Utils.showToast(ErrorCodeUtil.convertToChines(result.getErr().name()));
+		if (result != RetError.NONE) {
+			Utils.showToast(ErrorCodeUtil.convertToChines(result.name()));
+			return;
 		}
+		CLXApplication.circleListLastRefreshTime = System.currentTimeMillis();
 //		callBack.getCircleList(serverListModle);
 		callBack.getCircleList(circles);
 		return;

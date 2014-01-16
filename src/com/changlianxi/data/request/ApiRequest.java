@@ -1,11 +1,13 @@
 package com.changlianxi.data.request;
 
+import java.io.File;
 import java.util.Map;
 
 import org.json.JSONObject;
 
 import com.changlianxi.data.Global;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.HttpUrlHelper;
 
 public class ApiRequest {
@@ -13,8 +15,11 @@ public class ApiRequest {
 	public static Result request(String url, Map<String, Object> params,
 			IParser parser) {
 		String httpResult = HttpUrlHelper.postData(params, url); // TODO network
-																	// problem
+		//--------------------
+		return checkRet(parser, httpResult);
+	}
 
+	private static Result checkRet(IParser parser, String httpResult) {
 		try {
 			JSONObject jsonObj = new JSONObject(httpResult);
 			String rt = jsonObj.getString("rt");
@@ -47,6 +52,13 @@ public class ApiRequest {
 			Map<String, Object> params, IParser parser) {
 		return requestWithToken(url, Global.getUid(), Global.getUserToken(),
 				params, parser);
+	}
+	
+	public static Result uploadFileWithToken(String url,Map<String,Object> params,File file,String specialKey,IParser parser){
+		params.put("uid", Global.getUid());
+		params.put("token", Global.getUserToken());
+		String ret = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl + url, params, file, specialKey);
+		return checkRet(parser, ret);
 	}
 
 }

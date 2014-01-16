@@ -1,5 +1,6 @@
 package com.changlianxi.data;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.CircleParser;
@@ -24,6 +26,7 @@ import com.changlianxi.data.request.RetError;
 import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.StringUtils;
 
 /**
@@ -33,10 +36,10 @@ import com.changlianxi.util.StringUtils;
  * 
  */
 public class Circle extends AbstractData {
-	public final static String DETAIL_API = "circles/idetail";
-	public final static String EDIT_API = "circles/iedit";
-	public final static String EDIT_LOGO_API = "circles/iuploadLogo";
-	public final static String ADD_API = "circles/iadd";
+	public final static String DETAIL_API = "/circles/idetail";
+	public final static String EDIT_API = "/circles/iedit";
+	public final static String EDIT_LOGO_API = "/circles/iuploadLogo";
+	public final static String ADD_API = "/circles/iadd";
 
 	// circle basic info
 	private String id = "0";
@@ -57,9 +60,7 @@ public class Circle extends AbstractData {
 
 	// circle roles
 	private List<CircleRole> roles = new ArrayList<CircleRole>();
-	public Circle() {
-		// TODO Auto-generated constructor stub
-	}
+	
 	public Circle(String id) {
 		this(id, "");
 	}
@@ -308,27 +309,27 @@ public class Circle extends AbstractData {
 		}
 		Circle another = (Circle) data;
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (!this.id.equals(another.id)) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.name.equals(another.name)) {
+		if (!this.name.equals(another.name)) {
 			this.name = another.name;
 			isChange = true;
 		}
-		if (this.logo.equals(another.logo)) {
+		if (!this.logo.equals(another.logo)) {
 			this.logo = another.logo;
 			isChange = true;
 		}
-		if (this.description.equals(another.description)) {
+		if (!this.description.equals(another.description)) {
 			this.description = another.description;
 			isChange = true;
 		}
-		if (this.creator.equals(another.creator)) {
+		if (!this.creator.equals(another.creator)) {
 			this.creator = another.creator;
 			isChange = true;
 		}
-		if (this.created.equals(another.created)) {
+		if (!this.created.equals(another.created)) {
 			this.created = another.created;
 			isChange = true;
 		}
@@ -387,15 +388,15 @@ public class Circle extends AbstractData {
 
 	public void updateForEditInfo(Circle another) {
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (!this.id.equals(another.id)) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.name.equals(another.name)) {
+		if (!this.name.equals(another.name)) {
 			this.name = another.name;
 			isChange = true;
 		}
-		if (this.description.equals(another.description)) {
+		if (!this.description.equals(another.description)) {
 			this.description = another.description;
 			isChange = true;
 		}
@@ -408,19 +409,19 @@ public class Circle extends AbstractData {
 
 	public void updateForListChange(Circle another) {
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (!this.id.equals(another.id)) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.name.equals(another.name)) {
+		if (!this.name.equals(another.name)) {
 			this.name = another.name;
 			isChange = true;
 		}
-		if (this.logo.equals(another.logo)) {
+		if (!this.logo.equals(another.logo)) {
 			this.logo = another.logo;
 			isChange = true;
 		}
-		if (this.myInvitor.equals(another.myInvitor)) {
+		if (!this.myInvitor.equals(another.myInvitor)) {
 			this.myInvitor = another.myInvitor;
 			isChange = true;
 		}
@@ -573,14 +574,16 @@ public class Circle extends AbstractData {
 		if (!isLogoChanged(logo)) {
 			return RetError.NONE;
 		}
-
+		File file = new File(logo);
+		if(file == null || !file.exists()){
+			return RetError.UNKOWN;
+		}
 		IParser parser = new StringParser("logo");
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("cid", id);
-		params.put("logo", logo);
-		StringResult ret = (StringResult) ApiRequest.requestWithToken(
-				Circle.EDIT_LOGO_API, params, parser);
-
+//		StringResult ret = (StringResult) ApiRequest.requestWithToken(
+//				Circle.EDIT_LOGO_API, params, parser);
+		StringResult ret = (StringResult) ApiRequest.uploadFileWithToken(Circle.EDIT_LOGO_API, params, file, "logo", parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.logo = ret.getStr();
 			return RetError.NONE;

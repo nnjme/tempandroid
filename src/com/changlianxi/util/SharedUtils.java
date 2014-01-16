@@ -64,4 +64,12 @@ public class SharedUtils {
 	public static String getUserID() {
 		return sharedPreferences.getString("user_id", "");
 	}
+	
+	public static void setCircleListLastRefreshTime(long time){
+		editor.putLong("CircleListLastRefreshTime", time);
+		editor.commit();
+	}
+	public static long getCircleListLastRefreshTime(){
+		return sharedPreferences.getLong("CircleListLastRefreshTime", 0);
+	}
 }

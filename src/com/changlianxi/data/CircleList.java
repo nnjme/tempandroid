@@ -17,9 +17,11 @@ import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.RetError;
 import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.db.Const;
+import com.changlianxi.db.DBUtils;
+import com.changlianxi.util.SharedUtils;
 
 public class CircleList extends AbstractData {
-	public final static String LIST_API = "circles/ilist";
+	public final static String LIST_API = "/circles/ilist"; // /circles/ilist/32
 	private List<Circle> circles = null;
 
 	public CircleList(List<Circle> circles) {
@@ -100,7 +102,7 @@ public class CircleList extends AbstractData {
 			String acId = ac.getId();
 			if (oldCids.contains(acId)) {
 				for (Circle c : this.circles) {
-					if (c.getId() == acId) {
+					if (c.getId().equals(acId)) {
 						if (ac.getStatus() != Status.DEL) {
 							c.updateForListChange(ac);
 						} else {

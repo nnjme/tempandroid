@@ -28,6 +28,7 @@ public class CLXApplication extends Application {
 	private static ImageLoader imageLoader;
 	private static List<Activity> activityList = new ArrayList<Activity>();
 	private static List<Activity> smsInviteAactivityList = new ArrayList<Activity>();
+	public static long circleListLastRefreshTime;//圈子列表的上次请求时间
 
 	public static CLXApplication getInstance() {
 		return instance;
@@ -102,12 +103,12 @@ public class CLXApplication extends Application {
 		circlOoptions = new DisplayImageOptions.Builder()
 				.showStubImage(R.drawable.pic)
 				.showImageForEmptyUri(R.drawable.pic)
-				.showImageOnFail(R.drawable.pic).cacheInMemory(true)
+				.showImageOnFail(R.drawable.pic).cacheInMemory(true).cacheOnDisc(true)
 				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
 				.build();
 		userOptions = new DisplayImageOptions.Builder()
 				.showStubImage(R.drawable.head_bg)
-				.showImageForEmptyUri(R.drawable.head_bg)
+				.showImageForEmptyUri(R.drawable.head_bg).cacheOnDisc(true)
 				.showImageOnFail(R.drawable.head_bg).cacheInMemory(true)
 				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
 				.build();

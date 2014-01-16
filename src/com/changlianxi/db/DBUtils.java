@@ -193,7 +193,7 @@ public class DBUtils {
 				String imgAdd = cursor.getString(cursor
 						.getColumnIndex("cirImg"));
 				String isNew = cursor.getString(cursor.getColumnIndex("isNew"));
-				Circle modle = new Circle();
+				Circle modle = new Circle(id);
 				modle.setCirID(id);
 				modle.setCirName(name);
 				modle.setCirIcon(imgAdd);
@@ -232,7 +232,7 @@ public class DBUtils {
 						.getColumnIndex("newCommentCount"));
 				int promptCount = cursor.getInt(cursor
 						.getColumnIndex("promptCount"));
-				Circle modle = new Circle();
+				Circle modle = new Circle(id);
 				modle.setCirID(id);
 				modle.setNewChatCount(newChatCount);
 				modle.setNewCommentCount(newCommentCount);
@@ -515,7 +515,7 @@ public class DBUtils {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-		Circle modle = new Circle();
+		Circle modle = new Circle(cirID);
 		Cursor cursor = db.query(Constants.CIRCLELIST_TABLE, null, "cirID='"
 				+ cirID + "'", null, null, null, null);
 		if (cursor.getCount() > 0) {

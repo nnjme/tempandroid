@@ -17,10 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.data.Circle;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleIdetailModle;
+import com.changlianxi.task.CircleIdetailTask;
+import com.changlianxi.task.CircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.GetCircleIdetailTask;
-import com.changlianxi.task.GetCircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.util.BroadCast;
@@ -35,7 +37,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
 
 public class CircleInfoActivity extends BaseActivity implements
-		OnClickListener, GetCircleIdetail, PostCallBack {
+		OnClickListener, PostCallBack, GetCircleIdetail {
 	private TextView circleName;// 圈子名称
 	private TextView titleName;
 	private TextView circleDescription;// 圈子描述
@@ -52,6 +54,7 @@ public class CircleInfoActivity extends BaseActivity implements
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	private CircleIdetailModle modle = new CircleIdetailModle();
+	private Circle circle;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -106,9 +109,13 @@ public class CircleInfoActivity extends BaseActivity implements
 	}
 
 	private void getServerData() {
-		GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
-		task.setTaskCallBack(this);
-		task.execute();
+		circle = new Circle(cid);
+		CircleIdetailTask circleIdetailTask = new CircleIdetailTask(circle);
+		circleIdetailTask.setTaskCallBack(this);
+		circleIdetailTask.execute();
+//		GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
+//		task.setTaskCallBack(this);
+//		task.execute();
 
 	}
 
@@ -159,6 +166,7 @@ public class CircleInfoActivity extends BaseActivity implements
 			Intent intent = new Intent();
 			intent.setClass(this, EditCircleActivity.class);
 			intent.putExtra("cid", cid);
+			intent.putExtra("circle", circle);
 			// startActivity(intent);
 			startActivityForResult(intent, 2);
 			Utils.leftOutRightIn(this);
@@ -227,7 +235,7 @@ public class CircleInfoActivity extends BaseActivity implements
 	 * 接口回调
 	 */
 	@Override
-	public void getIdetail(CircleIdetailModle modle) {
+	public void getIdetail(Circle modle) {
 		if (pd != null) {
 			pd.dismiss();
 		}
@@ -236,7 +244,7 @@ public class CircleInfoActivity extends BaseActivity implements
 		}
 		isSelf(modle.getCreator());
 		setvalue(modle.getName(), modle.getLogo(), modle.getDescription(),
-				modle.getMembersTotal() + "", modle.getMembersVerified() + "");
+				modle.getTotalCnt() + "", modle.getVerifiedCnt() + "");
 	}
 
 	private void setCount(String total, String veriofied) {

@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.data.Circle;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleIdetailModle;
@@ -30,6 +31,7 @@ import com.changlianxi.task.GetCircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.task.UpLoadPicAsyncTask;
+import com.changlianxi.task.UpdateCircleIdetailTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
@@ -64,6 +66,7 @@ public class EditCircleActivity extends BaseActivity implements
 	private ImageLoader imageLoader;
 	private Bitmap cirBmp = null;
 	private CircleIdetailModle modle = new CircleIdetailModle();
+	private Circle circle;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -72,9 +75,11 @@ public class EditCircleActivity extends BaseActivity implements
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
 		cid = getIntent().getStringExtra("cid");
+		circle = (Circle) getIntent().getSerializableExtra("circle");
 		findViewByID();
 		setListener();
-		getSercverData();
+		//getSercverData();
+		filldata();
 	}
 	/**设置页面统计
 	 * 
@@ -91,7 +96,20 @@ public class EditCircleActivity extends BaseActivity implements
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
+	private void filldata(){
+		circleDescription.setText(circle.getDescription());
+		circleName.setText(circle.getName());
+		titleName.setText(circle.getName());
+		String path = circle.getLogo();
+		String logo = "";
+		if (path.startsWith("http")) {
+			logo = StringUtils.JoinString(path, "_200x200");
+		} else {
+			logo = "file://" + path;
+		}
+		imageLoader.displayImage(logo, circleLogo, options);
+	}
+/*	@Deprecated
 	private void getSercverData() {
 		modle = DBUtils.getCircleDetail(cid);
 		circleDescription.setText(modle.getDescription());
@@ -114,7 +132,7 @@ public class EditCircleActivity extends BaseActivity implements
 		// task.setTaskCallBack(this);
 		// task.execute();
 		// pd.show();
-	}
+	}*/
 
 	private void findViewByID() {
 		btnSave = (Button) findViewById(R.id.btnsave);
@@ -175,15 +193,37 @@ public class EditCircleActivity extends BaseActivity implements
 	 * @param url
 	 */
 	private void saveInfo() {
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		map.put("uid", SharedUtils.getString("uid", ""));
-		map.put("token", SharedUtils.getString("token", ""));
-		map.put("cid", cid);
-		map.put("name", circleName.getText());
-		map.put("description", circleDescription.getText().toString());
-		PostAsyncTask task = new PostAsyncTask(this, map, "/circles/iedit");
-		task.setTaskCallBack(this);
-		task.execute();
+		Circle newCircle = new Circle(cid, circleName.getText().toString(), circleDescription.getText().toString(),logoPath);
+		UpdateCircleIdetailTask circleIdetailTask = new UpdateCircleIdetailTask(circle,newCircle);
+		circleIdetailTask.setTaskCallBack(new UpdateCircleIdetailTask.GetCircleIdetail() {
+			
+			@Override
+			public void finishUpdate(boolean b) {
+				// TODO Auto-generated method stub
+				pd.dismiss();
+				if(b){
+					Utils.showToast("修改成功");
+					BroadCast.sendBroadCast(EditCircleActivity.this,
+							Constants.REFRESH_CIRCLE_LIST);// 发送广播更新圈子列表
+					exitSuccess();
+				}else{
+					Utils.showToast("保存失败");
+				}
+				
+			}
+		});
+		circleIdetailTask.execute();
+		
+		
+//		HashMap<String, Object> map = new HashMap<String, Object>();
+//		map.put("uid", SharedUtils.getString("uid", ""));
+//		map.put("token", SharedUtils.getString("token", ""));
+//		map.put("cid", cid);
+//		map.put("name", circleName.getText());
+//		map.put("description", circleDescription.getText().toString());
+//		PostAsyncTask task = new PostAsyncTask(this, map, "/circles/iedit");
+//		task.setTaskCallBack(this);
+//		task.execute();
 		pd = DialogUtil.getWaitDialog(this, "请稍后");
 		pd.show();
 
@@ -220,7 +260,7 @@ public class EditCircleActivity extends BaseActivity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		SelectPicModle modle = new SelectPicModle();
-		if (resultCode != RESULT_OK || data == null) {
+		if (resultCode != RESULT_OK ) {
 			return;
 		}
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD

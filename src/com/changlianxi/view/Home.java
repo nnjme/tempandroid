@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Handler;
 import android.os.Message;
@@ -42,6 +43,7 @@ import com.changlianxi.data.CircleList;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.MemberModle;
+import com.changlianxi.task.CircleListTask;
 import com.changlianxi.task.GetCieclesNotifyTask;
 import com.changlianxi.task.GetCieclesNotifyTask.GetCirclesNotify;
 import com.changlianxi.task.GetCircleListTask;
@@ -70,6 +72,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	private OnOpenListener mOnOpenListener;
 	private List<Circle> listModle = new ArrayList<Circle>();
 	private List<Circle> listPrompt = new ArrayList<Circle>();// 圈子提醒数
+	//private CircleList circleList = new CircleList(listModle);
 	private GrowthImgGridView gView;
 	private CircleAdapter adapter;
 	private BounceScrollView scrollView;
@@ -81,6 +84,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	private CircleSearchAdapter searchAdapter;
 	private GetCieclesNotifyTask notifyTask;
 	private GetCircleListTask task;
+	private CircleListTask circleListTask;
 	private boolean prompt;
 	private Handler mHandler = new Handler() {
 		@Override
@@ -88,11 +92,10 @@ public class Home implements OnClickListener, OnRefreshComplete,
 			switch (msg.what) {
 			case 0:
 				setListener();
-				//listModle = DBUtils.getCircleList();
-				new CircleList(listModle).read(DBUtils.db);
+				//new CircleList(listModle).read(DBUtils.db);
 				listPrompt = DBUtils.getCirclePtompt();
-				// listPrompt = listModle;
-				showAdapter();
+				//showAdapter();
+				filldata();
 				break;
 
 			default:
@@ -107,9 +110,51 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		mHome = LayoutInflater.from(context).inflate(R.layout.home, null);
 		PushMessageReceiver.setMessagePrompt(this);
 		findViewById();
+		searchAdapter = new CircleSearchAdapter(mcontext, searchListModle);
+		searchListView.setAdapter(searchAdapter);
+		adapter = new CircleAdapter(mcontext, listModle);
+		adapter.setData(listModle);
+		gView.setAdapter(adapter);
 		mHandler.sendEmptyMessageDelayed(0, 100);
+		
 	}
-
+	public void filldata(){
+		circleListTask = new CircleListTask();
+		circleListTask.setTaskCallBack(new com.changlianxi.task.CircleListTask.GetCircleList() {
+			
+			@Override
+			public void getCircleList(List<Circle> circles) {
+				// TODO Auto-generated method stub
+				if (progressDialog != null) {
+					progressDialog.dismiss();
+				}
+				if (circles.size() == 0) {
+					return;
+				}
+				listModle.add(getNewCircle());
+				adapter.notifyDataSetChanged();
+//				String cids = "";
+//				for (int i = 0; i < circles.size() - 1; i++) {
+//					cids += circles.get(i).getId() + ",";
+//				}
+//				notifyTask = new GetCieclesNotifyTask(SharedUtils.getString(
+//						"exitTime",
+//						DateUtils.phpTime(System.currentTimeMillis())), cids
+//						.substring(0, cids.length() - 1));
+//				notifyTask.setTaskCallBack(new GetCirclesNotify() {
+//					@Override
+//					public void getCirclesNotify(String result) {
+//						if (result == null) {
+//							return;
+//						}
+//						getPromptCount(result);
+//					}
+//				});
+//				notifyTask.execute();
+			}
+		});
+		circleListTask.execute(listModle);
+	}
 	private void showAdapter() {
 		searchAdapter = new CircleSearchAdapter(mcontext, searchListModle);
 		searchListView.setAdapter(searchAdapter);
@@ -419,7 +464,8 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * @param modle
 	 */
 	public void refreshCircleList() {
-		getServerCircleLists();
+		//getServerCircleLists();
+		filldata();
 	}
 
 	/**
@@ -518,7 +564,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 				it.putExtra("name", name);
 				it.putExtra("type", "home");// 从圈子列表界面跳转
 				it.putExtra("is_New", listModle.get(position).isNew());
-				it.putExtra("inviterID", listModle.get(position).getInviterID());
+				it.putExtra("inviterID", listModle.get(position).getMyInvitor());
 				it.putExtra("cirID", listModle.get(position).getId());
 				it.putExtra("newGrowthCount", listModle.get(position)
 						.getNewGrowthCount());
@@ -614,14 +660,14 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	@Deprecated
 	private CircleModle newCircle() {
 		//CircleModle modle = new CircleModle();
-		CircleModle modle = new Circle();
+		CircleModle modle = new Circle("0");
 		modle.setCirIcon("addroot");
 		modle.setNew(false);
 		modle.setCirName("新建圈子");
 		return modle;
 	}
 	private Circle getNewCircle() {
-		Circle circle = new Circle();
+		Circle circle = new Circle("0");
 		circle.setLogo("addroot");
 		circle.setNew(false);
 		circle.setName("新建圈子");
