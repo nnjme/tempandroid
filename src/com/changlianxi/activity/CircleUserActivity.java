@@ -51,6 +51,7 @@ import com.changlianxi.view.QuickAlphabeticBar;
 import com.changlianxi.view.QuickAlphabeticBar.OnTouchingLetterChangedListener;
 import com.changlianxi.view.QuickAlphabeticBar.touchUp;
 import com.changlianxi.view.SearchEditText;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 显示圈子成员列表的界面
@@ -107,6 +108,7 @@ public class CircleUserActivity extends BaseActivity implements
 		inviterID = getIntent().getStringExtra("inviterID");
 		mHandler.sendEmptyMessageDelayed(0, 100);
 	}
+	
 
 	private void getServerList() {
 		if (Utils.isNetworkAvailable()) {
@@ -139,6 +141,20 @@ public class CircleUserActivity extends BaseActivity implements
 		super.onResume();
 		CircleActivity
 				.setInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+		MobclickAgent.onPageStart(getClass().getName() + "");
+		// MobclickAgent.onResume(this);
+	}
+
+	/**
+	 * 数据统计
+	 */
+
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+		// MobclickAgent.onPause(this);
 	}
 
 	/**

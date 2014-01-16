@@ -16,7 +16,9 @@ import android.widget.TextView;
 import com.changlianxi.R;
 import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 点击圈子之后进入的界面
@@ -75,6 +77,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		}
 		mTabHost.setCurrentTab(0);
 	}
+	
 
 	private void initview() {
 		cy = (TextView) findViewById(R.id.cy);
@@ -216,6 +219,22 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		context.getWindow().setSoftInputMode(mode);
 	}
 
+	@Override
+	protected void onResume() {
+		SharedUtils.setBoolean("isBackHome", false);// 后台运行
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+		// MobclickAgent.onResume(this);
+	}
+
+	@Override
+	protected void onPause() {
+		SharedUtils.setBoolean("isBackHome", true);// 后台运行
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+		//MobclickAgent.onPause(this);
+	}
+	
 	private void sendBroad(String cid, int promptCount, int position) {
 		Intent intent = new Intent(Constants.REMOVE_PROMPT_COUNT);
 		intent.putExtra("promptCount", promptCount);

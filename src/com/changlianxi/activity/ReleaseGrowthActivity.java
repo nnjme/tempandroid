@@ -44,6 +44,7 @@ import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.GrowthImgGridView;
 import com.changlianxi.view.RoundAngleImageView;
+import com.umeng.analytics.MobclickAgent;
 import com.changlianxi.R;
 
 public class ReleaseGrowthActivity extends BaseActivity implements
@@ -96,7 +97,22 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	/**
 	 * 编辑时初始化
 	 */

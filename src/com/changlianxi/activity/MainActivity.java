@@ -32,6 +32,7 @@ import com.changlianxi.view.MyCard;
 import com.changlianxi.view.SetMenu;
 import com.changlianxi.view.SetMenu.onChangeViewListener;
 import com.changlianxi.view.Setting;
+import com.umeng.analytics.MobclickAgent;
 
 public class MainActivity extends Activity implements OnOpenListener {
 	/**
@@ -124,9 +125,27 @@ public class MainActivity extends Activity implements OnOpenListener {
 	}
 
 	@Override
+	protected void onRestart() {
+		super.onRestart();
+	}
+
+	/**
+	 * 数据统计
+	 */
+	@Override
 	protected void onResume() {
-		SharedUtils.setBoolean("isBackHome", false);// 后台运行
 		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+		MobclickAgent.onResume(this);
+
+		SharedUtils.setBoolean("isBackHome", false);// 后台运行
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+		MobclickAgent.onPause(this);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -155,7 +174,7 @@ public class MainActivity extends Activity implements OnOpenListener {
 				mDesktop.setEidtAvatar(bmp);
 			}
 			if (basicList != null && contactList != null && socialList != null
-					&& addressList != null && eduList != null
+  && addressList != null && eduList != null
 					&& workList != null)
 				mCard.cardShow.notifyData(basicList, contactList, socialList,
 						addressList, eduList, workList);
