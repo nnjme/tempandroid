@@ -156,7 +156,7 @@ public class CircleMemberList extends AbstractData {
 			cursor.moveToFirst();
 			for (int i = 0; i < cursor.getCount(); i++) {
 				int pid = cursor.getInt(cursor.getColumnIndex("pid"));
-				CircleMember member = new CircleMember(cid, 0, pid);
+				CircleMember member = new CircleMember(cid, pid);
 				members.add(member);
 
 				cursor.moveToNext();

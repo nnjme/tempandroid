@@ -99,24 +99,24 @@ public class CircleMember extends AbstractData {
 	private String detailIds = "";
 	private List<PersonDetail> details = new ArrayList<PersonDetail>();
 
-	private State state = State.INVINTING;
+	private State state = State.OTHER;
 
 	public CircleMember(int cid) {
 		this(cid, 0);
 	}
 
-	public CircleMember(int cid, int uid) {
-		this(cid, 0, 0);
+	public CircleMember(int cid, int pid) {
+		this(cid, pid, 0);
 	}
 
-	public CircleMember(int cid, int uid, int pid) {
-		this(cid, 0, 0, "");
+	public CircleMember(int cid, int pid, int uid) {
+		this(cid, pid, uid, "");
 	}
 
-	public CircleMember(int cid, int uid, int pid, String name) {
+	public CircleMember(int cid, int pid, int uid, String name) {
 		this.cid = cid;
-		this.uid = uid;
 		this.pid = pid;
+		this.uid = uid;
 		this.name = name;
 	}
 
@@ -525,7 +525,7 @@ public class CircleMember extends AbstractData {
 	}
 
 	@SuppressLint("UseSparseArrays")
-	private boolean updateDetails(CircleMember another) {
+	protected boolean updateDetails(CircleMember another) {
 		if (another.getDetails().size() == 0) {
 			return false;
 		}
@@ -565,7 +565,7 @@ public class CircleMember extends AbstractData {
 		return isChange;
 	}
 
-	private void syncBasicAndDetail(boolean forward) {
+	protected void syncBasicAndDetail(boolean forward) {
 		Map<PersonDetailType, PersonDetail> type2Details =
 				new HashMap<PersonDetailType, PersonDetail>();
 		for (PersonDetail pd : this.details) {
@@ -743,7 +743,7 @@ public class CircleMember extends AbstractData {
 	}
 
 	@SuppressLint("UseSparseArrays")
-	private JSONArray getChangedDetails(CircleMember another) {
+	protected JSONArray getChangedDetails(CircleMember another) {
 		Map<Integer, PersonDetail> olds = new HashMap<Integer, PersonDetail>();
 		for (PersonDetail pp : this.details) {
 			olds.put(pp.getId(), pp);
@@ -791,6 +791,54 @@ public class CircleMember extends AbstractData {
 		return jsonArr;
 	}
 
+	protected void updateForEditInfo(CircleMember another,
+			JSONArray changedDetails, List<Object> ret) {
+		if (changedDetails.length() > 0
+				&& changedDetails.length() == ret.size()) {
+
+			List<PersonDetail> details = new ArrayList<PersonDetail>();
+			for (int i = 0; i < changedDetails.length(); i++) {
+				int propid = (Integer) ret.get(i);
+				if (propid > 0) {
+					try {
+						PersonDetail pd = new PersonDetail(propid);
+						JSONObject jobj = (JSONObject) changedDetails.opt(i);
+						pd.setType(PersonDetailType.convertToType(jobj
+								.getString("t")));
+						pd.setValue(jobj.getString("v"));
+						if (jobj.has("start")) {
+							pd.setStart(jobj.getString("start"));
+						}
+						if (jobj.has("end")) {
+							pd.setEnd(jobj.getString("end"));
+						}
+						if (jobj.has("remark")) {
+							pd.setRemark(jobj.getString("remark"));
+						}
+						String op = jobj.getString("op");
+						if ("new".equals(op)) {
+							pd.setStatus(Status.NEW);
+						} else if ("mod".equals(op)) {
+							pd.setStatus(Status.UPDATE);
+						} else if ("del".equals(op)) {
+							pd.setStatus(Status.DEL);
+						}
+						details.add(pd);
+					} catch (JSONException e) {
+					}
+				}
+			}
+			another.setDetails(details);
+
+			if (this.updateDetails(another)) {
+				this.syncBasicAndDetail(false);
+				this.status = Status.UPDATE;
+			}
+		} else {
+			// size not equal???
+		}
+	}
+	
 	/**
 	 * upload edit info to server, and update local data while upload success
 	 * 
@@ -812,58 +860,14 @@ public class CircleMember extends AbstractData {
 		ArrayResult ret = (ArrayResult) ApiRequest.requestWithToken(
 				CircleMember.EDIT_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
-			if (changedDetails.length() > 0
-					&& changedDetails.length() == ret.getArrs().size()) {
-				List<PersonDetail> details = new ArrayList<PersonDetail>();
-				for (int i = 0; i < changedDetails.length(); i++) {
-					int propid = (Integer) ret.getArrs().get(i);
-					if (propid > 0) {
-						try {
-							PersonDetail pd = new PersonDetail(propid);
-							JSONObject jobj = (JSONObject) changedDetails
-									.opt(i);
-							pd.setType(PersonDetailType.convertToType(jobj
-									.getString("t")));
-							pd.setValue(jobj.getString("v"));
-							if (jobj.has("start")) {
-								pd.setStart(jobj.getString("start"));
-							}
-							if (jobj.has("end")) {
-								pd.setEnd(jobj.getString("end"));
-							}
-							if (jobj.has("remark")) {
-								pd.setRemark(jobj.getString("remark"));
-							}
-							String op = jobj.getString("op");
-							if ("new".equals(op)) {
-								pd.setStatus(Status.NEW);
-							} else if ("mod".equals(op)) {
-								pd.setStatus(Status.UPDATE);
-							} else if ("del".equals(op)) {
-								pd.setStatus(Status.DEL);
-							}
-							details.add(pd);
-						} catch (JSONException e) {
-						}
-					}
-				}
-				another.setDetails(details);
-				
-				if (this.updateDetails(another)) {
-					this.syncBasicAndDetail(false);
-					this.status = Status.UPDATE;
-				}
-			} else {
-				// size not equal???
-			}
+			updateForEditInfo(another, changedDetails, ret.getArrs());
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
 		}
-
 	}
 
-	private boolean isAvatarChanged(String avatar) {
+	protected boolean isAvatarChanged(String avatar) {
 		return avatar != null && avatar.length() > 0
 				&& !this.avatar.equals(avatar);
 	}
@@ -882,6 +886,7 @@ public class CircleMember extends AbstractData {
 		IParser parser = new StringParser("avatar");
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("cid", cid);
+		params.put("pid", pid);
 		params.put("avatar", avatar);
 		StringResult ret = (StringResult) ApiRequest.requestWithToken(
 				CircleMember.UPLOAD_AVATAR_API, params, parser);

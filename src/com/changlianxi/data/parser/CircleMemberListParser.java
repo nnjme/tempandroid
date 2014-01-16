@@ -49,7 +49,7 @@ public class CircleMemberListParser implements IParser {
 			int roleId = obj.getInt("role_id");
 			int isAuth = obj.getInt("auth"); // TODO
 
-			CircleMember m = new CircleMember(cid, uid, pid);
+			CircleMember m = new CircleMember(cid, pid, uid);
 			m.setName(name);
 			m.setCellphone(cellphone);
 			m.setAvatar(avatar);
