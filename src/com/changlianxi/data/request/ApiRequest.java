@@ -27,7 +27,7 @@ public class ApiRequest {
 				return ret;
 			}
 
-			Result ret = parser.parse(jsonObj);
+			Result ret = parser.parse(params, jsonObj);
 			return ret;
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO logo

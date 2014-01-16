@@ -2,6 +2,7 @@ package com.changlianxi.data.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +15,7 @@ import com.changlianxi.data.request.Result;
 public class CircleListParser implements IParser {
 
 	@Override
-	public Result parse(JSONObject jsonObj) throws Exception {
+	public Result parse(Map<String, Object> params, JSONObject jsonObj) throws Exception {
 		if (jsonObj == null) {
 			return Result.defContentErrorResult();
 		}
@@ -37,14 +38,14 @@ public class CircleListParser implements IParser {
 			c.setLogo(logo);
 			c.setMyInvitor(myInvitor);
 			c.setNew(isNew.equals("1"));
-			c.setStatus(Status.OLD);
-			circles.add(c);
 			if ("mod".equals(editState)) {
 				c.setStatus(Status.UPDATE);
 			} else if ("del".equals(editState)) {
 				c.setStatus(Status.DEL);
-			} 
-			// else : others status is new
+			} else {
+				c.setStatus(Status.NEW);
+			}
+			circles.add(c);
 		}
 
 		Result ret = new Result();
