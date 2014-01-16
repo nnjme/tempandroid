@@ -792,7 +792,7 @@ public class CircleMember extends AbstractData {
 	}
 
 	/**
-	 * upload edit info to server
+	 * upload edit info to server, and update local data while upload success
 	 * 
 	 * @param another
 	 * @return
@@ -869,7 +869,7 @@ public class CircleMember extends AbstractData {
 	}
 
 	/**
-	 * upload new avatar to server
+	 * upload new avatar to server, and update local avatar while upload success
 	 * 
 	 * @param avatar
 	 * @return

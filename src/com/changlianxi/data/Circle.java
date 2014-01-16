@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,6 +30,40 @@ import com.changlianxi.util.StringUtils;
 /**
  * Circle data
  * 
+ * Usage:
+ * 
+ * get a circle info:
+ *     // new circle
+ *     circle.read();
+ *     // circle.get***()
+ * 
+ * refresh a circle's detail info:
+ *     // new circle
+ *     circle.read()
+ *     circle.refresh(); // request and merge with local data
+ *     circle.write();
+ *     
+ * 
+ * upload after edit:
+ *    // new circle1
+ *    // ...edit...
+ *    // new circle2 after edit
+ *    circle1.uploadAfterEdit(circle2);
+ *    circle1.write();    
+ * 
+ * upload logo
+ *    // new circle
+ *    // ...edit logo...
+ *    // new logo
+ *    circle.uploadLogo(newLogo);
+ *    circle.write();
+ *    
+ * add new circle
+ *    // new circle
+ *    // ...set circle info...
+ *    circle.uploadForAdd();
+ *    circle.write();
+ * 
  * @author nnjme
  * 
  */
@@ -39,12 +74,12 @@ public class Circle extends AbstractData {
 	public final static String ADD_API = "circles/iadd";
 
 	// circle basic info
-	private String id = "0";
+	private int id = 0;
 	private String name = "";
 	private String description = "";
-	private String logo = ""; // TODO
-	private String creator = "0";
-	private String myInvitor = "0";
+	private String logo = "";
+	private int creator = 0;
+	private int myInvitor = 0;
 	private String created = "";
 	private String joinTime = "";
 	private boolean isNew = false;
@@ -58,30 +93,30 @@ public class Circle extends AbstractData {
 	// circle roles
 	private List<CircleRole> roles = new ArrayList<CircleRole>();
 
-	public Circle(String id) {
+	public Circle(int id) {
 		this(id, "");
 	}
 
-	public Circle(String id, String name) {
+	public Circle(int id, String name) {
 		this(id, name, "");
 	}
 
-	public Circle(String id, String name, String description) {
+	public Circle(int id, String name, String description) {
 		this(id, name, description, "");
 	}
 
-	public Circle(String id, String name, String description, String logo) {
+	public Circle(int id, String name, String description, String logo) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.logo = logo;
 	}
 
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -131,19 +166,19 @@ public class Circle extends AbstractData {
 		}
 	}
 
-	public String getCreator() {
+	public int getCreator() {
 		return creator;
 	}
 
-	public void setCreator(String creator) {
+	public void setCreator(int creator) {
 		this.creator = creator;
 	}
 
-	public String getMyInvitor() {
+	public int getMyInvitor() {
 		return myInvitor;
 	}
 
-	public void setMyInvitor(String myInvitor) {
+	public void setMyInvitor(int myInvitor) {
 		this.myInvitor = myInvitor;
 	}
 
@@ -203,20 +238,19 @@ public class Circle extends AbstractData {
 	@Override
 	public void read(SQLiteDatabase db) {
 		// read circle basic info and member counts
-		Cursor cursor = db.query(Const.CIRCLE_TABLE_NAME, new String[] { "id",
-				"name", "logo", "description", "is_new", "creator", "myinvitor", 
+		Cursor cursor = db.query(Const.CIRCLE_TABLE_NAME, new String[] {
+				"name", "logo", "description", "isNew", "creator", "myinvitor", 
 				"created", "joinTime", "total", "inviting", "verified", "unverified" },
-				"id=?", new String[] { this.id }, null, null, null);
+				"id=?", new String[] { this.id + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
-			String id = cursor.getString(cursor.getColumnIndex("id"));
 			String name = cursor.getString(cursor.getColumnIndex("name"));
 			String logo = cursor.getString(cursor.getColumnIndex("logo"));
 			String description = cursor.getString(cursor
 					.getColumnIndex("description"));
-			int isNew = cursor.getInt(cursor.getColumnIndex("is_new"));
-			String creator = cursor.getString(cursor.getColumnIndex("creator"));
-			String myInvitor = cursor.getString(cursor.getColumnIndex("myinvitor"));
+			int isNew = cursor.getInt(cursor.getColumnIndex("isNew"));
+			int creator = cursor.getInt(cursor.getColumnIndex("creator"));
+			int myInvitor = cursor.getInt(cursor.getColumnIndex("myinvitor"));
 			String created = cursor.getString(cursor.getColumnIndex("created"));
 			String joinTime = cursor.getString(cursor
 					.getColumnIndex("joinTime"));
@@ -225,7 +259,6 @@ public class Circle extends AbstractData {
 			int verified = cursor.getInt(cursor.getColumnIndex("verified"));
 			int unverified = cursor.getInt(cursor.getColumnIndex("unverified"));
 
-			this.id = id;
 			this.name = name;
 			this.logo = logo;
 			this.description = description;
@@ -244,13 +277,13 @@ public class Circle extends AbstractData {
 		// read circle roles
 		List<CircleRole> roles = new ArrayList<CircleRole>();
 		Cursor cursor2 = db.query(Const.CIRCLE_ROLE_TABLE_NAME, new String[] {
-				"cid", "id" }, "cid=?", new String[] { this.id }, null, null,
+				"cid", "id" }, "cid=?", new String[] { this.id + "" }, null, null,
 				null);
 		if (cursor2.getCount() > 0) {
 			// cursor2.moveToFirst();
 			cursor2.moveToFirst();
 			for (int i = 0; i < cursor2.getCount(); i++) {
-				String crid = cursor2.getString(cursor.getColumnIndex("id"));
+				int crid = cursor2.getInt(cursor.getColumnIndex("id"));
 				CircleRole cRole = new CircleRole(this.id, crid);
 				roles.add(cRole);
 			}
@@ -272,7 +305,14 @@ public class Circle extends AbstractData {
 			return;
 		}
 		if (this.status == Status.DEL) {
-			db.delete(dbName, "id=?", new String[] { id });
+			db.delete(dbName, "id=?", new String[] { id + ""});
+			
+			// del roles
+			for (CircleRole cRole : roles) {
+				cRole.setStatus(Status.DEL);
+				cRole.write(db);
+			}
+
 			return;
 		}
 
@@ -281,7 +321,7 @@ public class Circle extends AbstractData {
 		cv.put("name", name);
 		cv.put("logo", logo);
 		cv.put("description", description);
-		cv.put("is_new", isNew ? 1 : 0);
+		cv.put("isNew", isNew ? 1 : 0);
 		cv.put("creator", creator);
 		cv.put("myinvitor", myInvitor);
 		cv.put("created", created);
@@ -294,8 +334,14 @@ public class Circle extends AbstractData {
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
 		} else if (this.status == Status.UPDATE) {
-			db.update(dbName, cv, "id=?", new String[] { id });
+			db.update(dbName, cv, "id=?", new String[] { id + "" });
 		}
+		
+		// write roles
+		for (CircleRole cRole : roles) {
+			cRole.write(db);
+		}
+		
 		this.status = Status.OLD;
 	}
 
@@ -306,27 +352,27 @@ public class Circle extends AbstractData {
 		}
 		Circle another = (Circle) data;
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (this.id != another.id) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.name.equals(another.name)) {
+		if (!this.name.equals(another.name)) {
 			this.name = another.name;
 			isChange = true;
 		}
-		if (this.logo.equals(another.logo)) {
+		if (!this.logo.equals(another.logo)) {
 			this.logo = another.logo;
 			isChange = true;
 		}
-		if (this.description.equals(another.description)) {
+		if (!this.description.equals(another.description)) {
 			this.description = another.description;
 			isChange = true;
 		}
-		if (this.creator.equals(another.creator)) {
+		if (this.creator != another.creator) {
 			this.creator = another.creator;
 			isChange = true;
 		}
-		if (this.created.equals(another.created)) {
+		if (!this.created.equals(another.created)) {
 			this.created = another.created;
 			isChange = true;
 		}
@@ -353,15 +399,16 @@ public class Circle extends AbstractData {
 		}
 	}
 
+	@SuppressLint("UseSparseArrays")
 	private boolean updateRoles(Circle another, boolean changeCount) {
 		boolean isChange = false;
-		Map<String, CircleRole> olds = new HashMap<String, CircleRole>();
-		Map<String, CircleRole> news = new HashMap<String, CircleRole>();
+		Map<Integer, CircleRole> olds = new HashMap<Integer, CircleRole>();
+		Map<Integer, CircleRole> news = new HashMap<Integer, CircleRole>();
 		for (CircleRole cr : this.roles) {
 			olds.put(cr.getId(), cr);
 		}
 		for (CircleRole cr : another.roles) {
-			String crid = cr.getId();
+			int crid = cr.getId();
 			news.put(crid, cr);
 			if (olds.containsKey(crid)) {
 				olds.get(crid).update(cr, changeCount);
@@ -383,17 +430,17 @@ public class Circle extends AbstractData {
 		return isChange;
 	}
 
-	public void updateForEditInfo(Circle another) {
+	private void updateForEditInfo(Circle another) {
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (this.id != another.id) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.name.equals(another.name)) {
+		if (!this.name.equals(another.name)) {
 			this.name = another.name;
 			isChange = true;
 		}
-		if (this.description.equals(another.description)) {
+		if (!this.description.equals(another.description)) {
 			this.description = another.description;
 			isChange = true;
 		}
@@ -406,19 +453,19 @@ public class Circle extends AbstractData {
 
 	public void updateForListChange(Circle another) {
 		boolean isChange = false;
-		if (this.id.equals(another.id)) {
+		if (this.id != another.id) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (this.name.equals(another.name)) {
+		if (!this.name.equals(another.name)) {
 			this.name = another.name;
 			isChange = true;
 		}
-		if (this.logo.equals(another.logo)) {
+		if (!this.logo.equals(another.logo)) {
 			this.logo = another.logo;
 			isChange = true;
 		}
-		if (this.myInvitor.equals(another.myInvitor)) {
+		if (this.myInvitor != another.myInvitor) {
 			this.myInvitor = another.myInvitor;
 			isChange = true;
 		}
@@ -444,7 +491,7 @@ public class Circle extends AbstractData {
 	 * 
 	 * @param id
 	 */
-	public RetError refresh(String id) {
+	public RetError refresh(int id) {
 		IParser parser = new CircleParser();
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("cid", id);
@@ -464,16 +511,17 @@ public class Circle extends AbstractData {
 				|| (!another.description.equals(this.description));
 	}
 
+	@SuppressLint("UseSparseArrays")
 	private JSONArray getChangedRolesForUpload(Circle another) {
-		Map<String, CircleRole> olds = new HashMap<String, CircleRole>();
+		Map<Integer, CircleRole> olds = new HashMap<Integer, CircleRole>();
 		for (CircleRole cr : this.roles) {
 			olds.put(cr.getId(), cr);
 		}
 
 		JSONArray jsonArr = new JSONArray();
-		Map<String, CircleRole> news = new HashMap<String, CircleRole>();
+		Map<Integer, CircleRole> news = new HashMap<Integer, CircleRole>();
 		for (CircleRole cr : another.roles) {
-			String crid = cr.getId();
+			int crid = cr.getId();
 			news.put(crid, cr);
 
 			if (olds.containsKey(crid)) {
@@ -518,6 +566,12 @@ public class Circle extends AbstractData {
 		return jsonArr;
 	}
 
+	/**
+	 * upload edit info to server, and update local data while upload success
+	 * 
+	 * @param another
+	 * @return
+	 */
 	public RetError uploadAfterEdit(Circle another) {
 		JSONArray changedRoles = getChangedRolesForUpload(another);
 		if (changedRoles.length() == 0 && !isReallyChangedForUpload(another)) {
@@ -543,8 +597,7 @@ public class Circle extends AbstractData {
 					int crid = (Integer) ret.getArrs().get(i);
 					if (crid > 0) {
 						try {
-							CircleRole role = new CircleRole(another.id, crid
-									+ "");
+							CircleRole role = new CircleRole(another.id, crid);
 							JSONObject jobj = (JSONObject) changedRoles.opt(i);
 							role.setName(jobj.getString("name"));
 							roles.add(role);
@@ -553,10 +606,11 @@ public class Circle extends AbstractData {
 					}
 				}
 				another.setRoles(roles);
+				updateForEditInfo(another);
+			} else {
+				// size not equal???
 			}
-			// else size not equal???
 
-			updateForEditInfo(another);
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
@@ -567,6 +621,12 @@ public class Circle extends AbstractData {
 		return logo != null && logo.length() > 0 && !this.logo.equals(logo);
 	}
 
+	/**
+	 * upload new logo to server, and update local logo while upload success
+	 * 
+	 * @param logo
+	 * @return
+	 */
 	public RetError uploadLogo(String logo) {
 		if (!isLogoChanged(logo)) {
 			return RetError.NONE;
@@ -581,12 +641,18 @@ public class Circle extends AbstractData {
 
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.logo = ret.getStr();
+			this.status = Status.UPDATE;// TODO change local?
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
 		}
 	}
 	
+	/**
+	 * upload new circle to server, and reset id and some count info while upload success
+	 * 
+	 * @return
+	 */
 	public RetError uploadForAdd() {
 		IParser parser = new StringParser("cid");
 		Map<String, Object> params = new HashMap<String, Object>();
@@ -596,7 +662,7 @@ public class Circle extends AbstractData {
 		StringResult ret = (StringResult) ApiRequest.requestWithToken(
 				Circle.ADD_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
-			this.id = ret.getStr();
+			this.id = Integer.parseInt(ret.getStr());
 			this.totalCnt = 1;
 			this.verifiedCnt = 1;
 			this.status = Status.UPDATE;

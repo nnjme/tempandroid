@@ -83,20 +83,18 @@ public class PersonDetail extends AbstractData {
 	}
 
 	@Override
-	public void read(SQLiteDatabase db) {
+	public void read(SQLiteDatabase db) { // TODO need cid?
 		Cursor cursor = db.query(Const.PERSON_DETAIL_TABLE_NAME, new String[] {
-				"id", "type", "value", "start", "end", "remark" },
+				"type", "value", "start", "end", "remark" },
 				"id=?", new String[] { this.id + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
-			int id = cursor.getInt(cursor.getColumnIndex("id"));
 			String type = cursor.getString(cursor.getColumnIndex("type"));
 			String value = cursor.getString(cursor.getColumnIndex("value"));
 			String start = cursor.getString(cursor.getColumnIndex("start"));
 			String end = cursor.getString(cursor.getColumnIndex("end"));
 			String remark = cursor.getString(cursor.getColumnIndex("remark"));
 
-			this.id = id;
 			this.type = PersonDetailType.convertToType(type);
 			this.value = value;
 			this.start = start;

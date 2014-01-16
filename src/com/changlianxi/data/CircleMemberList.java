@@ -26,6 +26,7 @@ import com.changlianxi.util.DateUtils;
  * get a circle's member list
  *     // new CircleMemberList cml
  *     cml.read();
+ *     cml.getMembers();
  * 
  * refresh a circle's member
  *     // new CircleMemberList cml

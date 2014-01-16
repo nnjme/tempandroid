@@ -27,11 +27,11 @@ public class CircleListParser implements IParser {
 		List<Circle> circles = new ArrayList<Circle>();
 		for (int i = 0; i < jsonArr.length(); i++) {
 			JSONObject obj = (JSONObject) jsonArr.opt(i);
-			String id = obj.getString("id");
+			int id = obj.getInt("id");
 			String logo = obj.getString("logo");
 			String name = obj.getString("name");
 			String isNew = obj.getString("is_new");
-			String myInvitor = obj.getString("inviter"); 
+			int myInvitor = obj.getInt("inviter"); 
 			String editState = obj.getString("edit_state");
 
 			Circle c = new Circle(id, name);
