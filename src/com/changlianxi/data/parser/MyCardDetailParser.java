@@ -44,7 +44,7 @@ public class MyCardDetailParser implements IParser {
 			if (pType == PersonDetailType.UNKNOWN) {
 				continue;
 			}
-			PersonDetail p = new PersonDetail(id, pType, value);
+			PersonDetail p = new PersonDetail(id, 0, pType, value);
 			p.setStart(start);
 			p.setEnd(end);
 			p.setRemark(remark);

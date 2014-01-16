@@ -22,7 +22,7 @@ public class Const {
 
 	public static final String PERSON_DETAIL_TABLE_NAME = "person_details";
 	public static final String PERSON_DETAIL_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
-			+ " id integer, type varchar, value varchar, start varchar, end integer, remark varchar";
+			+ " id integer, cid integer, type varchar, value varchar, start varchar, end integer, remark varchar";
 
 	public static final String TIME_RECORD_TABLE_NAME = "time_records";
 	public static final String TIME_RECORD_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"

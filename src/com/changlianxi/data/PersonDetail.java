@@ -12,18 +12,21 @@ import com.changlianxi.db.Const;
 public class PersonDetail extends AbstractData {
 
 	private int id = 0;
+	private int cid = 0;
 	private PersonDetailType type = PersonDetailType.UNKNOWN;
 	private String value = "0";
 	private String start = "";
 	private String end = "";
 	private String remark = "";
 
-	public PersonDetail(int id) {
+	public PersonDetail(int id, int cid) {
 		this.id = id;
+		this.cid = cid;
 	}
 
-	public PersonDetail(int id, PersonDetailType type, String value) {
+	public PersonDetail(int id, int cid, PersonDetailType type, String value) {
 		this.id = id;
+		this.cid = cid;
 		this.type = type;
 		this.value = value;
 	}
@@ -34,6 +37,14 @@ public class PersonDetail extends AbstractData {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getCid() {
+		return cid;
+	}
+
+	public void setCid(int cid) {
+		this.cid = cid;
 	}
 
 	public PersonDetailType getType() {
@@ -78,15 +89,15 @@ public class PersonDetail extends AbstractData {
 
 	@Override
 	public String toString() {
-		return "PersonProperty [id=" + id + ", type=" + type + ", value="
-				+ value + "]";
+		return "PersonProperty [id=" + id + ", cid=" + cid + ", type=" + type
+				+ ", value=" + value + "]";
 	}
 
 	@Override
-	public void read(SQLiteDatabase db) { // TODO need cid?
+	public void read(SQLiteDatabase db) {
 		Cursor cursor = db.query(Const.PERSON_DETAIL_TABLE_NAME, new String[] {
-				"type", "value", "start", "end", "remark" },
-				"id=?", new String[] { this.id + "" }, null, null, null);
+				"type", "value", "start", "end", "remark" }, "id=? and cid=?",
+				new String[] { this.id + "", this.cid + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			String type = cursor.getString(cursor.getColumnIndex("type"));
@@ -100,7 +111,7 @@ public class PersonDetail extends AbstractData {
 			this.start = start;
 			this.end = end;
 			this.remark = remark;
-			
+
 			this.status = Status.OLD;
 		}
 		cursor.close();
@@ -113,7 +124,8 @@ public class PersonDetail extends AbstractData {
 			return;
 		}
 		if (this.status == Status.DEL) {
-			db.delete(dbName, "id=?", new String[] { id + "" });
+			db.delete(dbName, "id=? and cid=?", new String[] { id + "",
+					cid + "" });
 			return;
 		}
 
@@ -128,7 +140,8 @@ public class PersonDetail extends AbstractData {
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
 		} else if (this.status == Status.UPDATE) {
-			db.update(dbName, cv, "id=?", new String[] { id + "" });
+			db.update(dbName, cv, "id=? and cid=?", new String[] { id + "",
+					cid + "" });
 		}
 		this.status = Status.OLD;
 	}
@@ -142,6 +155,10 @@ public class PersonDetail extends AbstractData {
 		boolean isChange = false;
 		if (this.id != another.id) {
 			this.id = another.id;
+			isChange = true;
+		}
+		if (this.cid != another.cid) {
+			this.cid = another.cid;
 			isChange = true;
 		}
 		if (this.type != another.type) {
@@ -177,6 +194,9 @@ public class PersonDetail extends AbstractData {
 		}
 		PersonDetail another = (PersonDetail) o;
 		if (this.id != another.id) {
+			return false;
+		}
+		if (this.cid != another.cid) {
 			return false;
 		}
 		if (this.type != another.type) {

@@ -30,7 +30,7 @@ public class ApiRequest {
 			Result ret = parser.parse(params, jsonObj);
 			return ret;
 		} catch (Exception e) {
-			e.printStackTrace(); // TODO logo
+			e.printStackTrace(); // TODO log
 			return Result.defContentErrorResult();
 		}
 	}
