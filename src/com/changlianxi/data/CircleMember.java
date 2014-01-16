@@ -14,6 +14,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.enums.CircleMemberState;
 import com.changlianxi.data.enums.Gendar;
 import com.changlianxi.data.enums.PersonDetailType;
 import com.changlianxi.data.enums.RetError;
@@ -75,10 +76,6 @@ public class CircleMember extends AbstractData {
 	public final static String EDIT_API = "people/iedit";
 	public final static String UPLOAD_AVATAR_API = "people/iuploadAvatar";
 
-	public static enum State { // TODO
-		INVINTING, ENTER_ACCEPT, ENTER_REJECT, VERIFIED, KICKOFFING, KICKOUT, QUIT, OTHER
-	};
-
 	private int cid = 0;
 	private int uid = 0;
 	private int pid = 0;
@@ -97,7 +94,7 @@ public class CircleMember extends AbstractData {
 	private String detailIds = "";
 	private List<PersonDetail> details = new ArrayList<PersonDetail>();
 
-	private State state = State.OTHER;
+	private CircleMemberState state = CircleMemberState.STATUS_INVALID;
 
 	public CircleMember(int cid) {
 		this(cid, 0);
@@ -174,11 +171,11 @@ public class CircleMember extends AbstractData {
 		this.jobtitle = jobtitle;
 	}
 
-	public State getState() {
+	public CircleMemberState getState() {
 		return state;
 	}
 
-	public void setState(State state) {
+	public void setState(CircleMemberState state) {
 		this.state = state;
 	}
 
@@ -316,7 +313,7 @@ public class CircleMember extends AbstractData {
 			this.lastModTime = lastModTime;
 			this.leaveTime = leaveTime;
 			this.roleId = roleId;
-			this.state = State.valueOf(state);
+			this.state = CircleMemberState.convert(state);
 			this.detailIds = detailIds;
 		}
 		cursor.close();

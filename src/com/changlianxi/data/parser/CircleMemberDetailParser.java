@@ -20,14 +20,14 @@ public class CircleMemberDetailParser implements IParser {
 			return Result.defContentErrorResult();
 		}
 
-		if (!jsonObj.has("person") || !jsonObj.has("cid") || !jsonObj.has("uid")
+		if (!jsonObj.has("person") || !jsonObj.has("cid") || !jsonObj.has("puid")
 				|| !jsonObj.has("pid")) {
 			return Result.defContentErrorResult();
 		}
 		JSONArray jsonPersons = jsonObj.getJSONArray("person");
 		int cid = jsonObj.getInt("cid");
 		int pid = jsonObj.getInt("pid");
-		int uid = jsonObj.getInt("uid");
+		int uid = jsonObj.getInt("puid");
 		if (jsonPersons == null || cid == 0 || pid == 0) {
 			return Result.defContentErrorResult();
 		}

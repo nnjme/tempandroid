@@ -15,19 +15,18 @@ public class CircleMemberBasicParser implements IParser {
 			return Result.defContentErrorResult();
 		}
 
-		if (!jsonObj.has("person") || !jsonObj.has("cid") || !jsonObj.has("uid")
-				|| !jsonObj.has("pid")) {
+		if (!jsonObj.has("person") || !jsonObj.has("cid")) {
 			return Result.defContentErrorResult();
 		}
 		JSONObject jsonPerson = jsonObj.getJSONObject("person");
 		int cid = jsonObj.getInt("cid");
-		int pid = jsonObj.getInt("pid");
-		int uid = jsonObj.getInt("uid");
-		if (jsonPerson == null || cid == 0 || pid == 0) {
+		if (jsonPerson == null || cid == 0) {
 			return Result.defContentErrorResult();
 		}
 
 		// member basic info
+		int pid = jsonPerson.getInt("id");
+		int uid = jsonPerson.getInt("user_id");
 		String name = jsonPerson.getString("name");
 		String cellphone = jsonPerson.getString("cellphone");
 		String location = jsonPerson.getString("location");

@@ -9,8 +9,8 @@ import org.json.JSONObject;
 
 import com.changlianxi.data.AbstractData.Status;
 import com.changlianxi.data.CircleMember;
-import com.changlianxi.data.CircleMember.State;
 import com.changlianxi.data.CircleMemberList;
+import com.changlianxi.data.enums.CircleMemberState;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.util.DateUtils;
 
@@ -47,7 +47,7 @@ public class CircleMemberListParser implements IParser {
 			String time = obj.getString("time");
 			String location = obj.getString("location");
 			int roleId = obj.getInt("role_id");
-			int isAuth = obj.getInt("auth"); // TODO
+			String state = obj.getString("state");
 
 			CircleMember m = new CircleMember(cid, pid, uid);
 			m.setName(name);
@@ -57,9 +57,7 @@ public class CircleMemberListParser implements IParser {
 			m.setJobtitle(jobtitle);
 			m.setLocation(location);
 			m.setRoleId(roleId);
-			if (isAuth == 1) { // TODO
-				m.setState(State.VERIFIED);
-			}
+			m.setState(CircleMemberState.convert(state));
 
 			if ("mod".equals(type)) {
 				m.setStatus(Status.UPDATE);

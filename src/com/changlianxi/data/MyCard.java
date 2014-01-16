@@ -115,7 +115,6 @@ public class MyCard extends CircleMember {
 
 		IParser parser = new ArrayParser("details");
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("pid", another.getPid());
 		params.put("person", changedDetails.toString());
 
 		ArrayResult ret = (ArrayResult) ApiRequest.requestWithToken(
@@ -142,7 +141,6 @@ public class MyCard extends CircleMember {
 
 		IParser parser = new StringParser("avatar");
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("pid", getPid());
 		params.put("avatar", avatar);
 		StringResult ret = (StringResult) ApiRequest.requestWithToken(
 				MyCard.UPLOAD_AVATAR_API, params, parser);
