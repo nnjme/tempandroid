@@ -1,18 +1,10 @@
 package com.changlianxi.data.request;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.changlianxi.data.IData;
+import com.changlianxi.data.enums.RetError;
+import com.changlianxi.data.enums.RetStatus;
 
 public class Result {
-
-	public static Map<String, RetError> str2Error = new HashMap<String, RetError>();
-	static {
-		for (RetError err : RetError.values()) {
-			str2Error.put(err.name(), err);
-		}
-	}
 
 	private IData data = null;
 
@@ -55,11 +47,7 @@ public class Result {
 	}
 
 	public void setErr(String err) {
-		if (!Result.str2Error.containsKey(err)) {
-			this.err = RetError.UNKOWN;
-		} else {
-			this.err = Result.str2Error.get(err);
-		}
+		this.err = RetError.convert(err);
 	}
 
 	@Override

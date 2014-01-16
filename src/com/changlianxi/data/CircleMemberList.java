@@ -10,11 +10,11 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.CircleMemberListParser;
 import com.changlianxi.data.parser.IParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
-import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.db.Const;
 import com.changlianxi.util.DateUtils;
 

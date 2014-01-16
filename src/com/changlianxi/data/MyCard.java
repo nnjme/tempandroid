@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.json.JSONArray;
 
+import com.changlianxi.data.enums.RetError;
+import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.IParser;
 import com.changlianxi.data.parser.MyCardDetailParser;
@@ -12,8 +14,6 @@ import com.changlianxi.data.parser.StringParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.ArrayResult;
 import com.changlianxi.data.request.Result;
-import com.changlianxi.data.request.RetError;
-import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.data.request.StringResult;
 
 /**

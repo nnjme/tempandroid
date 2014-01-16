@@ -5,6 +5,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.changlianxi.data.Global;
+import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.IParser;
 import com.changlianxi.util.HttpUrlHelper;
 

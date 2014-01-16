@@ -3,6 +3,7 @@ package com.changlianxi.data.request;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class ArrayResult extends Result {
 	private List<Object> arrs = new ArrayList<Object>();
 

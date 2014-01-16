@@ -14,6 +14,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.enums.Gendar;
+import com.changlianxi.data.enums.PersonDetailType;
+import com.changlianxi.data.enums.RetError;
+import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.CircleMemberBasicParser;
 import com.changlianxi.data.parser.CircleMemberDetailParser;
@@ -22,8 +26,6 @@ import com.changlianxi.data.parser.StringParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.ArrayResult;
 import com.changlianxi.data.request.Result;
-import com.changlianxi.data.request.RetError;
-import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
 
@@ -73,13 +75,9 @@ public class CircleMember extends AbstractData {
 	public final static String EDIT_API = "people/iedit";
 	public final static String UPLOAD_AVATAR_API = "people/iuploadAvatar";
 
-	public static enum State {
+	public static enum State { // TODO
 		INVINTING, ENTER_ACCEPT, ENTER_REJECT, VERIFIED, KICKOFFING, KICKOUT, QUIT, OTHER
 	};
-
-	public static enum Gendar {
-		UNKNOWN, MAN, WOMAN
-	}
 
 	private int cid = 0;
 	private int uid = 0;
@@ -209,11 +207,11 @@ public class CircleMember extends AbstractData {
 	}
 
 	public void setGendar(int gendar) {
-		this.gendar = CircleMember.parseInt2Gendar(gendar);
+		this.gendar = Gendar.parseInt2Gendar(gendar);
 	}
 	
 	public void setGendar(String gendar) {
-		this.gendar = CircleMember.parseString2Gendar(gendar);
+		this.gendar = Gendar.parseString2Gendar(gendar);
 	}
 	
 	public String getBirthday() {
@@ -309,7 +307,7 @@ public class CircleMember extends AbstractData {
 			this.name = name;
 			this.cellphone = cellphone;
 			this.location = location;
-			this.gendar = CircleMember.parseInt2Gendar(gendar);
+			this.gendar = Gendar.parseInt2Gendar(gendar);
 			this.avatar = avatar;
 			this.birthday = birthday;
 			this.employer = employer;
@@ -362,7 +360,7 @@ public class CircleMember extends AbstractData {
 		cv.put("name", name);
 		cv.put("cellphone", cellphone);
 		cv.put("location", location);
-		cv.put("gendar", CircleMember.parseGendar2Int(gendar));
+		cv.put("gendar", Gendar.parseGendar2Int(gendar));
 		cv.put("avatar", avatar);
 		cv.put("birthday", birthday);
 		cv.put("employer", employer);
@@ -599,11 +597,11 @@ public class CircleMember extends AbstractData {
 			}
 			if (Gendar.UNKNOWN != this.gendar) {
 				if (type2Details.containsKey(type)) {
-					type2Details.get(type).setValue(CircleMember.parseGendar2String(this.gendar));
+					type2Details.get(type).setValue(Gendar.parseGendar2String(this.gendar));
 				} else {
 					PersonDetail pd = new PersonDetail(0, cid);
 					pd.setType(type);
-					pd.setValue(CircleMember.parseGendar2String(this.gendar));
+					pd.setValue(Gendar.parseGendar2String(this.gendar));
 					this.details.add(pd);
 				}
 			}
@@ -663,7 +661,7 @@ public class CircleMember extends AbstractData {
 			}
 			type = PersonDetailType.D_GENDAR;
 			if (type2Details.containsKey(type)) {
-				this.gendar = CircleMember.parseString2Gendar(type2Details.get(type).getValue());
+				this.gendar = Gendar.parseString2Gendar(type2Details.get(type).getValue());
 			}
 			type = PersonDetailType.D_AVATAR;
 			if (type2Details.containsKey(type)) {
@@ -901,39 +899,4 @@ public class CircleMember extends AbstractData {
 		}
 	}
 
-	public static Gendar parseInt2Gendar(int i) {
-		switch (i) {
-		case 1:
-			return Gendar.MAN;
-		case 2:
-			return Gendar.WOMAN;
-		default:
-			return Gendar.UNKNOWN;
-		}
-	}
-
-	public static Gendar parseString2Gendar(String s) {
-		if ("男".equals(s)) {
-			return Gendar.MAN;
-		}
-		if ("女".equals(s)) {
-			return Gendar.WOMAN;
-		}
-		return Gendar.UNKNOWN;
-	}
-
-	public static int parseGendar2Int(Gendar g) {
-		return g.ordinal();
-	}
-
-	public static String parseGendar2String(Gendar g) {
-		if (Gendar.MAN == g) {
-			return "男";
-		}
-		if (Gendar.WOMAN == g) {
-			return "女";
-		}
-		return "";
-
-	}
 }

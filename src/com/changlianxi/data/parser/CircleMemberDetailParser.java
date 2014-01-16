@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 import com.changlianxi.data.CircleMember;
 import com.changlianxi.data.PersonDetail;
-import com.changlianxi.data.PersonDetailType;
+import com.changlianxi.data.enums.PersonDetailType;
 import com.changlianxi.data.request.Result;
 
 public class CircleMemberDetailParser implements IParser {

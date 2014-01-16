@@ -1,4 +1,4 @@
-package com.changlianxi.data;
+package com.changlianxi.data.enums;
 
 import java.util.HashMap;
 import java.util.Map;

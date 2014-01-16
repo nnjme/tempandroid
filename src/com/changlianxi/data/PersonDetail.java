@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.enums.PersonDetailType;
 import com.changlianxi.db.Const;
 
 public class PersonDetail extends AbstractData {

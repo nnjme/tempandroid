@@ -1,4 +1,7 @@
-package com.changlianxi.data.request;
+package com.changlianxi.data.enums;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public enum RetError {
 	NONE,
@@ -25,6 +28,21 @@ public enum RetError {
 	MSG_DIST_ERROR,
 	CONDITION_NOT_SATISFY,
 	TOKEN_INVALID,
-	OLD_PASSWD_WRONG,
+	OLD_PASSWD_WRONG;
 	
+	public static Map<String, RetError> str2Error = new HashMap<String, RetError>();
+	static {
+		for (RetError err : RetError.values()) {
+			str2Error.put(err.name(), err);
+		}
+	}
+
+	public static RetError convert(String err) {
+		if (!str2Error.containsKey(err)) {
+			return RetError.UNKOWN;
+		} else {
+			return str2Error.get(err);
+		}
+	}
+
 }
