@@ -18,10 +18,11 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.data.Circle;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleIdetailModle;
+import com.changlianxi.task.BaseAsyncTask;
 import com.changlianxi.task.CircleIdetailTask;
-import com.changlianxi.task.CircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.GetCircleIdetailTask;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
@@ -37,7 +38,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
 
 public class CircleInfoActivity extends BaseActivity implements
-		OnClickListener, PostCallBack, GetCircleIdetail {
+		OnClickListener, PostCallBack {
 	private TextView circleName;// 圈子名称
 	private TextView titleName;
 	private TextView circleDescription;// 圈子描述
@@ -63,22 +64,8 @@ public class CircleInfoActivity extends BaseActivity implements
 		cid = getIntent().getIntExtra("cid",0);
 		findViewById();
 		setListener();
-		//modle = DBUtils.getCircleDetail(cid);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
-		if (!Utils.isNetworkAvailable()) {
-			Utils.showToast("请检查网络");
-			return;
-		}
-		if (modle != null) {
-			isSelf(modle.getCreator());
-			setvalue(modle.getName(), modle.getLogo(), modle.getDescription(),
-					modle.getMembersTotal() + "", modle.getMembersVerified()
-							+ "");
-		} else {
-			pd = DialogUtil.getWaitDialog(this, "请稍后");
-			pd.show();
-		}
 		getServerData();
 	}
 	/**设置页面统计
@@ -111,11 +98,23 @@ public class CircleInfoActivity extends BaseActivity implements
 	private void getServerData() {
 		circle = new Circle(cid);
 		CircleIdetailTask circleIdetailTask = new CircleIdetailTask(circle);
-		circleIdetailTask.setTaskCallBack(this);
-		circleIdetailTask.execute();
-//		GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
-//		task.setTaskCallBack(this);
-//		task.execute();
+		circleIdetailTask.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
+
+			@Override
+			public void taskFinish(RetError result) {
+				// TODO Auto-generated method stub
+				if (pd != null) {
+					pd.dismiss();
+				}
+				if (circle == null) {
+					return;
+				}
+				isSelf(circle.getCreator()+"");
+				setvalue(circle.getName(), circle.getLogo(), circle.getDescription(),
+						circle.getTotalCnt() + "", circle.getVerifiedCnt() + "");
+			}
+		}) ;
+		circleIdetailTask.executeWithCheckNet();
 
 	}
 
@@ -165,12 +164,10 @@ public class CircleInfoActivity extends BaseActivity implements
 		case R.id.edit:
 			Intent intent = new Intent();
 			intent.setClass(this, EditCircleActivity.class);
-			intent.putExtra("cid", cid);
+			//intent.putExtra("cid", cid);
 			intent.putExtra("circle", circle);
-			// startActivity(intent);
 			startActivityForResult(intent, 2);
 			Utils.leftOutRightIn(this);
-			// finish();
 			break;
 		default:
 			break;
@@ -212,7 +209,7 @@ public class CircleInfoActivity extends BaseActivity implements
 				Intent intent = new Intent();
 				intent.setAction(Constants.UPDECIRNAME);
 				intent.putExtra("cirName", cirName);
-				intent.putExtra("cid", cid);
+				intent.putExtra("cid", cid+"");
 				BroadCast.sendBroadCast(this, intent);
 			}
 		}
@@ -234,18 +231,18 @@ public class CircleInfoActivity extends BaseActivity implements
 	/**
 	 * 接口回调
 	 */
-	@Override
-	public void getIdetail(Circle modle) {
-		if (pd != null) {
-			pd.dismiss();
-		}
-		if (modle == null) {
-			return;
-		}
-		isSelf(modle.getCreator()+"");
-		setvalue(modle.getName(), modle.getLogo(), modle.getDescription(),
-				modle.getTotalCnt() + "", modle.getVerifiedCnt() + "");
-	}
+//	@Override
+//	public void getIdetail(Circle modle) {
+//		if (pd != null) {
+//			pd.dismiss();
+//		}
+//		if (modle == null) {
+//			return;
+//		}
+//		isSelf(modle.getCreator()+"");
+//		setvalue(modle.getName(), modle.getLogo(), modle.getDescription(),
+//				modle.getTotalCnt() + "", modle.getVerifiedCnt() + "");
+//	}
 
 	private void setCount(String total, String veriofied) {
 		String strtotal = "<font color=\"#fd7a00\">" + total + "</font>人";

@@ -175,7 +175,7 @@ public class HttpUrlHelper {
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		Iterator<?> mapite = map.entrySet().iterator();
 		while (mapite.hasNext()) {// 循环遍历需要传递给服务器的请求参数
-			@SuppressWarnings("rawtypes")
+			@SuppressWarnings("rawtypes") 
 			Map.Entry testDemo = (Map.Entry) mapite.next();
 			Object key = testDemo.getKey();
 			Object value = testDemo.getValue();

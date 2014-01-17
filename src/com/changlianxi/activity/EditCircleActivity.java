@@ -22,11 +22,13 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.data.Circle;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleIdetailModle;
 import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
+import com.changlianxi.task.BaseAsyncTask;
 import com.changlianxi.task.GetCircleIdetailTask.GetCircleIdetail;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
@@ -74,8 +76,9 @@ public class EditCircleActivity extends BaseActivity implements
 		setContentView(R.layout.activity_edit_circle);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
-		cid = getIntent().getIntExtra("cid",0);
+		//cid = getIntent().getIntExtra("cid",0);
 		circle = (Circle) getIntent().getSerializableExtra("circle");
+		cid = circle.getId();
 		findViewByID();
 		setListener();
 		//getSercverData();
@@ -127,10 +130,10 @@ public class EditCircleActivity extends BaseActivity implements
 		// Utils.showToast("请检查网络");
 		// return;
 		// }
-		// pd = DialogUtil.getWaitDialog(this, "请稍后");
 		// GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
 		// task.setTaskCallBack(this);
 		// task.execute();
+		// pd = DialogUtil.getWaitDialog(this, "请稍后");
 		// pd.show();
 	}*/
 
@@ -193,27 +196,42 @@ public class EditCircleActivity extends BaseActivity implements
 	 * @param url
 	 */
 	private void saveInfo() {
+		pd = DialogUtil.getWaitDialog(this, "请稍后");
+		pd.show();
 		Circle newCircle = new Circle(cid, circleName.getText().toString(), circleDescription.getText().toString(),logoPath);
 		UpdateCircleIdetailTask circleIdetailTask = new UpdateCircleIdetailTask(circle,newCircle);
-		circleIdetailTask.setTaskCallBack(new UpdateCircleIdetailTask.GetCircleIdetail() {
-			
+//		circleIdetailTask.setTaskCallBack(new UpdateCircleIdetailTask.GetCircleIdetail() {
+//			
+//			@Override
+//			public void finishUpdate(boolean b) {
+//				// TODO Auto-generated method stub
+//				pd.dismiss();
+//				if(b){
+//					Utils.showToast("修改成功");
+//					BroadCast.sendBroadCast(EditCircleActivity.this,
+//							Constants.REFRESH_CIRCLE_LIST);// 发送广播更新圈子列表
+//					exitSuccess();
+//				}else{
+//					Utils.showToast("保存失败");
+//				}
+//				
+//			}
+//		});
+//		circleIdetailTask.execute();
+		
+		circleIdetailTask.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
+
 			@Override
-			public void finishUpdate(boolean b) {
+			public void taskFinish(RetError result) {
 				// TODO Auto-generated method stub
 				pd.dismiss();
-				if(b){
-					Utils.showToast("修改成功");
-					BroadCast.sendBroadCast(EditCircleActivity.this,
-							Constants.REFRESH_CIRCLE_LIST);// 发送广播更新圈子列表
-					exitSuccess();
-				}else{
-					Utils.showToast("保存失败");
-				}
-				
+				Utils.showToast("修改成功");
+				BroadCast.sendBroadCast(EditCircleActivity.this,
+						Constants.REFRESH_CIRCLE_LIST);// 发送广播更新圈子列表
+				exitSuccess();
 			}
 		});
-		circleIdetailTask.execute();
-		
+		circleIdetailTask.executeWithCheckNet();
 		
 //		HashMap<String, Object> map = new HashMap<String, Object>();
 //		map.put("uid", SharedUtils.getString("uid", ""));

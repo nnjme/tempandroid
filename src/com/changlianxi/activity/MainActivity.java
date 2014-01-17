@@ -231,7 +231,7 @@ public class MainActivity extends Activity implements OnOpenListener {
 				int promptCount = intent.getIntExtra("promptCount", 0);
 				mHome.pushPormpt(cid, promptCount, type);
 			} else if (action.equals(Constants.UPDECIRNAME)) {// 更改圈子名称
-				String cid = intent.getStringExtra("cid");
+				int cid = intent.getIntExtra("cid", 0);
 				String cirName = intent.getStringExtra("cirName");
 				mHome.upDateCirName(cid, cirName);
 			} else if (action.equals(Constants.MYCARD_PROMPT)) {// 个人名片提醒

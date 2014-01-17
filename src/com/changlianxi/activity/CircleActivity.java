@@ -206,7 +206,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		case R.id.more:
 			Intent intent = new Intent();
 			intent.setClass(this, CircleInfoActivity.class);
-			intent.putExtra("cid", id);
+			intent.putExtra("cid", Integer.parseInt(id));
 			startActivityForResult(intent, 1);
 			overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
 			break;

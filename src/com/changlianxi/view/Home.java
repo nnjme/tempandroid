@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.w3c.dom.ls.LSInput;
 
 import android.app.Dialog;
 import android.content.ContentValues;
@@ -40,9 +41,11 @@ import com.changlianxi.adapter.CircleAdapter;
 import com.changlianxi.adapter.CircleSearchAdapter;
 import com.changlianxi.data.Circle;
 import com.changlianxi.data.CircleList;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CircleModle;
 import com.changlianxi.modle.MemberModle;
+import com.changlianxi.task.BaseAsyncTask.PostCallBack;
 import com.changlianxi.task.CircleListTask;
 import com.changlianxi.task.GetCieclesNotifyTask;
 import com.changlianxi.task.GetCieclesNotifyTask.GetCirclesNotify;
@@ -72,7 +75,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	private OnOpenListener mOnOpenListener;
 	private List<Circle> listModle = new ArrayList<Circle>();
 	private List<Circle> listPrompt = new ArrayList<Circle>();// 圈子提醒数
-	//private CircleList circleList = new CircleList(listModle);
+	// private CircleList circleList = new CircleList(listModle);
 	private GrowthImgGridView gView;
 	private CircleAdapter adapter;
 	private BounceScrollView scrollView;
@@ -92,9 +95,9 @@ public class Home implements OnClickListener, OnRefreshComplete,
 			switch (msg.what) {
 			case 0:
 				setListener();
-				//new CircleList(listModle).read(DBUtils.db);
+				// new CircleList(listModle).read(DBUtils.db);
 				listPrompt = DBUtils.getCirclePtompt();
-				//showAdapter();
+				// showAdapter();
 				filldata();
 				break;
 
@@ -116,45 +119,68 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		adapter.setData(listModle);
 		gView.setAdapter(adapter);
 		mHandler.sendEmptyMessageDelayed(0, 100);
-		
+
 	}
-	public void filldata(){
+
+	public void filldata() {
 		circleListTask = new CircleListTask();
-		circleListTask.setTaskCallBack(new com.changlianxi.task.CircleListTask.GetCircleList() {
-			
+		circleListTask.setTaskCallBack(new PostCallBack<RetError>() {
+
 			@Override
-			public void getCircleList(List<Circle> circles) {
+			public void taskFinish(RetError result) {
 				// TODO Auto-generated method stub
 				if (progressDialog != null) {
 					progressDialog.dismiss();
 				}
-				if (circles.size() == 0) {
+				if (listModle.size() == 0) {
 					return;
 				}
 				listModle.add(getNewCircle());
 				adapter.notifyDataSetChanged();
-//				String cids = "";
-//				for (int i = 0; i < circles.size() - 1; i++) {
-//					cids += circles.get(i).getId() + ",";
-//				}
-//				notifyTask = new GetCieclesNotifyTask(SharedUtils.getString(
-//						"exitTime",
-//						DateUtils.phpTime(System.currentTimeMillis())), cids
-//						.substring(0, cids.length() - 1));
-//				notifyTask.setTaskCallBack(new GetCirclesNotify() {
-//					@Override
-//					public void getCirclesNotify(String result) {
-//						if (result == null) {
-//							return;
-//						}
-//						getPromptCount(result);
-//					}
-//				});
-//				notifyTask.execute();
 			}
+
 		});
-		circleListTask.execute(listModle);
+		circleListTask.executeWithCheckNet(listModle);
+		// circleListTask.setTaskCallBack(new
+		// com.changlianxi.task.CircleListTask.GetCircleList() {
+		//
+		// @Override
+		// public void getCircleList(List<Circle> circles) {
+		// // TODO Auto-generated method stub
+		// if (progressDialog != null) {
+		// progressDialog.dismiss();
+		// }
+		// if (circles.size() == 0) {
+		// return;
+		// }
+		// listModle.add(getNewCircle());
+		// adapter.notifyDataSetChanged();
+		//
+		//
+		//
+		// // String cids = "";
+		// // for (int i = 0; i < circles.size() - 1; i++) {
+		// // cids += circles.get(i).getId() + ",";
+		// // }
+		// // notifyTask = new GetCieclesNotifyTask(SharedUtils.getString(
+		// // "exitTime",
+		// // DateUtils.phpTime(System.currentTimeMillis())), cids
+		// // .substring(0, cids.length() - 1));
+		// // notifyTask.setTaskCallBack(new GetCirclesNotify() {
+		// // @Override
+		// // public void getCirclesNotify(String result) {
+		// // if (result == null) {
+		// // return;
+		// // }
+		// // getPromptCount(result);
+		// // }
+		// // });
+		// // notifyTask.execute();
+		// }
+		// });
+		// circleListTask.execute(listModle);
 	}
+
 	private void showAdapter() {
 		searchAdapter = new CircleSearchAdapter(mcontext, searchListModle);
 		searchListView.setAdapter(searchAdapter);
@@ -175,22 +201,40 @@ public class Home implements OnClickListener, OnRefreshComplete,
 
 	private void getServerCircleLists() {
 		task = new GetCircleListTask();
-		/*task.setTaskCallBack(new GetCircleList() {
+		/*
+		 * task.setTaskCallBack(new GetCircleList() {
+		 * 
+		 * @Override public void getCircleList(List modles) { if (progressDialog
+		 * != null) { progressDialog.dismiss(); } if (modles.size() == 0) {
+		 * return; } modles.add(newCircle()); listModle.clear();
+		 * listModle.addAll(modles); adapter.setData(listModle); String cids =
+		 * ""; for (int i = 0; i < modles.size() - 1; i++) { cids +=
+		 * modles.get(i).getId() + ","; } notifyTask = new
+		 * GetCieclesNotifyTask(SharedUtils.getString( "exitTime",
+		 * DateUtils.phpTime(System.currentTimeMillis())), cids .substring(0,
+		 * cids.length() - 1)); notifyTask.setTaskCallBack(new
+		 * GetCirclesNotify() {
+		 * 
+		 * @Override public void getCirclesNotify(String result) { if (result ==
+		 * null) { return; } getPromptCount(result); } }); notifyTask.execute();
+		 * } });
+		 */
+		task.setTaskCallBack(new GetCircleList() {
 			@Override
-			public void getCircleList(List modles) {
+			public void getCircleList(List<Circle> circles) {
 				if (progressDialog != null) {
 					progressDialog.dismiss();
 				}
-				if (modles.size() == 0) {
+				if (circles.size() == 0) {
 					return;
 				}
-				modles.add(newCircle());
+				circles.add(getNewCircle());
 				listModle.clear();
-				listModle.addAll(modles);
+				listModle.addAll(circles);
 				adapter.setData(listModle);
 				String cids = "";
-				for (int i = 0; i < modles.size() - 1; i++) {
-					cids += modles.get(i).getId() + ",";
+				for (int i = 0; i < circles.size() - 1; i++) {
+					cids += circles.get(i).getId() + ",";
 				}
 				notifyTask = new GetCieclesNotifyTask(SharedUtils.getString(
 						"exitTime",
@@ -207,41 +251,8 @@ public class Home implements OnClickListener, OnRefreshComplete,
 				});
 				notifyTask.execute();
 			}
-		});*/
-		task.setTaskCallBack(new GetCircleList() {
-		@Override
-		public void getCircleList(List<Circle> circles) {
-			if (progressDialog != null) {
-				progressDialog.dismiss();
-			}
-			if (circles.size() == 0) {
-				return;
-			}
-			circles.add(getNewCircle());
-			listModle.clear();
-			listModle.addAll(circles);
-			adapter.setData(listModle);
-			String cids = "";
-			for (int i = 0; i < circles.size() - 1; i++) {
-				cids += circles.get(i).getId() + ",";
-			}
-			notifyTask = new GetCieclesNotifyTask(SharedUtils.getString(
-					"exitTime",
-					DateUtils.phpTime(System.currentTimeMillis())), cids
-					.substring(0, cids.length() - 1));
-			notifyTask.setTaskCallBack(new GetCirclesNotify() {
-				@Override
-				public void getCirclesNotify(String result) {
-					if (result == null) {
-						return;
-					}
-					getPromptCount(result);
-				}
-			});
-			notifyTask.execute();
-		}
 
-	});
+		});
 		task.execute();
 	}
 
@@ -296,9 +307,9 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * @param cid
 	 * @param cirName
 	 */
-	public void upDateCirName(String cid, String cirName) {
+	public void upDateCirName(int cid, String cirName) {
 		for (int i = 0; i < listModle.size(); i++) {
-			if (cid.equals(listModle.get(i).getId())) {
+			if (cid == listModle.get(i).getId()) {
 				listModle.get(i).setName(cirName);
 				adapter.setData(listModle);
 				break;
@@ -345,7 +356,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		listModle.get(position).setNewDynamicCount(newDynamicCount);
 		listModle.get(position).setNewGrowthCount(newGrowthCount);
 		listModle.get(position).setNewMemberCount(newMemberCount);
-		getLoaclPrompt(listModle.get(position).getId()+"", position);
+		getLoaclPrompt(listModle.get(position).getId() + "", position);
 
 	}
 
@@ -430,7 +441,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		int newCommentCount = 0;// 新评论数。
 		int promptCount = 0;
 		for (int i = 0; i < listModle.size() - 1; i++) {
-			String cid = listModle.get(i).getId()+"";
+			String cid = listModle.get(i).getId() + "";
 			promptCount = listModle.get(i).getPromptCount();
 			if (promptCount <= 0) {
 				continue;
@@ -464,7 +475,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * @param modle
 	 */
 	public void refreshCircleList() {
-		//getServerCircleLists();
+		// getServerCircleLists();
 		filldata();
 	}
 
@@ -565,7 +576,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 				it.putExtra("type", "home");// 从圈子列表界面跳转
 				it.putExtra("is_New", listModle.get(position).isNew());
 				it.putExtra("inviterID", listModle.get(position).getMyInvitor());
-				it.putExtra("cirID", listModle.get(position).getId());
+				it.putExtra("cirID", listModle.get(position).getId()+"");
 				it.putExtra("newGrowthCount", listModle.get(position)
 						.getNewGrowthCount());
 				it.putExtra("newChatCount", listModle.get(position)
@@ -576,8 +587,8 @@ public class Home implements OnClickListener, OnRefreshComplete,
 						.getNewCommentCount());
 				mcontext.startActivity(it);
 				Utils.leftOutRightIn(mcontext);
-				remorePromptCount(listModle.get(position).getId()+"", listModle
-						.get(position).getNewMemberCount(), 0);
+				remorePromptCount(listModle.get(position).getId() + "",
+						listModle.get(position).getNewMemberCount(), 0);
 
 			}
 		});

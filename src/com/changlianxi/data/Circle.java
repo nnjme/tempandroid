@@ -251,7 +251,7 @@ public class Circle extends AbstractData {
 					.getColumnIndex("description"));
 			int isNew = cursor.getInt(cursor.getColumnIndex("isNew"));
 			int creator = cursor.getInt(cursor.getColumnIndex("creator"));
-			int myInvitor = cursor.getInt(cursor.getColumnIndex("myinvitor"));
+			int myInvitor = cursor.getInt(cursor.getColumnIndex("myInvitor"));
 			String created = cursor.getString(cursor.getColumnIndex("created"));
 			String joinTime = cursor.getString(cursor
 					.getColumnIndex("joinTime"));
@@ -318,7 +318,7 @@ public class Circle extends AbstractData {
 		}
 
 		ContentValues cv = new ContentValues();
-		cv.put("cid", id);
+		cv.put("id", id);
 		cv.put("name", name);
 		cv.put("logo", logo);
 		cv.put("description", description);

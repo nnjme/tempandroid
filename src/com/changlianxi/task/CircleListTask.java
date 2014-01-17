@@ -1,6 +1,5 @@
 package com.changlianxi.task;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.changlianxi.activity.CLXApplication;
@@ -11,20 +10,11 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Utils;
 
-import android.content.ContentValues;
-import android.os.AsyncTask;
+public class CircleListTask extends BaseAsyncTask<List<Circle>, Void, RetError>{
 
-public class CircleListTask extends AsyncTask<List<Circle>, Void, RetError>{
-
-	private GetCircleList callBack;
 	private List<Circle> circles;
 	private CircleList circleList = null; // TODO
 	
-
-	public void setTaskCallBack(GetCircleList callBack) {
-		this.callBack = callBack;
-	}
-
 	// 可变长的输入参数，与AsyncTask.exucute()对应
 	@Override
 	protected RetError doInBackground(List<Circle>... params) {
@@ -35,7 +25,7 @@ public class CircleListTask extends AsyncTask<List<Circle>, Void, RetError>{
 		circleList = new CircleList(circles);
 		circleList.read(DBUtils.db);
 		RetError retError = circleList.refresh(CLXApplication.circleListLastRefreshTime);
-		circleList.write(DBUtils.db);
+		circleList.write(DBUtils.db);    
 		
 		
 //		// 你要执行的方法
@@ -86,32 +76,16 @@ public class CircleListTask extends AsyncTask<List<Circle>, Void, RetError>{
 
 	@Override
 	protected void onPostExecute(RetError result) {
-		
-		if(result == null)
-			return;
-		// 任务结束
-		if (result != RetError.NONE) {
-			Utils.showToast(ErrorCodeUtil.convertToChines(result.name()));
-			return;
-		}
 		CLXApplication.circleListLastRefreshTime = System.currentTimeMillis();
-//		callBack.getCircleList(serverListModle);
-		callBack.getCircleList(circles);
-		return;
+		super.onPostExecute(result);
 	}
 
-	@Override
-	protected void onPreExecute() {
-		// 任务启动，可以在这里显示一个对话框，这里简单处理
-		
-	}
-
-	/**
+/*	*//**
 	 * 插入数据库
 	 * 
 	 * @param name
 	 * @param num
-	 */
+	 *//*
 	private void insertData(String id, String name, String img, String status) {
 		ContentValues values = new ContentValues();
 		// 想该对象当中插入键值对，其中键是列名，值是希望插入到这一列的值，值必须和数据库当中的数据类型一致
@@ -121,10 +95,10 @@ public class CircleListTask extends AsyncTask<List<Circle>, Void, RetError>{
 		values.put("isNew", status);
 		DBUtils.insertData("circlelist", values);
 	}
-
-	public interface GetCircleList {
-		//void getCircleList(List<CircleModle> listModle);
-		void getCircleList(List<Circle> circles);
-	}
+*/
+//	public interface GetCircleList {
+//		//void getCircleList(List<CircleModle> listModle);
+//		void getCircleList(List<Circle> circles);
+//	}
 
 }
