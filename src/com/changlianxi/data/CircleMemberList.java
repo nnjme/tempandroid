@@ -177,8 +177,9 @@ public class CircleMemberList extends AbstractData {
 		}
 
 		// read last request times
-		Cursor cursor2 = db.query(Const.TIME_RECORD_TABLE_NAME, new String[] {
-				"subkey", "time" }, "key=?", new String[] { "c" + this.cid },
+		Cursor cursor2 = db.query(Const.TIME_RECORD_TABLE_NAME,
+				new String[] { "subkey", "time" }, "key=?",
+				new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid },
 				null, null, null);
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
@@ -213,10 +214,16 @@ public class CircleMemberList extends AbstractData {
 			// write last request time
 			ContentValues cv = new ContentValues();
 			cv.put("last_new_req_time", lastNewReqTime);
+			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
+					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
+			cv.clear();
 			cv.put("last_mod_req_time", lastModReqTime);
+			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
+					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
+			cv.clear();
 			cv.put("last_del_req_time", lastDelReqTime);
 			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { "c" + this.cid });
+					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
 
 			this.status = Status.OLD;
 		}

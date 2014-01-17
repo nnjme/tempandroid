@@ -82,9 +82,10 @@ public class CircleRole extends AbstractData {
 			this.cid = cid;
 			this.name = name;
 			this.count = count;
-			this.status = Status.OLD;
 		}
 		cursor.close();
+		
+		this.status = Status.OLD;
 	}
 
 	@Override

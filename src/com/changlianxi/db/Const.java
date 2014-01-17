@@ -27,7 +27,24 @@ public class Const {
 	public static final String TIME_RECORD_TABLE_NAME = "time_records";
 	public static final String TIME_RECORD_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
 			+ " key varchar, subkey varchar, time long";
+	public static final String TIME_RECORD_KEY_PREFIX_GROWTH = "growth";
+	public static final String TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER = "cm";
+	
+	
+	public static final String GROWTH_TABLE_NAME = "growths";
+	public static final String GROWTH_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " id integer, cid integer, publisher integer, content varchar, location varchar, happened integer,"
+			+ " published varchar, praiseCnt integer, commentCnt integer, isPraised integer,"
+			+ " lastCommentsReqTime long";
 
+	public static final String GROWTH_IMAGE_TABLE_NAME = "growth_images";
+	public static final String GROWTH_IMAGE_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " cid integer, gid integer, imgId integer, img varchar";	
+
+	public static final String GROWTH_COMMENT_TABLE_NAME = "growth_comments";
+	public static final String GROWTH_COMMENT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " gid integer, gcid integer, uid integer, replyid integer, content varchar, time varchar";	
+	
 	public static final String CHAT_TABLE_NAME = "chats";
 	public static final String CHAT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT," // TODO
 			+ " chatId varchar, circleId varchar, senderUid varchar, type varchar, content varchar, time integer";
