@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.data.Circle;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.CircleModle;
@@ -33,7 +34,9 @@ import com.changlianxi.modle.MemberInfoModle;
 import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.modle.SmsPrevieModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
+import com.changlianxi.task.BaseAsyncTask;
 import com.changlianxi.task.CircleLogoAsyncTask;
+import com.changlianxi.task.CreateNewCircleTask;
 import com.changlianxi.task.IinviteUserTask;
 import com.changlianxi.task.IinviteUserTask.IinviteUser;
 import com.changlianxi.task.PostAsyncTask;
@@ -334,13 +337,31 @@ public class CreateCircleActivity extends BaseActivity implements
 				Utils.showToast("请输入圈子名称");
 				return;
 			}
-			new CreateCirTask().execute();
+			createNewCirTask();
 			break;
 		default:
 			break;
 		}
 	}
 
+	private void createNewCirTask() {
+//		progressDialog = DialogUtil.getWaitDialog(
+//				CreateCircleActivity.this, "请稍后");
+//		progressDialog.show();
+//		// TODO Auto-generated method stub
+//		Circle circle = new Circle(0, editCirName.getText().toString(), description.getText().toString(), cirIconPath);
+//		CreateNewCircleTask circleTask = new CreateNewCircleTask();
+//		circleTask.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
+//
+//			@Override
+//			public void taskFinish(RetError result) {
+//				// TODO Auto-generated method stub
+//				progressDialog.dismiss();
+//			}
+//		});
+//		circleTask.executeWithCheckNet(circle);
+		new CreateCirTask().execute();
+	}
 	/**
 	 * 上传图片返回结果处理 包括圈子logo以及 个人用户头像
 	 */

@@ -348,10 +348,14 @@ public class SelectContactsActivity extends BaseActivity implements
 			break;
 		case R.id.btnfinish:
 			List<SmsPrevieModle> Modles = new ArrayList<SmsPrevieModle>();
-			for (int i = 0; i < listModle.size(); i++) {
-				if (!listModle.get(i).isChecked()) {
-					continue;
-				}
+//			for (int i = 0; i < listModle.size(); i++) {
+//				if (!listModle.get(i).isChecked()) {
+//					continue;
+//				}
+				for (int i = 0; i < searchListModles.size(); i++) {
+					if (!searchListModles.get(i).isChecked()) {
+						continue;
+					}
 				ContactModle modle = (ContactModle) adapter.getItem(i);
 				String name = modle.getName();
 				String num = modle.getNum();
