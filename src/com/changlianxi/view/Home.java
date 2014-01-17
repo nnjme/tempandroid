@@ -345,7 +345,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		listModle.get(position).setNewDynamicCount(newDynamicCount);
 		listModle.get(position).setNewGrowthCount(newGrowthCount);
 		listModle.get(position).setNewMemberCount(newMemberCount);
-		getLoaclPrompt(listModle.get(position).getId(), position);
+		getLoaclPrompt(listModle.get(position).getId()+"", position);
 
 	}
 
@@ -430,7 +430,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 		int newCommentCount = 0;// 新评论数。
 		int promptCount = 0;
 		for (int i = 0; i < listModle.size() - 1; i++) {
-			String cid = listModle.get(i).getId();
+			String cid = listModle.get(i).getId()+"";
 			promptCount = listModle.get(i).getPromptCount();
 			if (promptCount <= 0) {
 				continue;
@@ -576,7 +576,7 @@ public class Home implements OnClickListener, OnRefreshComplete,
 						.getNewCommentCount());
 				mcontext.startActivity(it);
 				Utils.leftOutRightIn(mcontext);
-				remorePromptCount(listModle.get(position).getId(), listModle
+				remorePromptCount(listModle.get(position).getId()+"", listModle
 						.get(position).getNewMemberCount(), 0);
 
 			}
@@ -657,17 +657,8 @@ public class Home implements OnClickListener, OnRefreshComplete,
 	 * 
 	 * @return
 	 */
-	@Deprecated
-	private CircleModle newCircle() {
-		//CircleModle modle = new CircleModle();
-		CircleModle modle = new Circle("0");
-		modle.setCirIcon("addroot");
-		modle.setNew(false);
-		modle.setCirName("新建圈子");
-		return modle;
-	}
 	private Circle getNewCircle() {
-		Circle circle = new Circle("0");
+		Circle circle = new Circle(0);
 		circle.setLogo("addroot");
 		circle.setNew(false);
 		circle.setName("新建圈子");

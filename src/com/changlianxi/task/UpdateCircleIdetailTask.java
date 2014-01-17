@@ -3,7 +3,7 @@ package com.changlianxi.task;
 import android.os.AsyncTask;
 
 import com.changlianxi.data.Circle;
-import com.changlianxi.data.request.RetError;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Utils;

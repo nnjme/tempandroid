@@ -2,6 +2,7 @@ package com.changlianxi.data.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,7 +16,7 @@ import com.changlianxi.util.DateUtils;
 public class ChatListParser implements IParser {
 
 	@Override
-	public Result parse(JSONObject jsonObj) throws Exception {
+	public Result parse(Map<String, Object> params, JSONObject jsonObj) throws Exception {
 		if (jsonObj == null) {
 			return Result.defContentErrorResult();
 		}

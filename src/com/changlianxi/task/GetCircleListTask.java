@@ -17,13 +17,11 @@ import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.data.Circle;
 import com.changlianxi.data.CircleList;
 import com.changlianxi.data.IData;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.data.parser.CircleListParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
-import com.changlianxi.data.request.RetError;
-import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.modle.CircleModle;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
@@ -38,7 +36,7 @@ import com.changlianxi.util.Utils;
 public class GetCircleListTask extends AsyncTask<String, Integer, RetError> {
 	private GetCircleList callBack;
 	private String errorCode;
-	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
+	private List<Circle> serverListModle = new ArrayList<Circle>();
 	private String rt = "";
 	private List<Circle> circles = new ArrayList<Circle>();
 	private CircleList cl = null; // TODO

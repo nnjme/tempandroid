@@ -2,6 +2,7 @@ package com.changlianxi.data.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +15,7 @@ import com.changlianxi.data.request.Result;
 public class CircleListParser implements IParser {
 
 	@Override
-	public Result parse(JSONObject jsonObj) throws Exception {
+	public Result parse(Map<String, Object> params, JSONObject jsonObj) throws Exception {
 		if (jsonObj == null) {
 			return Result.defContentErrorResult();
 		}
@@ -26,27 +27,25 @@ public class CircleListParser implements IParser {
 		List<Circle> circles = new ArrayList<Circle>();
 		for (int i = 0; i < jsonArr.length(); i++) {
 			JSONObject obj = (JSONObject) jsonArr.opt(i);
-			String id = obj.getString("id");
+			int id = obj.getInt("id");
 			String logo = obj.getString("logo");
 			String name = obj.getString("name");
 			String isNew = obj.getString("is_new");
-			String myInvitor = obj.getString("inviter"); 
+			int myInvitor = obj.getInt("inviter"); 
 			String editState = obj.getString("edit_state");
 
 			Circle c = new Circle(id, name);
 			c.setLogo(logo);
 			c.setMyInvitor(myInvitor);
 			c.setNew(isNew.equals("1"));
-			c.setStatus(Status.OLD);
 			if ("mod".equals(editState)) {
 				c.setStatus(Status.UPDATE);
 			} else if ("del".equals(editState)) {
 				c.setStatus(Status.DEL);
-			} else if("new".equals(editState)){
+			} else {
 				c.setStatus(Status.NEW);
 			}
 			circles.add(c);
-			// else : others status is new
 		}
 
 		Result ret = new Result();

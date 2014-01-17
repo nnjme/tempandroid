@@ -310,7 +310,7 @@ public class CreateCircleActivity extends BaseActivity implements
 		values.put("cirName", editCirName.getText().toString());
 		values.put("cirImg", cirIconPath);
 		DBUtils.insertData("circlelist", values);
-		Circle modle = new Circle(cid);
+		Circle modle = new Circle(Integer.parseInt(cid));
 		modle.setCirIcon(cirIconPath);
 		modle.setCirID(cid);
 		modle.setCirName(editCirName.getText().toString());

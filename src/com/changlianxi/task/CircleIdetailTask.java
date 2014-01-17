@@ -1,23 +1,11 @@
 package com.changlianxi.task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.os.AsyncTask;
 
 import com.changlianxi.data.Circle;
-import com.changlianxi.data.request.RetError;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.modle.CircleIdetailModle;
-import com.changlianxi.modle.CircleRoles;
 import com.changlianxi.util.ErrorCodeUtil;
-import com.changlianxi.util.HttpUrlHelper;
-import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 
 /**
@@ -27,8 +15,6 @@ import com.changlianxi.util.Utils;
  */
 public class CircleIdetailTask extends AsyncTask<Void, Integer, RetError> {
 	private GetCircleIdetail callBack;
-	private CircleIdetailModle modle;
-	private String cid;
 	private String errorCode;
 	private Circle circle;
 

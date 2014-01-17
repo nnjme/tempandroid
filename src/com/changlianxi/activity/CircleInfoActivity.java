@@ -48,7 +48,7 @@ public class CircleInfoActivity extends BaseActivity implements
 	private ImageView edit;
 	private Button btnDissolve;// 解散圈子
 	private Button btnExit;
-	private String cid;
+	private int cid;
 	private Dialog pd;
 	private int type;// 1退出圈子 2 解散圈子
 	private DisplayImageOptions options;
@@ -60,10 +60,10 @@ public class CircleInfoActivity extends BaseActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_circle_info);
-		cid = getIntent().getStringExtra("cid");
+		cid = getIntent().getIntExtra("cid",0);
 		findViewById();
 		setListener();
-		modle = DBUtils.getCircleDetail(cid);
+		//modle = DBUtils.getCircleDetail(cid);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
 		if (!Utils.isNetworkAvailable()) {
@@ -242,7 +242,7 @@ public class CircleInfoActivity extends BaseActivity implements
 		if (modle == null) {
 			return;
 		}
-		isSelf(modle.getCreator());
+		isSelf(modle.getCreator()+"");
 		setvalue(modle.getName(), modle.getLogo(), modle.getDescription(),
 				modle.getTotalCnt() + "", modle.getVerifiedCnt() + "");
 	}

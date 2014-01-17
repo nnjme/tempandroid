@@ -6,10 +6,8 @@ import java.util.List;
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.data.Circle;
 import com.changlianxi.data.CircleList;
-import com.changlianxi.data.request.RetError;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
-import com.changlianxi.modle.CircleModle;
-import com.changlianxi.task.GetCircleListTask.GetCircleList;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.Utils;
 
@@ -19,13 +17,9 @@ import android.os.AsyncTask;
 public class CircleListTask extends AsyncTask<List<Circle>, Void, RetError>{
 
 	private GetCircleList callBack;
-	private String errorCode;
-	private List<CircleModle> serverListModle = new ArrayList<CircleModle>();
-	private String rt = "";
 	private List<Circle> circles;
 	private CircleList circleList = null; // TODO
 	
-	private String url = "/circles/ilist/";
 
 	public void setTaskCallBack(GetCircleList callBack) {
 		this.callBack = callBack;

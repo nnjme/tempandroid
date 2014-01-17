@@ -1,5 +1,6 @@
 package com.changlianxi.data.request;
 
+
 public class SimpleResult extends Result {
 
 	public SimpleResult() {

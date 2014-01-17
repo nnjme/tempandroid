@@ -1,6 +1,7 @@
 package com.changlianxi.data.request;
 
 
+
 public class StringResult extends Result {
 
 	private String str = "";

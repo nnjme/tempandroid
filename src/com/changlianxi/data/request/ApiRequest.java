@@ -6,6 +6,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.changlianxi.data.Global;
+import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.IParser;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.HttpUrlHelper;
@@ -15,11 +16,10 @@ public class ApiRequest {
 	public static Result request(String url, Map<String, Object> params,
 			IParser parser) {
 		String httpResult = HttpUrlHelper.postData(params, url); // TODO network
-		//--------------------
-		return checkRet(parser, httpResult);
+		return checkRet(parser, httpResult,params);
 	}
 
-	private static Result checkRet(IParser parser, String httpResult) {
+	private static Result checkRet(IParser parser, String httpResult,Map<String, Object> params) {
 		try {
 			JSONObject jsonObj = new JSONObject(httpResult);
 			String rt = jsonObj.getString("rt");
@@ -32,7 +32,7 @@ public class ApiRequest {
 				return ret;
 			}
 
-			Result ret = parser.parse(jsonObj);
+			Result ret = parser.parse(params, jsonObj);
 			return ret;
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO logo
@@ -58,7 +58,7 @@ public class ApiRequest {
 		params.put("uid", Global.getUid());
 		params.put("token", Global.getUserToken());
 		String ret = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl + url, params, file, specialKey);
-		return checkRet(parser, ret);
+		return checkRet(parser, ret,params);
 	}
 
 }

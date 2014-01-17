@@ -57,7 +57,7 @@ public class EditCircleActivity extends BaseActivity implements
 	private TextView titleName;
 	private EditText circleDescription;// 圈子描述
 	private ImageView circleLogo;
-	private String cid;
+	private int cid;
 	private Dialog pd;
 	private String logoPath = "";
 	private ImageView back;
@@ -74,7 +74,7 @@ public class EditCircleActivity extends BaseActivity implements
 		setContentView(R.layout.activity_edit_circle);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
-		cid = getIntent().getStringExtra("cid");
+		cid = getIntent().getIntExtra("cid",0);
 		circle = (Circle) getIntent().getSerializableExtra("circle");
 		findViewByID();
 		setListener();
@@ -302,7 +302,7 @@ public class EditCircleActivity extends BaseActivity implements
 				values.put("cirIcon", logoPath);
 			}
 			DBUtils.updateInfo(Constants.CIRCLEDETAIL, values, "cid=?",
-					new String[] { cid });
+					new String[] { cid+"" });
 			if (logoPath.equals("")) {
 				pd.dismiss();
 				Utils.showToast("修改成功");

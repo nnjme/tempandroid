@@ -10,16 +10,39 @@ import java.util.Set;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.enums.RetError;
+import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.CircleListParser;
 import com.changlianxi.data.parser.IParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
-import com.changlianxi.data.request.RetError;
-import com.changlianxi.data.request.RetStatus;
 import com.changlianxi.db.Const;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.util.SharedUtils;
 
+/**
+ * Circle List of a user
+ * 
+ * Usage:
+ * 
+ * get a user's circle list
+ *     // new CircleList cl
+ *     cl.read();
+ *     cl.getCircles();
+ * 
+ * refresh a user's circle list
+ *     // new CircleList cl
+ *     cl.read();
+ *     ...
+ *     cl.refresh(); // get new and mod and del circles
+ *     
+ *     ...
+ *     cl.write();
+ *     
+ *     
+ * @author jieme
+ *
+ */
 public class CircleList extends AbstractData {
 	public final static String LIST_API = "/circles/ilist"; // /circles/ilist/32
 	private List<Circle> circles = null;
@@ -47,11 +70,11 @@ public class CircleList extends AbstractData {
 		// read ids
 		Cursor cursor = db.query(Const.CIRCLE_TABLE_NAME,
 				new String[] { "id" }, null, null, null, null, null);
-		List<String> cids = new ArrayList<String>();
+		List<Integer> cids = new ArrayList<Integer>();
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			for (int i = 0; i < cursor.getCount(); i++) {
-				String id = cursor.getString(cursor.getColumnIndex("id"));
+				int id = cursor.getInt(cursor.getColumnIndex("id"));
 				cids.add(id);
 				cursor.moveToNext();
 			}
@@ -59,7 +82,7 @@ public class CircleList extends AbstractData {
 		cursor.close();
 
 		// read one by one
-		for (String cid : cids) {
+		for (int cid : cids) {
 			Circle c = new Circle(cid);
 			c.read(db);
 			this.circles.add(c);
@@ -92,17 +115,17 @@ public class CircleList extends AbstractData {
 		}
 
 		// old cids
-		Set<String> oldCids = new HashSet<String>();
+		Set<Integer> oldCids = new HashSet<Integer>();
 		for (Circle c : this.circles) {
 			oldCids.add(c.getId());
 		}
 
 		// update/del circles
 		for (Circle ac : another.circles) {
-			String acId = ac.getId();
+			int acId = ac.getId();
 			if (oldCids.contains(acId)) {
 				for (Circle c : this.circles) {
-					if (c.getId().equals(acId)) {
+					if (c.getId()==(acId)) {
 						if (ac.getStatus() != Status.DEL) {
 							c.updateForListChange(ac);
 						} else {
@@ -115,7 +138,7 @@ public class CircleList extends AbstractData {
 
 		// new circles
 		for (Circle ac : another.circles) {
-			String acId = ac.getId();
+			int acId = ac.getId();
 			if (!oldCids.contains(acId)) {
 				this.circles.add(ac);
 			}
@@ -127,7 +150,7 @@ public class CircleList extends AbstractData {
 	/**
 	 * refresh new circles list from server
 	 */
-	public RetError refresh(String id) {
+	public RetError refresh() {
 		return refresh(0);
 	}
 

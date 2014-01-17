@@ -7,42 +7,42 @@ import android.database.sqlite.SQLiteDatabase;
 import com.changlianxi.db.Const;
 
 public class CircleRole extends AbstractData {
-	private String id = "0";
-	private String cid = "0";
+	private int id = 0;
+	private int cid = 0;
 	private String name = "";
 	private int count = 0;
 
-	public CircleRole(String cid) {
-		this(cid, "0");
+	public CircleRole(int cid) {
+		this(cid, 0);
 	}
 
-	public CircleRole(String cid, String id) {
+	public CircleRole(int cid, int id) {
 		this(cid, id, "");
 	}
 
-	public CircleRole(String cid, String id, String name) {
+	public CircleRole(int cid, int id, String name) {
 		this(cid, id, name, 0);
 	}
 
-	public CircleRole(String cid, String id, String name, int count) {
+	public CircleRole(int cid, int id, String name, int count) {
 		this.id = id;
 		this.name = name;
 		this.count = count;
 	}
 
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
-	public String getCid() {
+	public int getCid() {
 		return cid;
 	}
 
-	public void setCid(String cid) {
+	public void setCid(int cid) {
 		this.cid = cid;
 	}
 
@@ -71,17 +71,15 @@ public class CircleRole extends AbstractData {
 	@Override
 	public void read(SQLiteDatabase db) {
 		Cursor cursor = db.query(Const.CIRCLE_ROLE_TABLE_NAME, new String[] {
-				"cid", "id", "name", "count" }, "id=?", new String[] { this.id },
+				"cid", "name", "count" }, "id=?", new String[] { this.id + "" },
 				null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
-			String cid = cursor.getString(cursor.getColumnIndex("cid"));
-			String id = cursor.getString(cursor.getColumnIndex("id"));
+			int cid = cursor.getInt(cursor.getColumnIndex("cid"));
 			String name = cursor.getString(cursor.getColumnIndex("name"));
 			int count = cursor.getInt(cursor.getColumnIndex("count"));
 
 			this.cid = cid;
-			this.id = id;
 			this.name = name;
 			this.count = count;
 			this.status = Status.OLD;
@@ -96,7 +94,7 @@ public class CircleRole extends AbstractData {
 			return;
 		}
 		if (this.status == Status.DEL) {
-			db.delete(dbName, "id=?", new String[] { id });
+			db.delete(dbName, "id=?", new String[] { id + ""});
 			return;
 		}
 
@@ -109,7 +107,7 @@ public class CircleRole extends AbstractData {
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
 		} else if (this.status == Status.UPDATE) {
-			db.update(dbName, cv, "id=?", new String[] { id });
+			db.update(dbName, cv, "id=?", new String[] { id + ""});
 		}
 		this.status = Status.OLD;
 	}
@@ -125,11 +123,11 @@ public class CircleRole extends AbstractData {
 
 	public void update(CircleRole another, boolean changeCount) {
 		boolean isChange = false;
-		if (!this.id.equals(another.id)) {
+		if (this.id != another.id) {
 			this.id = another.id;
 			isChange = true;
 		}
-		if (!this.cid.equals(another.cid)) {
+		if (this.cid != another.cid) {
 			this.cid = another.cid;
 			isChange = true;
 		}
