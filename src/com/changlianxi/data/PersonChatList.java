@@ -13,57 +13,56 @@ import android.database.sqlite.SQLiteDatabase;
 import com.changlianxi.data.enums.ChatType;
 import com.changlianxi.data.enums.RetError;
 import com.changlianxi.data.enums.RetStatus;
-import com.changlianxi.data.parser.CircleChatListParser;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.data.parser.PersonChatListParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.db.Const;
 import com.changlianxi.util.DateUtils;
 
 /**
- * Chat List of a circle
+ * Person's Chat List
  * 
- * Usage:
+ * Usage: 
  * 
- * get a circle's chat list
- *     // new CircleChatList cl
- *     cl.read();
- *     cl.getChats();
+ * get chat list:
+ *     // new PersonChatList pcl
+ *     pcl.read();
+ *     pcl.getChats();
  * 
- * refresh a circle's chat list
- *     // new CircleChatList cl
- *     cl.read();
+ * refresh chat list:
+ *     // new PersonChatList pcl
+ *     pcl.read();
  *     ...
- *     cl.refresh(); // get new chats
+ *     pcl.refresh(); // get new chats
  *     
  *     ...
- *     cl.write();
+ *     pcl.write();
  *     
  *     
  * @author jieme
  *
  */
-public class CircleChatList extends AbstractData {
-	public final static String LIST_API = "chats/ilist";
+public class PersonChatList extends AbstractData {
+	public final static String LIST_API = "messages/imessages";
 
-	private int cid = 0;
+	private int partner = 0;
 	private long startTime = 0L; // data start time, in milliseconds
 	private long endTime = 0L; // data end time
 	private long lastReqTime = 0L; // last request time of chat data // TODO need this?
 	private int total = 0;
+	private List<PersonChat> chats = new ArrayList<PersonChat>();
 
-	private List<CircleChat> chats = null;
-
-	public CircleChatList(int cid) {
-		this.cid = cid;
+	public PersonChatList(int partner) {
+		this.partner = partner;
 	}
 
-	public int getCid() {
-		return cid;
+	public int getPartner() {
+		return partner;
 	}
 
-	public void setCid(int cid) {
-		this.cid = cid;
+	public void setPartner(int partner) {
+		this.partner = partner;
 	}
 
 	public long getStartTime() {
@@ -98,11 +97,11 @@ public class CircleChatList extends AbstractData {
 		this.total = total;
 	}
 
-	public List<CircleChat> getChats() {
+	public List<PersonChat> getChats() {
 		return chats;
 	}
 
-	public void setChats(List<CircleChat> chats) {
+	public void setChats(List<PersonChat> chats) {
 		this.chats = chats;
 	}
 
@@ -110,26 +109,27 @@ public class CircleChatList extends AbstractData {
 	public void read(SQLiteDatabase db) { // TODO sort
 		super.read(db);
 		if (this.chats == null) {
-			this.chats = new ArrayList<CircleChat>();
+			this.chats = new ArrayList<PersonChat>();
 		} else {
 			this.chats.clear();
 		}
 
-		Cursor cursor = db.query(Const.CIRCLE_CHAT_TABLE_NAME, new String[] {
-				"chatId", "sender", "type", "content", "time" }, "cid=?",
-				new String[] { this.cid + "" }, null, null, null);
+		Cursor cursor = db.query(Const.PERSON_CHAT_TABLE_NAME, new String[] {
+				"chatId", "cid", "sender", "type", "content", "time" }, "partner=?",
+				new String[] { this.partner + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
 			long start = 0, end = 0;
 			cursor.moveToFirst();
 			for (int i = 0; i < cursor.getCount(); i++) {
 				int chatId = cursor.getInt(cursor.getColumnIndex("chatId"));
+				int cid = cursor.getInt(cursor.getColumnIndex("cid"));
 				int sender = cursor.getInt(cursor.getColumnIndex("sender"));
 				String type = cursor.getString(cursor.getColumnIndex("type"));
 				String content = cursor.getString(cursor
 						.getColumnIndex("content"));
 				String time = cursor.getString(cursor.getColumnIndex("time"));
 
-				CircleChat chat = new CircleChat(cid, chatId, sender, content);
+				PersonChat chat = new PersonChat(cid, partner, chatId, sender, content);
 				chat.setType(ChatType.convert(type));
 				chat.setTime(time);
 				chat.setStatus(Status.OLD);
@@ -150,14 +150,14 @@ public class CircleChatList extends AbstractData {
 		cursor.close();
 
 		// read last request times
-		Cursor cursor2 = db.query(Const.TIME_RECORD_TABLE_NAME,
-				new String[] { "time" }, "key=? and subkey=?", new String[] {
-						Const.TIME_RECORD_KEY_PREFIX_CIRCLECHAT + this.cid,
-						"last_req_time" }, null, null, null);
+		Cursor cursor2 = db.query(Const.CHAT_PARTNER_TABLE_NAME,
+				new String[] { "lastChatsReqTime" }, "partner=?",
+				new String[] { this.partner + "" }, null, null, null);
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
-			long time = cursor2.getLong(cursor.getColumnIndex("time"));
-			this.lastReqTime = time;
+			long lastReqTime = cursor2.getLong(cursor
+					.getColumnIndex("lastChatsReqTime"));
+			this.lastReqTime = lastReqTime;
 		}
 		cursor2.close();
 
@@ -168,16 +168,15 @@ public class CircleChatList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
-			for (CircleChat chat : chats) {
+			for (PersonChat chat : chats) {
 				chat.write(db);
 			}
 
 			// write last request time
 			ContentValues cv = new ContentValues();
-			cv.put("last_req_time", lastReqTime);
-			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLECHAT
-							+ this.cid });
+			cv.put("lastChatsReqTime", lastReqTime);
+			db.update(Const.CHAT_PARTNER_TABLE_NAME, cv, "partner=?",
+					new String[] { this.partner + "" });
 
 			this.status = Status.OLD;
 		}
@@ -186,11 +185,11 @@ public class CircleChatList extends AbstractData {
 	@SuppressLint("UseSparseArrays")
 	@Override
 	public void update(IData data) {
-		if (!(data instanceof CircleChatList)) {
+		if (!(data instanceof PersonChatList)) {
 			return;
 		}
 
-		CircleChatList another = (CircleChatList) data;
+		PersonChatList another = (PersonChatList) data;
 		if (another.chats.size() == 0) {
 			return;
 		}
@@ -201,15 +200,15 @@ public class CircleChatList extends AbstractData {
 		}
 
 		// old ones
-		Map<Integer, CircleChat> olds = new HashMap<Integer, CircleChat>();
-		for (CircleChat chat : this.chats) {
+		Map<Integer, PersonChat> olds = new HashMap<Integer, PersonChat>();
+		for (PersonChat chat : this.chats) {
 			olds.put(chat.getChatId(), chat);
 		}
 
 		// join new ones
 		boolean canJoin = false;
-		Map<Integer, CircleChat> news = new HashMap<Integer, CircleChat>();
-		for (CircleChat chat : another.chats) {
+		Map<Integer, PersonChat> news = new HashMap<Integer, PersonChat>();
+		for (PersonChat chat : another.chats) {
 			int chatId = chat.getChatId();
 			news.put(chatId, chat);
 
@@ -262,9 +261,9 @@ public class CircleChatList extends AbstractData {
 	 * @return
 	 */
 	public RetError refresh(long startTime, long endTime) {
-		IParser parser = new CircleChatListParser();
+		IParser parser = new PersonChatListParser();
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("cid", cid);
+		params.put("ruid", partner);
 		if (startTime > 0) {
 			params.put("start", startTime);
 		}
@@ -272,17 +271,17 @@ public class CircleChatList extends AbstractData {
 			params.put("end", endTime);
 		}
 
-		Result ret = ApiRequest.requestWithToken(CircleChatList.LIST_API,
+		Result ret = ApiRequest.requestWithToken(PersonChatList.LIST_API,
 				params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
-			update((CircleChatList) ret.getData());
+			update((PersonChatList) ret.getData());
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
 		}
 	}
 
-	public void insert(CircleChat chat) { // TODO how to 
+	public void insert(PersonChat chat) { // TODO how to?
 		long chatTime = DateUtils.convertToDate(chat.getTime());
 		if (chatTime >= this.endTime) {
 			this.endTime = chatTime;

@@ -8,13 +8,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.changlianxi.data.AbstractData.Status;
-import com.changlianxi.data.CircleChat;
-import com.changlianxi.data.CircleChatList;
+import com.changlianxi.data.PersonChat;
+import com.changlianxi.data.PersonChatList;
 import com.changlianxi.data.enums.ChatType;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.util.DateUtils;
 
-public class CircleChatListParser implements IParser {
+public class PersonChatListParser implements IParser {
 
 	@Override
 	public Result parse(Map<String, Object> params, JSONObject jsonObj) throws Exception {
@@ -22,27 +22,30 @@ public class CircleChatListParser implements IParser {
 			return Result.defContentErrorResult();
 		}
 
-		int cid = jsonObj.getInt("cid");
+		int partner = jsonObj.getInt("ruid");
 		int total = jsonObj.getInt("total");
 		int requestTime = jsonObj.getInt("current");
-		JSONArray jsonArr = jsonObj.getJSONArray("chats");
-		if (jsonArr == null || cid == 0) {
+		JSONArray jsonArr = jsonObj.getJSONArray("messages");
+		if (jsonArr == null || partner == 0) {
 			return Result.defContentErrorResult();
 		}
 
-		List<CircleChat> chats = new ArrayList<CircleChat>();
+		List<PersonChat> chats = new ArrayList<PersonChat>();
 		long start = 0L, end = 0L;
 		for (int i = jsonArr.length() - 1; i > 0; i--) {
 			JSONObject obj = (JSONObject) jsonArr.opt(i);
 			int chatId = obj.getInt("id");
+			int cid = obj.getInt("cid");
+			int sender = obj.getInt("uid");
 			String type = obj.getString("type");
-			int sender = obj.getInt("sender");
 			String content = obj.getString("content");
 			String time = obj.getString("time");
+			int isRead = obj.getInt("isread");
 
-			CircleChat chat = new CircleChat(cid, chatId, sender, content);
+			PersonChat chat = new PersonChat(cid, partner, chatId, sender, content);
 			chat.setType(ChatType.convert(type));
 			chat.setTime(time);
+			chat.setRead(isRead > 0);
 			chat.setStatus(Status.NEW);
 			
 			chats.add(chat);
@@ -55,7 +58,7 @@ public class CircleChatListParser implements IParser {
 			}
 		}
 		
-		CircleChatList cl = new CircleChatList(cid);
+		PersonChatList cl = new PersonChatList(partner);
 		cl.setChats(chats);
 		cl.setLastReqTime(requestTime);
 		cl.setTotal(total);

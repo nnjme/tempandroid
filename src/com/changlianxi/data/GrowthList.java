@@ -144,22 +144,16 @@ public class GrowthList extends AbstractData {
 		}
 
 		// read last request times
-		Cursor cursor2 = db.query(Const.TIME_RECORD_TABLE_NAME, new String[] {
-				"subkey", "time" }, "key=?",
-				new String[] { Const.TIME_RECORD_KEY_PREFIX_GROWTH + this.cid },
-				null, null, null);
+		Cursor cursor2 = db.query(Const.TIME_RECORD_TABLE_NAME,
+				new String[] { "time" }, "key=? and subkey=?", new String[] {
+						Const.TIME_RECORD_KEY_PREFIX_GROWTH + this.cid,
+						"last_req_time" }, null, null, null);
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
-			for (int i = 0; i < cursor2.getCount(); i++) {
-				String subkey = cursor2.getString(cursor
-						.getColumnIndex("subkey"));
-				long time = cursor2.getLong(cursor.getColumnIndex("time"));
-				if ("last_req_time".equals(subkey)) {
-					this.lastReqTime = time;
-				}
+			long time = cursor2.getLong(cursor.getColumnIndex("time"));
+			this.lastReqTime = time;
 
-				cursor2.moveToNext();
-			}
+			cursor2.moveToNext();
 		}
 		cursor2.close();
 

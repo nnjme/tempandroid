@@ -35,7 +35,7 @@ public class CircleChatDetailParser implements IParser {
 		String time = jsonChat.getString("time");
 		ChatType cType = ChatType.convert(type);
 
-		CircleChat chat = new CircleChat(cmid, cid, sender, content);
+		CircleChat chat = new CircleChat(cid, cmid, sender, content);
 		chat.setTime(time);
 		chat.setType(cType);
 		chat.setStatus(Status.NEW);

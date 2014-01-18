@@ -10,16 +10,14 @@ import android.database.sqlite.SQLiteDatabase;
 import com.changlianxi.data.enums.ChatType;
 import com.changlianxi.data.enums.RetError;
 import com.changlianxi.data.enums.RetStatus;
-import com.changlianxi.data.parser.CircleChatDetailParser;
-import com.changlianxi.data.parser.CircleChatParser;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.data.parser.PersonChatParser;
 import com.changlianxi.data.request.ApiRequest;
-import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
 
 /**
- * Circle Chat
+ * Person Chat
  * 
  * Usage:
  * 
@@ -27,13 +25,6 @@ import com.changlianxi.db.Const;
  *     // new chat
  *     chat.read();
  *     // chat.get***()
- * 
- * refresh a chat's detail info:
- *     // new chat
- *     chat.read()
- *     chat.refresh(); // request and merge with local data
- *     chat.write();
- *     
  * 
  * send image:
  *    // new chat
@@ -46,28 +37,30 @@ import com.changlianxi.db.Const;
  *    // ...set chat content...
  *    chat.sendText();
  *    chat.write();
- *    
- *    
  * 
  * @author nnjme
  * 
  */
-public class CircleChat extends AbstractChat {
-	public final static String SEND_TEXT_API = "chats/isend";
-	public final static String SEND_IMAGE_API = "chats/isendImg";
-	public final static String DETAIL_API = "chats/idetail";
+public class PersonChat extends AbstractChat {
+	public final static String SEND_TEXT_API = "messages/isend";
+	public final static String SEND_IMAGE_API = "messages/isendImg";
 
 	private int cid = 0; // circle id
-	private int sender = 0; // sender uid
+	private int partner = 0; // the other user id, who i chat with
+	private int sender = 0; // sender uid, me or the partner
+	private boolean isRead = true;
 
-	public CircleChat(int cid, int chatId) {
+	public PersonChat(int cid, int partner, int chatId) {
 		super(chatId);
 		this.cid = cid;
+		this.partner = partner;
 	}
 
-	public CircleChat(int cid, int chatId, int sender, String content) {
+	public PersonChat(int cid, int partner, int chatId, int sender,
+			String content) {
 		super(chatId);
 		this.cid = cid;
+		this.partner = partner;
 		this.sender = sender;
 		this.content = content;
 	}
@@ -80,6 +73,14 @@ public class CircleChat extends AbstractChat {
 		this.cid = cid;
 	}
 
+	public int getPartner() {
+		return partner;
+	}
+
+	public void setPartner(int partner) {
+		this.partner = partner;
+	}
+
 	public int getSender() {
 		return sender;
 	}
@@ -88,32 +89,45 @@ public class CircleChat extends AbstractChat {
 		this.sender = sender;
 	}
 
+	public boolean isRead() {
+		return isRead;
+	}
+
+	public void setRead(boolean isRead) {
+		this.isRead = isRead;
+	}
+
 	@Override
 	public String toString() {
-		return "CircleChat [cid=" + cid + ", sender=" + sender + ", chatId="
-				+ chatId + ", type=" + type + ", content=" + content
-				+ ", time=" + time + "]";
+		return "PersonChat [cid=" + cid + ", partner=" + partner + ", sender="
+				+ sender + ", chatId=" + chatId + ", type=" + type
+				+ ", content=" + content + ", time=" + time + "]";
 	}
 
 	@Override
 	public void read(SQLiteDatabase db) {
 		super.read(db);
-		Cursor cursor = db.query(Const.CIRCLE_CHAT_TABLE_NAME, new String[] {
-				"cid", "sender", "type", "content", "time" }, "chatId=?",
+		Cursor cursor = db.query(Const.PERSON_CHAT_TABLE_NAME,
+				new String[] { "cid", "partner", "sender", "type", "content",
+						"time", "isRead" }, "chatId=?",
 				new String[] { this.chatId + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			int cid = cursor.getInt(cursor.getColumnIndex("cid"));
+			int partner = cursor.getInt(cursor.getColumnIndex("partner"));
 			int sender = cursor.getInt(cursor.getColumnIndex("sender"));
 			String type = cursor.getString(cursor.getColumnIndex("type"));
 			String content = cursor.getString(cursor.getColumnIndex("content"));
 			String time = cursor.getString(cursor.getColumnIndex("time"));
+			int isRead = cursor.getInt(cursor.getColumnIndex("isRead"));
 
 			this.cid = cid;
+			this.partner = partner;
 			this.sender = sender;
 			this.type = ChatType.convert(type);
 			this.content = content;
 			this.time = time;
+			this.isRead = (isRead > 0);
 		}
 		cursor.close();
 
@@ -124,7 +138,7 @@ public class CircleChat extends AbstractChat {
 	public void write(SQLiteDatabase db) {
 		super.write(db);
 
-		String dbName = Const.CIRCLE_CHAT_TABLE_NAME;
+		String dbName = Const.PERSON_CHAT_TABLE_NAME;
 		if (this.status == Status.OLD) {
 			return;
 		}
@@ -136,10 +150,12 @@ public class CircleChat extends AbstractChat {
 		ContentValues cv = new ContentValues();
 		cv.put("chatId", chatId);
 		cv.put("cid", cid);
+		cv.put("partner", partner);
 		cv.put("sender", sender);
 		cv.put("type", type.name());
 		cv.put("content", content);
 		cv.put("time", time);
+		cv.put("isRead", isRead);
 
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
@@ -152,11 +168,11 @@ public class CircleChat extends AbstractChat {
 
 	@Override
 	public void update(IData data) {
-		if (!(data instanceof CircleChat)) {
+		if (!(data instanceof PersonChat)) {
 			return;
 		}
 
-		CircleChat another = (CircleChat) data;
+		PersonChat another = (PersonChat) data;
 		boolean isChange = false;
 		if (this.chatId != another.chatId) {
 			this.chatId = another.chatId;
@@ -164,6 +180,10 @@ public class CircleChat extends AbstractChat {
 		}
 		if (this.cid != another.cid) {
 			this.cid = another.cid;
+			isChange = true;
+		}
+		if (this.partner != another.partner) {
+			this.partner = another.partner;
 			isChange = true;
 		}
 		if (this.type != another.type) {
@@ -182,6 +202,10 @@ public class CircleChat extends AbstractChat {
 			this.time = another.time;
 			isChange = true;
 		}
+		if (this.isRead != another.isRead) {
+			this.isRead = another.isRead;
+			isChange = true;
+		}
 
 		if (isChange && this.status == Status.OLD) {
 			this.status = Status.UPDATE;
@@ -196,14 +220,15 @@ public class CircleChat extends AbstractChat {
 	 * @return
 	 */
 	public RetError sendImage() {
-		IParser parser = new CircleChatParser();
+		IParser parser = new PersonChatParser();
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("cid", cid);
 		params.put("image", content);
+		params.put("ruid", parser);
 		params.put("type", ChatType.TYPE_IMAGE.name());
 
 		StringResult ret = (StringResult) ApiRequest.requestWithToken(
-				CircleChat.SEND_IMAGE_API, params, parser);
+				PersonChat.SEND_IMAGE_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.update(ret.getData());
 			return RetError.NONE;
@@ -219,42 +244,15 @@ public class CircleChat extends AbstractChat {
 	 * @return
 	 */
 	public RetError sendText() {
-		IParser parser = new CircleChatParser();
+		IParser parser = new PersonChatParser();
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("cid", cid);
+		params.put("ruid", parser);
 		params.put("content", content);
 		params.put("type", ChatType.TYPE_TEXT.name());
 
 		StringResult ret = (StringResult) ApiRequest.requestWithToken(
-				CircleChat.SEND_TEXT_API, params, parser);
-		if (ret.getStatus() == RetStatus.SUCC) {
-			this.update(ret.getData());
-			return RetError.NONE;
-		} else {
-			return ret.getErr();
-		}
-	}
-
-	/**
-	 * refresh this chat info from server
-	 */
-	public RetError refresh() {
-		return this.refresh(this.chatId);
-	}
-
-	/**
-	 * refresh chat info with id from server
-	 * 
-	 * @param chatId
-	 */
-	public RetError refresh(int chatId) {
-		IParser parser = new CircleChatDetailParser();
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("cid", cid);
-		params.put("cmid", chatId);
-		Result ret = ApiRequest.requestWithToken(CircleChat.DETAIL_API, params,
-				parser);
-
+				PersonChat.SEND_TEXT_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.update(ret.getData());
 			return RetError.NONE;

@@ -5,11 +5,11 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.changlianxi.data.AbstractData.Status;
-import com.changlianxi.data.CircleChat;
+import com.changlianxi.data.PersonChat;
 import com.changlianxi.data.enums.ChatType;
 import com.changlianxi.data.request.Result;
 
-public class CircleChatParser implements IParser {
+public class PersonChatParser implements IParser {
 
 	@Override
 	public Result parse(Map<String, Object> params, JSONObject jsonObj)
@@ -20,14 +20,15 @@ public class CircleChatParser implements IParser {
 
 		int cid = (Integer) params.get("cid");
 		int uid = (Integer) params.get("uid");
+		int partner = (Integer) params.get("ruid");
 		ChatType type = ChatType.convert((String) params.get("type"));
 
-		if (!jsonObj.has("cmid") || !jsonObj.has("time")) {
+		if (!jsonObj.has("mid") || !jsonObj.has("time")) {
 			return Result.defContentErrorResult();
 		}
 		String time = jsonObj.getString("time");
-		int cmid = jsonObj.getInt("cmid");
-		if (time == null || cmid == 0) {
+		int mid = jsonObj.getInt("mid");
+		if (time == null || mid == 0) {
 			return Result.defContentErrorResult();
 		}
 		
@@ -44,7 +45,7 @@ public class CircleChatParser implements IParser {
 			return Result.defContentErrorResult();
 		}
 
-		CircleChat chat = new CircleChat(cid, cmid, uid, content);
+		PersonChat chat = new PersonChat(mid, partner, cid, uid, content);
 		chat.setTime(time);
 		chat.setType(type);
 		chat.setStatus(Status.NEW);

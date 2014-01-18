@@ -164,7 +164,7 @@ public class GrowthCommentList extends AbstractData {
 
 		// read last request times
 		Cursor cursor2 = db.query(Const.GROWTH_TABLE_NAME, new String[] {
-				"cid", "lastCommentsReqTime" }, "id=?", new String[] { this.gid
+				"lastCommentsReqTime" }, "id=?", new String[] { this.gid
 				+ "" }, null, null, null);
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
