@@ -10,9 +10,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.data.enums.ChatType;
 import com.changlianxi.data.enums.RetError;
 import com.changlianxi.data.enums.RetStatus;
-import com.changlianxi.data.parser.GrowthListParser;
+import com.changlianxi.data.parser.CircleChatListParser;
 import com.changlianxi.data.parser.IParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
@@ -20,39 +21,40 @@ import com.changlianxi.db.Const;
 import com.changlianxi.util.DateUtils;
 
 /**
- * Growth List of a circle
+ * Chat List of a circle
  * 
  * Usage:
  * 
- * get a circle's growth list
- *     // new GrowthList gl
- *     gl.read();
- *     gl.getGrowths();
+ * get a circle's chat list
+ *     // new CircleChatList cl
+ *     cl.read();
+ *     cl.getChats();
  * 
- * refresh a circle's growth list
- *     // new GrowthList gl
- *     gl.read();
+ * refresh a circle's chat list
+ *     // new CircleChatList cl
+ *     cl.read();
  *     ...
- *     gl.refresh(); // get new growths
+ *     cl.refresh(); // get new chats
  *     
  *     ...
- *     gl.write();
+ *     cl.write();
  *     
  *     
  * @author jieme
  *
  */
-public class GrowthList extends AbstractData {
-	public final static String LIST_API = "growth/ilist";
+public class CircleChatList extends AbstractData {
+	public final static String LIST_API = "chats/ilist";
 
 	private int cid = 0;
 	private long startTime = 0L; // data start time, in milliseconds
 	private long endTime = 0L; // data end time
-	private long lastReqTime = 0L; // last request time of growth data
+	private long lastReqTime = 0L; // last request time of chat data
 	private int total = 0;
-	private List<Growth> growths = new ArrayList<Growth>();
 
-	public GrowthList(int cid) {
+	private List<CircleChat> chats = null;
+
+	public CircleChatList(int cid) {
 		this.cid = cid;
 	}
 
@@ -96,58 +98,62 @@ public class GrowthList extends AbstractData {
 		this.total = total;
 	}
 
-	public List<Growth> getGrowths() {
-		return growths;
+	public List<CircleChat> getChats() {
+		return chats;
 	}
 
-	public void setGrowths(List<Growth> growths) {
-		if (growths != null) {
-			this.growths = growths;
-		}
+	public void setChats(List<CircleChat> chats) {
+		this.chats = chats;
 	}
 
 	@Override
-	public void read(SQLiteDatabase db) { // TODO how to sort?
-		if (growths == null) {
-			growths = new ArrayList<Growth>();
+	public void read(SQLiteDatabase db) { // TODO sort
+		super.read(db);
+		if (this.chats == null) {
+			this.chats = new ArrayList<CircleChat>();
 		} else {
-			growths.clear();
+			this.chats.clear();
 		}
 
-		// read ids
-		Cursor cursor = db.query(Const.GROWTH_TABLE_NAME,
-				new String[] { "id" }, "cid=?", new String[] { this.cid + "" },
-				null, null, null);
+		Cursor cursor = db.query(Const.CIRCLE_CHAT_TABLE_NAME, new String[] {
+				"chatId", "sender", "type", "content", "time" }, "cid=?",
+				new String[] { this.cid + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
+			long start = 0, end = 0;
 			cursor.moveToFirst();
 			for (int i = 0; i < cursor.getCount(); i++) {
-				int gid = cursor.getInt(cursor.getColumnIndex("id"));
-				Growth growth = new Growth(cid, gid);
-				growths.add(growth);
+				int chatId = cursor.getInt(cursor.getColumnIndex("chatId"));
+				int sender = cursor.getInt(cursor.getColumnIndex("sender"));
+				String type = cursor.getString(cursor.getColumnIndex("type"));
+				String content = cursor.getString(cursor
+						.getColumnIndex("content"));
+				String time = cursor.getString(cursor.getColumnIndex("time"));
 
+				CircleChat chat = new CircleChat(chatId, cid, sender, content);
+				chat.setType(ChatType.convert(type));
+				chat.setTime(time);
+				chat.setStatus(Status.OLD);
+				this.chats.add(chat);
+
+				long tmp = DateUtils.convertToDate(time);
+				if (start == 0 || tmp < start) {
+					start = tmp;
+				}
+				if (end == 0 || tmp > end) {
+					end = tmp;
+				}
 				cursor.moveToNext();
 			}
+			this.startTime = start;
+			this.endTime = end;
 		}
 		cursor.close();
-
-		// read one by one
-		for (Growth growth : growths) {
-			growth.read(db);
-
-			long joinTime = DateUtils.convertToDate(growth.getPublished());
-			if (startTime == 0 || joinTime < startTime) {
-				startTime = joinTime;
-			}
-			if (endTime == 0 || joinTime > endTime) {
-				endTime = joinTime;
-			}
-		}
 
 		// read last request times
 		Cursor cursor2 = db.query(Const.TIME_RECORD_TABLE_NAME, new String[] {
 				"subkey", "time" }, "key=?",
-				new String[] { Const.TIME_RECORD_KEY_PREFIX_GROWTH + this.cid },
-				null, null, null);
+				new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLECHAT
+						+ this.cid }, null, null, null);
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
 			for (int i = 0; i < cursor2.getCount(); i++) {
@@ -157,7 +163,6 @@ public class GrowthList extends AbstractData {
 				if ("last_req_time".equals(subkey)) {
 					this.lastReqTime = time;
 				}
-
 				cursor2.moveToNext();
 			}
 		}
@@ -170,15 +175,16 @@ public class GrowthList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
-			for (Growth growth : growths) {
-				growth.write(db);
+			for (CircleChat chat : chats) {
+				chat.write(db);
 			}
 
 			// write last request time
 			ContentValues cv = new ContentValues();
 			cv.put("last_req_time", lastReqTime);
 			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { Const.TIME_RECORD_KEY_PREFIX_GROWTH + this.cid });
+					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLECHAT
+							+ this.cid });
 
 			this.status = Status.OLD;
 		}
@@ -187,12 +193,12 @@ public class GrowthList extends AbstractData {
 	@SuppressLint("UseSparseArrays")
 	@Override
 	public void update(IData data) {
-		if (!(data instanceof GrowthList)) {
+		if (!(data instanceof CircleChatList)) {
 			return;
 		}
 
-		GrowthList another = (GrowthList) data;
-		if (another.growths.size() == 0) {
+		CircleChatList another = (CircleChatList) data;
+		if (another.chats.size() == 0) {
 			return;
 		}
 
@@ -202,28 +208,28 @@ public class GrowthList extends AbstractData {
 		}
 
 		// old ones
-		Map<Integer, Growth> olds = new HashMap<Integer, Growth>();
-		for (Growth growth : this.growths) {
-			olds.put(growth.getId(), growth);
+		Map<Integer, CircleChat> olds = new HashMap<Integer, CircleChat>();
+		for (CircleChat chat : this.chats) {
+			olds.put(chat.getChatId(), chat);
 		}
 
 		// join new ones
 		boolean canJoin = false;
-		Map<Integer, Growth> news = new HashMap<Integer, Growth>();
-		for (Growth growth : another.growths) {
-			int gid = growth.getId();
-			news.put(gid, growth);
+		Map<Integer, CircleChat> news = new HashMap<Integer, CircleChat>();
+		for (CircleChat chat : another.chats) {
+			int chatId = chat.getChatId();
+			news.put(chatId, chat);
 
-			if (olds.containsKey(gid)) {
-				olds.get(gid).update(growth);
+			if (olds.containsKey(chatId)) {
+				olds.get(chatId).update(chat);
 				canJoin = true;
 			} else {
-				this.growths.add(growth);
+				this.chats.add(chat);
 			}
 		}
 
 		if (isNewer) {
-			if (another.total == another.getGrowths().size()) {
+			if (another.total == another.getChats().size()) {
 				canJoin = true;
 			}
 
@@ -240,14 +246,14 @@ public class GrowthList extends AbstractData {
 	}
 
 	/**
-	 * refresh new growths list from server for the first time
+	 * refresh new chats list from server for the first time
 	 */
 	public void refresh() {
 		refresh(0);
 	}
 
 	/**
-	 * refresh new growths list from server, with start time
+	 * refresh new chats list from server, with start time
 	 * 
 	 * @param startTime
 	 */
@@ -256,14 +262,14 @@ public class GrowthList extends AbstractData {
 	}
 
 	/**
-	 * refresh new growths list from server, with start and end time
+	 * refresh new chats list from server, with start and end time
 	 * 
 	 * @param startTime
 	 * @param endTime
 	 * @return
 	 */
 	public RetError refresh(long startTime, long endTime) {
-		IParser parser = new GrowthListParser();
+		IParser parser = new CircleChatListParser();
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("cid", cid);
 		if (startTime > 0) {
@@ -273,13 +279,22 @@ public class GrowthList extends AbstractData {
 			params.put("end", endTime);
 		}
 
-		Result ret = ApiRequest.requestWithToken(GrowthList.LIST_API, params,
-				parser);
+		Result ret = ApiRequest.requestWithToken(CircleChatList.LIST_API,
+				params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
-			update((GrowthList) ret.getData());
+			update((CircleChatList) ret.getData());
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
+		}
+	}
+
+	public void insert(CircleChat chat) { // TODO
+		long chatTime = DateUtils.convertToDate(chat.getTime());
+		if (chatTime >= this.endTime) {
+			this.endTime = chatTime;
+			this.chats.add(chat);
+			this.setStatus(Status.UPDATE);
 		}
 	}
 

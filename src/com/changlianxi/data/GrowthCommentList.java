@@ -233,10 +233,16 @@ public class GrowthCommentList extends AbstractData {
 			}
 		}
 
-		if (isNewer && !canJoin) {
-			for (int gid : olds.keySet()) {
-				if (news.containsKey(gid)) {
-					olds.get(gid).setStatus(Status.DEL);
+		if (isNewer) {
+			if (another.total == another.getComments().size()) {
+				canJoin = true;
+			}
+
+			if (!canJoin) {
+				for (int gid : olds.keySet()) {
+					if (news.containsKey(gid)) {
+						olds.get(gid).setStatus(Status.DEL);
+					}
 				}
 			}
 		}

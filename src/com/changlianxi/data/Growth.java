@@ -25,7 +25,9 @@ import com.changlianxi.db.Const;
 
 /**
  * circle growth
- *  
+ *
+ * Usage:
+ * 
  * get a growth info:
  *     // new growth
  *     growth.read();
