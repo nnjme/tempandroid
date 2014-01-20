@@ -87,6 +87,23 @@ public class CircleDynamic extends AbstractData {
 	public int getUid1() {
 		return uid1;
 	}
+	
+	/**
+	 * get uid1 related circle member, first read member info from db, 
+	 * if not in db, refresh from server.
+	 * 
+	 * @param db
+	 * @return
+	 */
+	public CircleMember getUser1(SQLiteDatabase db) {
+		CircleMember cm = new CircleMember(cid, 0, uid1);
+		cm.read(db);
+		if (cm.getUid() == 0 && cm.getPid() == 0) {
+			cm.refreshBasic();
+			cm.write(db);
+		}
+		return cm;
+	}
 
 	public void setUid1(int uid1) {
 		this.uid1 = uid1;
@@ -107,26 +124,38 @@ public class CircleDynamic extends AbstractData {
 	public void setPid2(int pid2) {
 		this.pid2 = pid2;
 	}
-
+	
 	/**
-	 * get composite content, users' info will be read from db or server side 
+	 * get uid2 related circle member, first read member info from db, 
+	 * if not in db, refresh from server.
 	 * 
 	 * @param db
 	 * @return
 	 */
-	public String getContent(SQLiteDatabase db) {
+	public CircleMember getUser2(SQLiteDatabase db) {
+		CircleMember cm = new CircleMember(cid, pid2, uid2);
+		cm.read(db);
+		if (cm.getUid() == 0 && cm.getPid() == 0) {
+			cm.refreshBasic();
+			cm.write(db);
+		}
+		return cm;
+	}
+
+	/**
+	 * get composite content 
+	 * 
+	 * @return
+	 */
+	public String getCompositeContent(String userName1, String userName2) {
 		String ret = content;
 		if (ret.indexOf("[X]") >= 0) {
-			CircleMember cm = new CircleMember(cid, pid2);// TODO pid1?
-			cm.read(db);
-			ret = ret.replaceFirst("[X]", cm.getName());
+			ret = ret.replaceFirst("[X]", userName1);
 		}
 		if (ret.indexOf("[Y]") >= 0) {
-			CircleMember cm = new CircleMember(cid, pid2);
-			cm.read(db);
-			ret = ret.replaceFirst("[Y]", cm.getName());
+			ret = ret.replaceFirst("[Y]", userName2);
 		}
-		return content;
+		return ret;
 	}
 	
 	public String getContent() {

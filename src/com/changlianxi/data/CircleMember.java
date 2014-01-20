@@ -267,11 +267,17 @@ public class CircleMember extends AbstractData {
 
 	@Override
 	public void read(SQLiteDatabase db) {
+		String conditionsKey = "cid=? and pid=?";
+		String[] conditionsValue = { this.cid + "", this.pid + "" };
+		if (pid == 0) {
+			conditionsKey = "cid=? and uid=?";
+			conditionsValue = new String[] { this.cid + "", this.uid + "" };
+		}
 		Cursor cursor = db.query(Const.CIRCLE_MEMBER_TABLE_NAME, new String[] {
-				"uid", "name", "cellphone", "location", "gendar", "avatar", "birthday",
-				"employer", "jobtitle", "joinTime", "lastModTime", "leaveTime", "roleId",
-				"state", "detailIds" }, "cid=? and pid=?", new String[] { this.cid + "",
-				this.pid + "" }, null, null, null);
+				"uid", "name", "cellphone", "location", "gendar", "avatar",
+				"birthday", "employer", "jobtitle", "joinTime", "lastModTime",
+				"leaveTime", "roleId", "state", "detailIds" }, conditionsKey,
+				conditionsValue, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			int uid = cursor.getInt(cursor.getColumnIndex("uid"));
