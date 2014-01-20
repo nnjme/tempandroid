@@ -74,7 +74,6 @@ public class ChatPartner extends AbstractChat {
 
 	@Override
 	public void read(SQLiteDatabase db) {
-		super.read(db);
 		Cursor cursor = db.query(Const.CHAT_PARTNER_TABLE_NAME,
 				new String[] { "cid", "chatId", "type", "content", "time",
 						"unReadCnt" }, "partner=?", new String[] { this.partner
@@ -102,8 +101,6 @@ public class ChatPartner extends AbstractChat {
 
 	@Override
 	public void write(SQLiteDatabase db) {
-		super.write(db);
-
 		String dbName = Const.CHAT_PARTNER_TABLE_NAME;
 		if (this.status == Status.OLD) {
 			return;

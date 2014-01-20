@@ -78,7 +78,6 @@ public class ChatPartnerList extends AbstractData {
 
 	@Override
 	public void read(SQLiteDatabase db) { // TODO sort
-		super.read(db);
 		if (this.partners == null) {
 			this.partners = new ArrayList<ChatPartner>();
 		} else {

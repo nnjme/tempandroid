@@ -97,7 +97,6 @@ public class CircleChat extends AbstractChat {
 
 	@Override
 	public void read(SQLiteDatabase db) {
-		super.read(db);
 		Cursor cursor = db.query(Const.CIRCLE_CHAT_TABLE_NAME, new String[] {
 				"cid", "sender", "type", "content", "time" }, "chatId=?",
 				new String[] { this.chatId + "" }, null, null, null);
@@ -122,8 +121,6 @@ public class CircleChat extends AbstractChat {
 
 	@Override
 	public void write(SQLiteDatabase db) {
-		super.write(db);
-
 		String dbName = Const.CIRCLE_CHAT_TABLE_NAME;
 		if (this.status == Status.OLD) {
 			return;

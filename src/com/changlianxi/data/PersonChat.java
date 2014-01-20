@@ -106,7 +106,6 @@ public class PersonChat extends AbstractChat {
 
 	@Override
 	public void read(SQLiteDatabase db) {
-		super.read(db);
 		Cursor cursor = db.query(Const.PERSON_CHAT_TABLE_NAME,
 				new String[] { "cid", "partner", "sender", "type", "content",
 						"time", "isRead" }, "chatId=?",
@@ -136,8 +135,6 @@ public class PersonChat extends AbstractChat {
 
 	@Override
 	public void write(SQLiteDatabase db) {
-		super.write(db);
-
 		String dbName = Const.PERSON_CHAT_TABLE_NAME;
 		if (this.status == Status.OLD) {
 			return;
@@ -155,7 +152,7 @@ public class PersonChat extends AbstractChat {
 		cv.put("type", type.name());
 		cv.put("content", content);
 		cv.put("time", time);
-		cv.put("isRead", isRead);
+		cv.put("isRead", isRead ? 1 : 0);
 
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);

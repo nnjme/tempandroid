@@ -5,6 +5,7 @@ import java.util.Map;
 
 public enum RetError {
 	NONE,
+	UNVALID,
 	UNKOWN,
 	NETWORK_ERROR,
 	NOT_POST_REQUEST,

@@ -107,7 +107,6 @@ public class PersonChatList extends AbstractData {
 
 	@Override
 	public void read(SQLiteDatabase db) { // TODO sort
-		super.read(db);
 		if (this.chats == null) {
 			this.chats = new ArrayList<PersonChat>();
 		} else {

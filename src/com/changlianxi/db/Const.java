@@ -31,6 +31,7 @@ public class Const {
 	public static final String TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER = "cm";
 	public static final String TIME_RECORD_KEY_PREFIX_CIRCLECHAT = "chats";
 	public static final String TIME_RECORD_KEY_PREFIX_PARTNERS = "partners";
+	public static final String TIME_RECORD_KEY_PREFIX_CIRCLEDYNAMIC = "dynamics";
 	
 	
 	public static final String GROWTH_TABLE_NAME = "growths";
@@ -60,5 +61,11 @@ public class Const {
 	public static final String CHAT_PARTNER_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
 			+ " chatId integer, cid integer, partner integer, type varchar, content varchar, time varchar,"
 			+ " unReadCnt integer, lastChatsReqTime long";
+	
+	public static final String CIRCLE_DYNAMIC_TABLE_NAME = "circle_dynamics";
+	public static final String CIRCLE_DYNAMIC_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " id integer, cid integer, uid1 integer, uid2 integer, pid2 integer, type varchar, content varchar,"
+			+ " detail varchar, time varchar, needApproved integer";
+	
 
 }
