@@ -27,4 +27,10 @@ public enum CircleMemberState {
 		}
 		return CircleMemberState.STATUS_INVALID;
 	}
+
+	public static boolean isInCircle(CircleMemberState s) {
+		return s == CircleMemberState.STATUS_ENTER_AND_VERIFYING
+				|| s == CircleMemberState.STATUS_VERIFIED
+				|| s == CircleMemberState.STATUS_KICKOFFING;
+	}
 }

@@ -88,23 +88,6 @@ public class CircleDynamic extends AbstractData {
 		return uid1;
 	}
 	
-	/**
-	 * get uid1 related circle member, first read member info from db, 
-	 * if not in db, refresh from server.
-	 * 
-	 * @param db
-	 * @return
-	 */
-	public CircleMember getUser1(SQLiteDatabase db) {
-		CircleMember cm = new CircleMember(cid, 0, uid1);
-		cm.read(db);
-		if (cm.getUid() == 0 && cm.getPid() == 0) {
-			cm.refreshBasic();
-			cm.write(db);
-		}
-		return cm;
-	}
-
 	public void setUid1(int uid1) {
 		this.uid1 = uid1;
 	}
@@ -125,23 +108,6 @@ public class CircleDynamic extends AbstractData {
 		this.pid2 = pid2;
 	}
 	
-	/**
-	 * get uid2 related circle member, first read member info from db, 
-	 * if not in db, refresh from server.
-	 * 
-	 * @param db
-	 * @return
-	 */
-	public CircleMember getUser2(SQLiteDatabase db) {
-		CircleMember cm = new CircleMember(cid, pid2, uid2);
-		cm.read(db);
-		if (cm.getUid() == 0 && cm.getPid() == 0) {
-			cm.refreshBasic();
-			cm.write(db);
-		}
-		return cm;
-	}
-
 	/**
 	 * get composite content 
 	 * 
@@ -346,8 +312,8 @@ public class CircleDynamic extends AbstractData {
 		MapResult ret = (MapResult) ApiRequest.requestWithToken(
 				CircleDynamic.APPROVE_ENTER_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
-			this.detail = (String)(ret.getArrs().get("detail"));
-			this.isPassed = ((Integer)(ret.getArrs().get("pass")) > 0);
+			this.detail = (String)(ret.getMaps().get("detail"));
+			this.isPassed = ((Integer)(ret.getMaps().get("pass")) > 0);
 			this.needApproved = false;
 			this.setStatus(Status.UPDATE);
 			return RetError.NONE;
@@ -377,8 +343,8 @@ public class CircleDynamic extends AbstractData {
 		MapResult ret = (MapResult) ApiRequest.requestWithToken(
 				CircleDynamic.APPROVE_KICKOUT_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
-			this.detail = (String)(ret.getArrs().get("detail"));
-			this.isPassed = ((Integer)(ret.getArrs().get("pass")) > 0);
+			this.detail = (String)(ret.getMaps().get("detail"));
+			this.isPassed = ((Integer)(ret.getMaps().get("pass")) > 0);
 			this.needApproved = false;
 			this.setStatus(Status.UPDATE);
 			return RetError.NONE;

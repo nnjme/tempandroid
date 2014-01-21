@@ -10,14 +10,14 @@ public class MapResult extends Result {
 	}
 
 	public MapResult(Map<String, Object> maps) {
-		this.setArrs(maps);
+		this.setMaps(maps);
 	}
 
-	public Map<String, Object> getArrs() {
+	public Map<String, Object> getMaps() {
 		return maps;
 	}
 
-	public void setArrs(Map<String, Object> maps) {
+	public void setMaps(Map<String, Object> maps) {
 		if (maps != null) {
 			this.maps = maps;
 		}
@@ -25,7 +25,7 @@ public class MapResult extends Result {
 
 	@Override
 	public String toString() {
-		return "ArrayResult [data=" + maps + ", status=" + status + ", err="
+		return "MapResult [data=" + maps + ", status=" + status + ", err="
 				+ err + "]";
 	}
 }

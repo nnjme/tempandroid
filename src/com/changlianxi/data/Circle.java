@@ -19,10 +19,12 @@ import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.CircleParser;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.data.parser.SimpleParser;
 import com.changlianxi.data.parser.StringParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.ArrayResult;
 import com.changlianxi.data.request.Result;
+import com.changlianxi.data.request.SimpleResult;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
 import com.changlianxi.util.StringUtils;
@@ -51,18 +53,22 @@ import com.changlianxi.util.StringUtils;
  *    circle1.uploadAfterEdit(circle2);
  *    circle1.write();    
  * 
- * upload logo
+ * upload logo:
  *    // new circle
  *    // ...edit logo...
  *    // new logo
  *    circle.uploadLogo(newLogo);
  *    circle.write();
  *    
- * add new circle
+ * add new circle:
  *    // new circle
  *    // ...set circle info...
  *    circle.uploadForAdd();
  *    circle.write();
+ *    
+ * other operations:
+ *    // new circle
+ *    circle.dissolve();
  * 
  * @author nnjme
  * 
@@ -72,6 +78,7 @@ public class Circle extends AbstractData {
 	public final static String EDIT_API = "circles/iedit";
 	public final static String EDIT_LOGO_API = "circles/iuploadLogo";
 	public final static String ADD_API = "circles/iadd";
+	public final static String DISSOLVE_API = "circles/idissolve";
 
 	// circle basic info
 	private int id = 0;
@@ -110,6 +117,10 @@ public class Circle extends AbstractData {
 		this.name = name;
 		this.description = description;
 		this.logo = logo;
+	}
+	
+	public boolean isEmpty() {
+		return this.creator == 0;
 	}
 
 	public int getId() {
@@ -666,6 +677,26 @@ public class Circle extends AbstractData {
 			this.totalCnt = 1;
 			this.verifiedCnt = 1;
 			this.status = Status.UPDATE;
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+	
+	/**
+	 * dissolve the circle
+	 * 
+	 * @return
+	 */
+	public RetError dissolve() {
+		IParser parser = new SimpleParser();
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", id);
+		SimpleResult ret = (SimpleResult) ApiRequest.requestWithToken(
+				Circle.DISSOLVE_API, params, parser);
+
+		if (ret.getStatus() == RetStatus.SUCC) {
+			this.status = Status.DEL;
 			return RetError.NONE;
 		} else {
 			return ret.getErr();

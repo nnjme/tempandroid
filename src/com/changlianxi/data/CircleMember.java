@@ -23,10 +23,12 @@ import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.CircleMemberBasicParser;
 import com.changlianxi.data.parser.CircleMemberDetailParser;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.data.parser.SimpleParser;
 import com.changlianxi.data.parser.StringParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.ArrayResult;
 import com.changlianxi.data.request.Result;
+import com.changlianxi.data.request.SimpleResult;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
 
@@ -67,6 +69,13 @@ import com.changlianxi.db.Const;
  *    member.uploadAvatar(newAvatar);
  *    member.write();
  *    
+ * other operations:
+ *   // new member
+ *   member.quit(); // quit the circle
+ *   member.acceptInvitation(); // accept invitation
+ *   member.refuseInvitation(); // refuse invitation
+ *   member.kickout(); // be kick out
+ *    
  * @author nnjme
  * 
  */
@@ -75,6 +84,10 @@ public class CircleMember extends AbstractData {
 	public final static String BASIC_API = "people/ibasic";
 	public final static String EDIT_API = "people/iedit";
 	public final static String UPLOAD_AVATAR_API = "people/iuploadAvatar";
+	public final static String QUIT_API = "circles/iquit";
+	public final static String ACCETP_INVITATION_API = "circles/iacceptInvitation";
+	public final static String REFUSE_INVITATION_API = "circles/irefuseInvitation";
+	public final static String KICKOUT_API = "circles/ikickOut";
 
 	private int cid = 0;
 	private int uid = 0;
@@ -113,6 +126,10 @@ public class CircleMember extends AbstractData {
 		this.pid = pid;
 		this.uid = uid;
 		this.name = name;
+	}
+	
+	public boolean isEmpty() {
+		return pid == 0 && uid == 0;
 	}
 
 	public int getCid() {
@@ -896,6 +913,143 @@ public class CircleMember extends AbstractData {
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.avatar = ret.getStr();
 			this.status = Status.UPDATE; // TODO change local?
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+	
+	
+	/**
+	 * get circle member, first read member info from db, 
+	 * if not in db, refresh from server.
+	 * 
+	 * @param cid
+	 * @param pid
+	 * @param uid
+	 * @param db
+	 * @return
+	 */
+	public static CircleMember getUser(int cid, int pid, int uid, SQLiteDatabase db) {
+		CircleMember cm = new CircleMember(cid, pid, uid);
+		cm.read(db);
+		if (cm.getUid() == 0 && cm.getPid() == 0) {
+			cm.refreshBasic();
+			cm.write(db);
+		}
+		return cm;
+	}
+	
+	/**
+	 * quit from the circle
+	 * 
+	 * @return
+	 */
+	public RetError quit() {
+		int uid = Integer.parseInt(Global.getUid());
+		if (uid != this.uid
+				|| !CircleMemberState.isInCircle(this.state)) {
+			return RetError.UNVALID;
+		}
+
+		IParser parser = new SimpleParser();
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", cid);
+		SimpleResult ret = (SimpleResult) ApiRequest.requestWithToken(
+				CircleMember.QUIT_API, params, parser);
+
+		if (ret.getStatus() == RetStatus.SUCC) {
+			this.state = CircleMemberState.STATUS_QUIT;
+			this.status = Status.UPDATE;
+
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+	
+	/**
+	 * accept the invitation for the circle
+	 * 
+	 * @return
+	 */
+	public RetError acceptInvitation() {
+		int uid = Integer.parseInt(Global.getUid());
+		if (uid != this.uid
+				|| (CircleMemberState.STATUS_INVITING != this.state)) {
+			return RetError.UNVALID;
+		}
+
+		IParser parser = new StringParser("auth");
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", cid);
+		StringResult ret = (StringResult) ApiRequest.requestWithToken(
+				CircleMember.ACCETP_INVITATION_API, params, parser);
+
+		if (ret.getStatus() == RetStatus.SUCC) {
+			int auth = Integer.parseInt(ret.getStr());
+			this.state = auth > 0 ? CircleMemberState.STATUS_VERIFIED
+					: CircleMemberState.STATUS_ENTER_AND_VERIFYING;
+			this.status = Status.UPDATE;
+
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+	
+	/**
+	 * refuse the invitation for the circle
+	 * 
+	 * @return
+	 */
+	public RetError refuseInvitation() {
+		int uid = Integer.parseInt(Global.getUid());
+		if (uid != this.uid
+				|| (CircleMemberState.STATUS_INVITING != this.state)) {
+			return RetError.UNVALID;
+		}
+
+		IParser parser = new SimpleParser();
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", cid);
+		SimpleResult ret = (SimpleResult) ApiRequest.requestWithToken(
+				CircleMember.REFUSE_INVITATION_API, params, parser);
+
+		if (ret.getStatus() == RetStatus.SUCC) {
+			this.state = CircleMemberState.STATUS_REFUSED;
+			this.status = Status.UPDATE;
+
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+	
+	/**
+	 * kickout a circle member
+	 * 
+	 * @return
+	 */
+	public RetError kickout() {
+		if (!CircleMemberState.isInCircle(this.state)
+				|| (CircleMemberState.STATUS_KICKOFFING == this.state)) {
+			return RetError.UNVALID;
+		}
+
+		IParser parser = new StringParser("auth");
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", cid);
+		params.put("pid", pid);
+		StringResult ret = (StringResult) ApiRequest.requestWithToken(
+				CircleMember.KICKOUT_API, params, parser);
+
+		if (ret.getStatus() == RetStatus.SUCC) {
+			int auth = Integer.parseInt(ret.getStr());
+			this.state = auth > 0 ? CircleMemberState.STATUS_KICKOUT
+					: CircleMemberState.STATUS_KICKOFFING;
+			this.status = Status.UPDATE;
+
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
