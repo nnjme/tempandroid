@@ -23,10 +23,12 @@ import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.CircleMemberBasicParser;
 import com.changlianxi.data.parser.CircleMemberDetailParser;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.data.parser.MapParser;
 import com.changlianxi.data.parser.SimpleParser;
 import com.changlianxi.data.parser.StringParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.ArrayResult;
+import com.changlianxi.data.request.MapResult;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.SimpleResult;
 import com.changlianxi.data.request.StringResult;
@@ -62,12 +64,25 @@ import com.changlianxi.db.Const;
  *    member1.uploadAfterEdit(member2);
  *    member1.write();    
  * 
- * upload avatar
+ * upload avatar:
  *    // new member
  *    // ...edit avatar...
  *    // new avatar
  *    member.uploadAvatar(newAvatar);
  *    member.write();
+ *    
+ * invite one member:
+ *    // new member
+ *    // another member
+ *    member.invite(another);
+ *    another.write();
+ *
+ * invite more than one member:
+ *    // new member
+ *    // another member list
+ *    member.inviteMore(memberList);
+ *    // memberList write
+ *    // write one by one
  *    
  * other operations:
  *   // new member
@@ -88,6 +103,8 @@ public class CircleMember extends AbstractData {
 	public final static String ACCETP_INVITATION_API = "circles/iacceptInvitation";
 	public final static String REFUSE_INVITATION_API = "circles/irefuseInvitation";
 	public final static String KICKOUT_API = "circles/ikickOut";
+	public final static String INVITE_ONE_API = "people/iinviteOne";
+	public final static String INVITE_MORE_API = "people/iinviteMore";
 
 	private int cid = 0;
 	private int uid = 0;
@@ -106,8 +123,9 @@ public class CircleMember extends AbstractData {
 	private int roleId = 0;
 	private String detailIds = "";
 	private List<PersonDetail> details = new ArrayList<PersonDetail>();
-
 	private CircleMemberState state = CircleMemberState.STATUS_INVALID;
+	private int cmid = 0;
+	private String inviteCode = "";
 
 	public CircleMember(int cid) {
 		this(cid, 0);
@@ -276,6 +294,22 @@ public class CircleMember extends AbstractData {
 		this.details = properties;
 	}
 
+	public int getCmid() {
+		return cmid;
+	}
+
+	public void setCmid(int cmid) {
+		this.cmid = cmid;
+	}
+
+	public String getInviteCode() {
+		return inviteCode;
+	}
+
+	public void setInviteCode(String inviteCode) {
+		this.inviteCode = inviteCode;
+	}
+
 	@Override
 	public String toString() {
 		return "CircleMember [cid=" + cid + ", uid=" + uid + ", pid=" + pid
@@ -293,8 +327,9 @@ public class CircleMember extends AbstractData {
 		Cursor cursor = db.query(Const.CIRCLE_MEMBER_TABLE_NAME, new String[] {
 				"uid", "name", "cellphone", "location", "gendar", "avatar",
 				"birthday", "employer", "jobtitle", "joinTime", "lastModTime",
-				"leaveTime", "roleId", "state", "detailIds" }, conditionsKey,
-				conditionsValue, null, null, null);
+				"leaveTime", "roleId", "state", "detailIds", "cmid",
+				"inviteCode" }, conditionsKey, conditionsValue, null, null,
+				null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			int uid = cursor.getInt(cursor.getColumnIndex("uid"));
@@ -317,11 +352,13 @@ public class CircleMember extends AbstractData {
 					.getColumnIndex("lastModTime"));
 			String leaveTime = cursor.getString(cursor
 					.getColumnIndex("leaveTime"));
-			int roleId = cursor.getInt(cursor
-					.getColumnIndex("roleId"));
+			int roleId = cursor.getInt(cursor.getColumnIndex("roleId"));
 			String state = cursor.getString(cursor.getColumnIndex("state"));
 			String detailIds = cursor.getString(cursor
 					.getColumnIndex("detailIds"));
+			int cmid = cursor.getInt(cursor.getColumnIndex("cmid"));
+			String inviteCode = cursor.getString(cursor
+					.getColumnIndex("inviteCode"));
 			
 			this.uid = uid;
 			this.name = name;
@@ -338,6 +375,8 @@ public class CircleMember extends AbstractData {
 			this.roleId = roleId;
 			this.state = CircleMemberState.convert(state);
 			this.detailIds = detailIds;
+			this.cmid = cmid;
+			this.inviteCode = inviteCode;
 		}
 		cursor.close();
 
@@ -390,6 +429,8 @@ public class CircleMember extends AbstractData {
 		cv.put("leaveTime", leaveTime);
 		cv.put("roleId", roleId);
 		cv.put("state", state.name());
+		cv.put("cmid", cmid);
+		cv.put("inviteCode", inviteCode);
 
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
@@ -1049,6 +1090,138 @@ public class CircleMember extends AbstractData {
 			this.state = auth > 0 ? CircleMemberState.STATUS_KICKOUT
 					: CircleMemberState.STATUS_KICKOFFING;
 			this.status = Status.UPDATE;
+
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+
+	/**
+	 * invite another new member to join the same circle
+	 * 
+	 * @param another
+	 * @return
+	 */
+	public RetError invite(CircleMember another) {
+		int uid = Integer.parseInt(Global.getUid());
+		if (uid != this.uid) {
+			return RetError.UNVALID;
+		}
+		if ("".equals(another.name) || "".equals(another.cellphone)) {
+			return RetError.UNVALID;
+		}
+
+		String[] keys = { "pid", "rep", "code", "cmid" };
+		IParser parser = new MapParser(keys);
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", another.cid);
+		params.put("name", another.name);
+		params.put("cellphone", another.cellphone);
+		if (!"".equals(another.birthday)) {
+			params.put("birthday", another.birthday);
+		}
+		if (!"".equals(another.employer)) {
+			params.put("employer", another.employer);
+		}
+		if (!"".equals(another.jobtitle)) {
+			params.put("jobtitle", another.jobtitle);
+		}
+
+		MapResult ret = (MapResult) ApiRequest.requestWithToken(
+				CircleMember.INVITE_ONE_API, params, parser);
+		if (ret.getStatus() == RetStatus.SUCC) {
+			int pid = (Integer) (ret.getMaps().get("pid"));
+			int cmid = (Integer) (ret.getMaps().get("cmid"));
+			int isRepeat = (Integer) (ret.getMaps().get("rep"));
+			String code = (String) (ret.getMaps().get("code"));
+
+			another.pid = pid;
+			another.cmid = cmid;
+			another.inviteCode = code;
+			if (isRepeat > 0) {
+				// already exist
+				another.status = Status.OLD;
+			} else {
+				// new member
+				another.status = Status.NEW;
+			}
+
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+
+	/**
+	 * invite more members to join the same circle
+	 * 
+	 * @param members
+	 * @return
+	 */
+	public RetError inviteMore(List<CircleMember> members) {
+		int uid = Integer.parseInt(Global.getUid());
+		if (uid != this.uid) {
+			return RetError.UNVALID;
+		}
+		if (members.size() <= 0) {
+			return RetError.UNVALID;
+		}
+		if (members.size() == 1) {
+			return invite(members.get(0));
+		}
+
+		// create request parameter: persons
+		JSONArray jsonArr = new JSONArray();
+		for (CircleMember member : members) {
+			try {
+				JSONObject json = new JSONObject();
+				json.put("name", member.getName());
+				json.put("cellphone", member.getCellphone());
+				jsonArr.put(json);
+			} catch (Exception e) {
+			}
+		}
+		String persons = jsonArr.toString();
+
+		IParser parser = new StringParser("details");
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", cid);
+		params.put("persons", persons);
+
+		StringResult ret = (StringResult) ApiRequest.requestWithToken(
+				CircleMember.INVITE_MORE_API, params, parser);
+		if (ret.getStatus() == RetStatus.SUCC) {
+			String details = ret.getStr();
+
+			// parse details
+			String[] splits = details.split(";");
+			int cnt = Math.min(members.size(), splits.length);
+			for (int i = 0; i < cnt; i++) {
+				String[] attrs = splits[i].split(",");
+				CircleMember member = members.get(i);
+				if (attrs.length != 4) {
+					member.status = Status.OLD;
+					continue;
+				}
+				if (!"1".equals(attrs[0])) {
+					member.status = Status.OLD;
+					continue;
+				}
+				int pid = Integer.parseInt(attrs[1]);
+				String code = attrs[2];
+				int cmid = Integer.parseInt(attrs[3]);
+				member.pid = pid;
+				member.cmid = cmid;
+				if ("".equals(code)) {
+					// already exist
+					member.status = Status.OLD;
+				} else {
+					// new member
+					member.inviteCode = code;
+					member.status = Status.NEW;
+				}
+			}
 
 			return RetError.NONE;
 		} else {

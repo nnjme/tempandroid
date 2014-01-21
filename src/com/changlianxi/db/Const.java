@@ -18,7 +18,7 @@ public class Const {
 			+ " cid integer, uid integer, pid integer, name varchar, cellphone varchar, location varchar,"
 			+ " gendar integer, avatar varchar, birthday varchar, employer varchar, jobtitle varchar,"
 			+ " joinTime varchar, lastModTime varchar, leaveTime varchar, roleId integer, state varchar,"
-			+ " detailIds varchar";
+			+ " detailIds varchar, cmid integer, inviteCode varchar";
 
 	public static final String PERSON_DETAIL_TABLE_NAME = "person_details";
 	public static final String PERSON_DETAIL_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
