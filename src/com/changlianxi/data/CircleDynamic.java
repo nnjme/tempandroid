@@ -168,7 +168,6 @@ public class CircleDynamic extends AbstractData {
 		this.isPassed = isPassed;
 	}
 
-	@Override
 	public String toString() {
 		return "CircleDynamic [id=" + id + ", cid=" + cid + ", type=" + type
 				+ ", content=" + content + ", time=" + time + "]";
@@ -210,8 +209,6 @@ public class CircleDynamic extends AbstractData {
 
 	@Override
 	public void write(SQLiteDatabase db) {
-		super.write(db);
-
 		String dbName = Const.CIRCLE_DYNAMIC_TABLE_NAME;
 		if (this.status == Status.OLD) {
 			return;

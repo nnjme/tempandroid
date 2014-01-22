@@ -1,5 +1,7 @@
 package com.changlianxi.data;
 
+import android.database.sqlite.SQLiteDatabase;
+
 
 public abstract class AbstractData implements IData {
 
@@ -8,6 +10,16 @@ public abstract class AbstractData implements IData {
 	};
 
 	protected Status status = Status.NEW;
+
+	@Override
+	public void read(SQLiteDatabase db) {
+		return;
+	}
+	
+	@Override
+	public void write(SQLiteDatabase db) {
+		return;
+	}
 
 	@Override
 	public void update(IData data) {
