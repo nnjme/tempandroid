@@ -14,6 +14,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.data.Circle;
 import com.changlianxi.modle.CircleIdetailModle;
 import com.changlianxi.modle.GrowthImgModle;
@@ -38,6 +39,7 @@ import com.changlianxi.util.StringUtils;
 public class DBUtils {
 	public static DataBase dbase = DataBase.getInstance();
 	public static SQLiteDatabase db = dbase.getWritableDatabase();
+	//public static SQLiteDatabase db = DBHelper.getInstance(CLXApplication.getInstance()).getWritableDatabase();
 
 	/**
 	 * 将圈子成员插入本地数据库

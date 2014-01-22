@@ -1,6 +1,8 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +62,7 @@ import com.changlianxi.util.DateUtils;
  */
 @SuppressLint("UseSparseArrays")
 public class CircleMemberList extends AbstractData {
-	public final static String LIST_API = "circles/imembers";
+	public final static String LIST_API = "/circles/imembers";
 	private int cid = 0;
 	private long startTime = 0L; // data start time, in milliseconds
 	private long endTime = 0L; // data end time
@@ -69,6 +71,11 @@ public class CircleMemberList extends AbstractData {
 	private long lastDelReqTime = 0L; // last request time of del data
 	private int total = 0;
 	private List<CircleMember> members = new ArrayList<CircleMember>();
+	private Type type;
+	
+	enum Type{
+		NEW,MOD,DEL
+	}
 
 	public CircleMemberList(int cid) {
 		this.cid = cid;
@@ -212,9 +219,21 @@ public class CircleMemberList extends AbstractData {
 
 			// write last request time
 			ContentValues cv = new ContentValues();
-			cv.put("last_new_req_time", lastNewReqTime);
-			cv.put("last_mod_req_time", lastModReqTime);
-			cv.put("last_del_req_time", lastDelReqTime);
+			String subkey = "";
+			if (type == Type.NEW) {
+				subkey = "last_new_req_time";
+				cv.put("time", lastNewReqTime);
+			} else if (type == Type.MOD) {
+				subkey = "last_mod_req_time";
+				cv.put("time", lastModReqTime);
+			} else if (type == Type.DEL) {
+				subkey = "last_del_req_time";
+				cv.put("time", lastDelReqTime);
+			}
+			cv.put("subkey", subkey);
+//			cv.put("last_new_req_time", lastNewReqTime);
+//			cv.put("last_mod_req_time", lastModReqTime);
+//			cv.put("last_del_req_time", lastDelReqTime);
 			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
 					new String[] { "c" + this.cid });
 
@@ -238,42 +257,50 @@ public class CircleMemberList extends AbstractData {
 			olds.put(m.getPid(), m);
 		}
 
-		String type = "";
 		for (CircleMember am : another.members) {
 			if (olds.containsKey(am.getPid())) {
 				if (am.getStatus() == Status.UPDATE
 						&& olds.get(am.getPid()).getStatus() != Status.DEL) {
 					// update
 					olds.get(am.getPid()).updateListSummary(am);
-					type = "mod";
+					type = Type.MOD;
 				} else if (am.getStatus() == Status.DEL) {
 					// del
 					olds.get(am.getPid()).setStatus(Status.DEL);
-					type = "del";
+					type = Type.DEL;
 					this.total--;
 				}
 			} else {
 				// new
 				if (am.getStatus() == Status.NEW) {
 					this.members.add(am);
-					type = "new";
+					type = Type.NEW;
 					this.total++;
 				}
 			}
 		}
-
+		
 		// update request time, start and end time
-		if ("new" == type) {
+		if (type == Type.NEW) {
 			this.setLastNewReqTime(another.getLastNewReqTime());
 			this.startTime = Math.min(this.startTime, another.getStartTime());
 			this.endTime = Math.max(this.endTime, another.getEndTime());
-		} else if ("mod" == type) {
+		} else if (type == Type.MOD) {
 			this.setLastModReqTime(another.getLastModReqTime());
-		} else if ("del" == type) {
+		} else if (type == Type.DEL) {
 			this.setLastDelReqTime(another.getLastDelReqTime());
 		}
 
 		this.status = Status.UPDATE;
+		
+//		Collections.sort(members, new Comparator<CircleMember>() {
+//
+//			@Override
+//			public int compare(CircleMember lhs, CircleMember rhs) {
+//				// TODO Auto-generated method stub
+//				return lhs.getSort_key().compareTo(rhs.getSort_key());
+//			}
+//		});
 	}
 
 	/**
@@ -307,14 +334,11 @@ public class CircleMemberList extends AbstractData {
 			if (cml == null) {
 				break;
 			}
-
+			// update for data merge
+			update(cml);
 			if (cml.getTotal() <= cml.getMembers().size()) {
 				break;
 			}
-
-			// update for data merge
-			update(cml);
-
 			startTime = cml.getEndTime() + 1;
 		}
 	}
@@ -348,13 +372,12 @@ public class CircleMemberList extends AbstractData {
 			if (cml == null) {
 				break;
 			}
+			// update for data merge
+			update(cml);
 
 			if (cml.getTotal() <= cml.getMembers().size()) {
 				break;
 			}
-
-			// update for data merge
-			update(cml);
 
 			startTime = cml.getEndTime() + 1;
 		}
@@ -389,13 +412,11 @@ public class CircleMemberList extends AbstractData {
 			if (cml == null) {
 				break;
 			}
-
+			// update for data merge
+			update(cml);
 			if (cml.getTotal() <= cml.getMembers().size()) {
 				break;
 			}
-
-			// update for data merge
-			update(cml);
 
 			startTime = cml.getEndTime() + 1;
 		}
@@ -439,7 +460,7 @@ public class CircleMemberList extends AbstractData {
 		if (endTime > 0) {
 			params.put("end", endTime);
 		}
-
+		params.put("cid", cid);
 		Result ret = ApiRequest.requestWithToken(CircleMemberList.LIST_API,
 				params, parser);
 		return ret;

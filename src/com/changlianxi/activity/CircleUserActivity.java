@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,8 +35,13 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.adapter.MyAdapter;
+import com.changlianxi.data.CircleMember;
+import com.changlianxi.data.CircleMemberList;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.MemberModle;
+import com.changlianxi.task.BaseAsyncTask;
+import com.changlianxi.task.CircleMemberListTask;
 import com.changlianxi.task.GetCircleUserTask;
 import com.changlianxi.task.GetCircleUserTask.GetCircleUserList;
 import com.changlianxi.task.PostAsyncTask;
@@ -66,8 +72,8 @@ public class CircleUserActivity extends BaseActivity implements
 	private MyAdapter adapter;
 	private ListView listView;
 	private TextView selectedChar;// 显示选择字母
-	private List<MemberModle> listModles = new ArrayList<MemberModle>();// 存储成员列表
-	private List<MemberModle> searchListModles = new ArrayList<MemberModle>();// 存储搜索列表
+	//private List<MemberModle> listModles = new ArrayList<MemberModle>();// 存储成员列表
+	private List<CircleMember> searchListModles = new ArrayList<CircleMember>();// 存储搜索列表
 	private int position;// 当前字母子listview中所对应的位置
 	private String cid;// 圈子ID
 	private ImageView btadd;
@@ -81,38 +87,32 @@ public class CircleUserActivity extends BaseActivity implements
 	private int status;// 0 拒绝 1 接受
 	private SearchEditText editSearch;
 	private String inviterID = "";
-	private GetCircleUserTask task;
-	private Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case 0:
-				listModles = DBUtils.getUserListByCid(cid);
-				initView();
-				setMyAdapter();
-				getServerList();
-				//filldata();
-				break;
-			default:
-				break;
-			}
-		}
-	};
+	private CircleMemberListTask task;
+	private CircleMemberList circleMemberList;
+//	private GetCircleUserTask task;
 
-	private void filldata(){
-		if (Utils.isNetworkAvailable()) {
-			if (listModles.size() == 0) {
-				progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
-				progressDialog.show();
-			}
-			task = new GetCircleUserTask(cid);
-			task.setTaskCallBack(this);
-			task.execute();
-		} else {
-			Utils.showToast("请检查网络");
+	private void filldata() {
+		if(circleMemberList == null)
+			circleMemberList = new CircleMemberList(Integer.parseInt(cid));
+		if (circleMemberList.getMembers().size() == 0) {
+			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
+			progressDialog.show();
 		}
+		task = new CircleMemberListTask();
+		task.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
+
+			@Override
+			public void taskFinish(RetError result) {
+				// TODO Auto-generated method stub
+				layInvitate.setVisibility(View.GONE);
+				progressDialog.dismiss();
+				adapter = new MyAdapter(CircleUserActivity.this, circleMemberList);
+				listView.setAdapter(adapter);
+			}
+		});
+		task.executeWithCheckNet(circleMemberList);
 	}
-	
+
 	@SuppressLint("HandlerLeak")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -121,34 +121,35 @@ public class CircleUserActivity extends BaseActivity implements
 		cid = getIntent().getStringExtra("cirID");
 		isnew = getIntent().getBooleanExtra("is_New", false);
 		inviterID = getIntent().getStringExtra("inviterID");
-		mHandler.sendEmptyMessageDelayed(0, 100);
-	}
-	
-
-	private void getServerList() {
-		if (Utils.isNetworkAvailable()) {
-			if (listModles.size() == 0) {
-				progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
-				progressDialog.show();
-			}
-			task = new GetCircleUserTask(cid);
-			task.setTaskCallBack(this);
-			task.execute();
-		} else {
-			Utils.showToast("请检查网络");
-		}
+		initView();
+		filldata();
 	}
 
-	private void setMyAdapter() {
-		adapter = new MyAdapter(CircleUserActivity.this, listModles);
-		listView.setAdapter(adapter);
-	}
+//	 private void getServerList() {
+//	 if (Utils.isNetworkAvailable()) {
+//	 if (listModles.size() == 0) {
+//	 progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
+//	 progressDialog.show();
+//	 }
+//	 task = new GetCircleUserTask(cid);
+//	 task.setTaskCallBack(this);
+//	 task.execute();
+//	 } else {
+//	 Utils.showToast("请检查网络");
+//	 }
+//	 }
+
+//	private void setMyAdapter() {
+//		adapter = new MyAdapter(CircleUserActivity.this, listModles);
+//		adapter = new MyAdapter(CircleUserActivity.this, circleMemberList);
+//		listView.setAdapter(adapter);
+//	}
 
 	@Override
 	protected void onRestart() {
 		super.onRestart();
-		getServerList();
-
+//		 getServerList();
+		filldata();
 	}
 
 	@Override
@@ -198,8 +199,8 @@ public class CircleUserActivity extends BaseActivity implements
 		listView = (ListView) findViewById(R.id.cy_list);
 		listView.setCacheColorHint(0);
 		listView.setOnItemClickListener(this);
-		MyComparator compartor = new MyComparator();
-		Collections.sort(listModles, compartor);
+//		MyComparator compartor = new MyComparator();
+//		Collections.sort(listModles, compartor);
 		View view = LayoutInflater.from(this).inflate(R.layout.header, null);
 		editSearch = (SearchEditText) view.findViewById(R.id.search);
 		editSearch.addTextChangedListener(new EditWather());
@@ -219,7 +220,7 @@ public class CircleUserActivity extends BaseActivity implements
 			String key = s.toString().toLowerCase();
 			if (key.length() == 0) {
 				Utils.hideSoftInput(CircleUserActivity.this);
-				adapter.setData(listModles);
+				adapter.setData(circleMemberList.getMembers());
 				indexBar.setVisibility(View.VISIBLE);
 				editSearch.setCompoundDrawables(null, null, null, null);
 				return;
@@ -229,14 +230,14 @@ public class CircleUserActivity extends BaseActivity implements
 			editSearch.setCompoundDrawables(null, null, del, null);
 			indexBar.setVisibility(View.GONE);
 			searchListModles.clear();
-			for (int i = 0; i < listModles.size(); i++) {
-				String name = listModles.get(i).getName();
-				String pinyin = listModles.get(i).getSort_key().toLowerCase();
-				String pinyinFir = listModles.get(i).getKey_pinyin_fir();
-				String mobileNum = listModles.get(i).getMobileNum();
+			for (int i = 0; i < circleMemberList.getMembers().size(); i++) {
+				String name = circleMemberList.getMembers().get(i).getName();
+				String pinyin = circleMemberList.getMembers().get(i).getSortkey().toLowerCase();
+				String pinyinFir = circleMemberList.getMembers().get(i).getPinyinFir();
+				String mobileNum = circleMemberList.getMembers().get(i).getCellphone();
 				if (name.contains(key) || pinyin.contains(key)
 						|| pinyinFir.contains(key) || mobileNum.contains(key)) {
-					MemberModle modle = listModles.get(i);
+					CircleMember modle = circleMemberList.getMembers().get(i);
 					searchListModles.add(modle);
 
 				}
@@ -266,8 +267,8 @@ public class CircleUserActivity extends BaseActivity implements
 	 */
 	public int findIndexer(String s) {
 		int position = 0;
-		for (int i = 0; i < listModles.size(); i++) {
-			String sortkey = listModles.get(i).getSort_key();
+		for (int i = 0; i < circleMemberList.getMembers().size(); i++) {
+			String sortkey = circleMemberList.getMembers().get(i).getSortkey();
 			if (sortkey.startsWith(s)) {
 				position = i;
 				break;
@@ -296,21 +297,21 @@ public class CircleUserActivity extends BaseActivity implements
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		int position = arg2 - 2;
-		String pid = "";
-		String uid = "";
+		int pid = 0;
+		int uid = 0;
 		String iconImg = "";
 		String username = "";
 		if (searchListModles.size() > 0) {
 			uid = searchListModles.get(position).getUid();
-			iconImg = searchListModles.get(position).getImg();
+			iconImg = searchListModles.get(position).getAvatar();
 			username = searchListModles.get(position).getName();
-			pid = searchListModles.get(position).getId();
+			pid = searchListModles.get(position).getPid();
 
 		} else {
-			uid = listModles.get(position).getUid();
-			iconImg = listModles.get(position).getImg();
-			username = listModles.get(position).getName();
-			pid = listModles.get(position).getId();
+			uid = circleMemberList.getMembers().get(position).getUid();
+			iconImg = circleMemberList.getMembers().get(position).getAvatar();
+			username = circleMemberList.getMembers().get(position).getName();
+			pid = circleMemberList.getMembers().get(position).getPid();
 		}
 		Intent it = new Intent();
 		it.setClass(this, UserInfoActivity.class);
@@ -397,40 +398,40 @@ public class CircleUserActivity extends BaseActivity implements
 		super.onDestroy();
 	}
 
-	@Override
-	public void taskFinish(String result) {
-		layInvitate.setVisibility(View.GONE);
-		progressDialog.dismiss();
-		try {
-			JSONObject json = new JSONObject(result);
-			Intent intent = new Intent();
-			int rt = json.getInt("rt");
-			if (rt != 1) {
-				String errorCode = json.getString("err");
-				String err = ErrorCodeUtil.convertToChines(errorCode);
-				Utils.showToast(err);
-				return;
-			}
-			if (status == 1) {
-				// Home.acceptOrRefuseInvite(cid, false);
-				intent.setAction(Constants.ACCEPT_OR_REFUSE_INVITE);
-				intent.putExtra("cid", cid);
-				intent.putExtra("flag", false);
-				sendBroad(intent);
-				getServerList();// 更新列表
-			} else {
-				// Home.exitCircle(cid);
-				intent.setAction(Constants.EXIT_CIRCLE);
-				intent.putExtra("cid", cid);
-				sendBroad(intent);
-				finish();
-				this.getParent().overridePendingTransition(R.anim.right_in,
-						R.anim.right_out);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-	}
+//	@Override
+//	public void taskFinish(String result) {
+//		layInvitate.setVisibility(View.GONE);
+//		progressDialog.dismiss();
+//		try {
+//			JSONObject json = new JSONObject(result);
+//			Intent intent = new Intent();
+//			int rt = json.getInt("rt");
+//			if (rt != 1) {
+//				String errorCode = json.getString("err");
+//				String err = ErrorCodeUtil.convertToChines(errorCode);
+//				Utils.showToast(err);
+//				return;
+//			}
+//			if (status == 1) {
+//				// Home.acceptOrRefuseInvite(cid, false);
+//				intent.setAction(Constants.ACCEPT_OR_REFUSE_INVITE);
+//				intent.putExtra("cid", cid);
+//				intent.putExtra("flag", false);
+//				sendBroad(intent);
+//				getServerList();// 更新列表
+//			} else {
+//				// Home.exitCircle(cid);
+//				intent.setAction(Constants.EXIT_CIRCLE);
+//				intent.putExtra("cid", cid);
+//				sendBroad(intent);
+//				finish();
+//				this.getParent().overridePendingTransition(R.anim.right_in,
+//						R.anim.right_out);
+//			}
+//		} catch (JSONException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	/**
 	 * 发送广播
@@ -444,15 +445,21 @@ public class CircleUserActivity extends BaseActivity implements
 
 	@Override
 	public void getCircleUserList(List<MemberModle> listModle) {
-		if (progressDialog != null) {
-			progressDialog.dismiss();
-		}
-		if (listModle.size() == 0) {
-			return;
-		}
-		listModles.clear();
-		listModles = listModle;
-		adapter.setData(listModles);
+//		if (progressDialog != null) {
+//			progressDialog.dismiss();
+//		}
+//		if (listModle.size() == 0) {
+//			return;
+//		}
+//		circleMemberList.getMembers().clear();
+//		listModles = listModle;
+//		adapter.setData(listModles);
+	}
+
+	@Override
+	public void taskFinish(String result) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

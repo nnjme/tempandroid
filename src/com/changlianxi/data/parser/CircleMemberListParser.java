@@ -1,6 +1,8 @@
 package com.changlianxi.data.parser;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +15,16 @@ import com.changlianxi.data.CircleMemberList;
 import com.changlianxi.data.enums.CircleMemberState;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.MyComparator;
+import com.changlianxi.util.PinyinUtils;
 
 public class CircleMemberListParser implements IParser {
-
+	
+//	private CircleMemberList cml;
+//	public CircleMemberListParser(CircleMemberList circleMemberList) {
+//		// TODO Auto-generated constructor stub
+//		this.cml = circleMemberList;
+//	}
 	@Override
 	public Result parse(Map<String, Object> params, JSONObject jsonObj)
 			throws Exception {
@@ -48,6 +57,9 @@ public class CircleMemberListParser implements IParser {
 			String location = obj.getString("location");
 			int roleId = obj.getInt("role_id");
 			String state = obj.getString("state");
+			String auth = obj.getString("auth");
+			String sortkey = PinyinUtils.getPinyin(name).toUpperCase();
+			String pinyinFir = PinyinUtils.getPinyinFrt(name).toLowerCase();
 
 			CircleMember m = new CircleMember(cid, pid, uid);
 			m.setName(name);
@@ -58,6 +70,9 @@ public class CircleMemberListParser implements IParser {
 			m.setLocation(location);
 			m.setRoleId(roleId);
 			m.setState(CircleMemberState.convert(state));
+			m.setSortkey(sortkey);
+			m.setPinyinFir(pinyinFir);
+			m.setAuth(auth);
 
 			if ("mod".equals(type)) {
 				m.setStatus(Status.UPDATE);
@@ -81,6 +96,17 @@ public class CircleMemberListParser implements IParser {
 		}
 
 		CircleMemberList cml = new CircleMemberList(cid);
+		// TODO 进行排序
+		//MyComparator compartor = new MyComparator();
+		Collections.sort(members, new Comparator<CircleMember>() {
+
+			@Override
+			public int compare(CircleMember lhs, CircleMember rhs) {
+				// TODO Auto-generated method stub
+				return lhs.getSortkey().compareTo(rhs.getSortkey());
+			}
+		});
+		
 		cml.setMembers(members);
 		if ("mod".equals(type)) {
 			cml.setLastModReqTime(requestTime);

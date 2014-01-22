@@ -71,10 +71,10 @@ import com.changlianxi.db.Const;
  * 
  */
 public class CircleMember extends AbstractData {
-	public final static String DETAIL_API = "people/idetail";
-	public final static String BASIC_API = "people/ibasic";
-	public final static String EDIT_API = "people/iedit";
-	public final static String UPLOAD_AVATAR_API = "people/iuploadAvatar";
+	public final static String DETAIL_API = "/people/idetail";
+	public final static String BASIC_API = "/people/ibasic";
+	public final static String EDIT_API = "/people/iedit";
+	public final static String UPLOAD_AVATAR_API = "/people/iuploadAvatar";
 
 	private int cid = 0;
 	private int uid = 0;
@@ -92,9 +92,38 @@ public class CircleMember extends AbstractData {
 	private String leaveTime = "";
 	private int roleId = 0;
 	private String detailIds = "";
+	private String auth = "";
+	private String sortkey = "";// 用来排序的关键字
+	private String pinyinFir = "";// 名字首字母//搜索时使用
 	private List<PersonDetail> details = new ArrayList<PersonDetail>();
 
 	private CircleMemberState state = CircleMemberState.STATUS_INVALID;
+
+	
+	public String getAuth() {
+		return auth;
+	}
+
+	public void setAuth(String auth) {
+		this.auth = auth;
+	}
+
+
+	public String getSortkey() {
+		return sortkey;
+	}
+
+	public void setSortkey(String sortkey) {
+		this.sortkey = sortkey;
+	}
+
+	public String getPinyinFir() {
+		return pinyinFir;
+	}
+
+	public void setPinyinFir(String pinyinFir) {
+		this.pinyinFir = pinyinFir;
+	}
 
 	public CircleMember(int cid) {
 		this(cid, 0);
@@ -270,7 +299,7 @@ public class CircleMember extends AbstractData {
 		Cursor cursor = db.query(Const.CIRCLE_MEMBER_TABLE_NAME, new String[] {
 				"uid", "name", "cellphone", "location", "gendar", "avatar", "birthday",
 				"employer", "jobtitle", "joinTime", "lastModTime", "leaveTime", "roleId",
-				"state", "detailIds" }, "cid=? and pid=?", new String[] { this.cid + "",
+				"state", "detailIds","auth","pinyinFir","sortkey" }, "cid=? and pid=?", new String[] { this.cid + "",
 				this.pid + "" }, null, null, null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
@@ -299,7 +328,13 @@ public class CircleMember extends AbstractData {
 			String state = cursor.getString(cursor.getColumnIndex("state"));
 			String detailIds = cursor.getString(cursor
 					.getColumnIndex("detailIds"));
+			String auth = cursor.getString(cursor.getColumnIndex("auth"));
+			String pinyinFir = cursor.getString(cursor.getColumnIndex("pinyinFir"));
+			String sortkey = cursor.getString(cursor.getColumnIndex("sortkey"));
 			
+			this.sortkey = sortkey;
+			this.pinyinFir = pinyinFir;
+			this.auth = auth;
 			this.uid = uid;
 			this.name = name;
 			this.cellphone = cellphone;
@@ -367,6 +402,9 @@ public class CircleMember extends AbstractData {
 		cv.put("leaveTime", leaveTime);
 		cv.put("roleId", roleId);
 		cv.put("state", state.name());
+		cv.put("sortkey", sortkey);
+		cv.put("pinyinFir", pinyinFir);
+		cv.put("auth", auth);
 
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
@@ -443,6 +481,10 @@ public class CircleMember extends AbstractData {
 		}
 		if (!this.jobtitle.equals(another.jobtitle)) {
 			this.jobtitle = another.jobtitle;
+			isChange = true;
+		}
+		if(!this.auth.equals(another.auth)){
+			this.auth = another.auth;
 			isChange = true;
 		}
 

@@ -29,6 +29,8 @@ public class CLXApplication extends Application {
 	private static List<Activity> activityList = new ArrayList<Activity>();
 	private static List<Activity> smsInviteAactivityList = new ArrayList<Activity>();
 	public static long circleListLastRefreshTime;//圈子列表的上次请求时间
+	public static long circleMemberLastRefreshTime;//圈子成员上次请求时间
+	public static long circleMemberListLastRefreshTime;//圈子成员列表上次请求时间
 
 	public static CLXApplication getInstance() {
 		return instance;

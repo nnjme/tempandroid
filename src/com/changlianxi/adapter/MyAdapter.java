@@ -18,6 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
+import com.changlianxi.data.CircleMember;
+import com.changlianxi.data.CircleMemberList;
 import com.changlianxi.R;
 import com.changlianxi.modle.MemberModle;
 import com.changlianxi.view.CircularImage;
@@ -31,16 +33,19 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * 
  */
 public class MyAdapter extends BaseAdapter {
-	private List<MemberModle> list;
+	//private List<MemberModle> list;
 	private Context context;
 	private HashMap<String, Integer> alphaIndexer;// 保存每个索引在list中的位置�?-0，A-4，B-10�?
 	private String[] sections;// 每个分组的索引表【A,B,C,F...�?
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
+	
+	private CircleMemberList circleMemberList;
+	private List<CircleMember> circleMembers;
 
 	public MyAdapter(Context context, List<MemberModle> list) {
 		this.context = context;
-		this.list = list;
+		//this.list = list;
 		this.alphaIndexer = new HashMap<String, Integer>();
 		this.sections = new String[list.size()];
 		for (int i = 1; i < list.size(); i++) {
@@ -57,14 +62,23 @@ public class MyAdapter extends BaseAdapter {
 		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 	}
+	
+	public MyAdapter(Context context, CircleMemberList list) {
+		// TODO Auto-generated constructor stub
+		options = CLXApplication.getUserOptions();
+		imageLoader = CLXApplication.getImageLoader();
+		this.circleMemberList = list;
+		this.context = context;
+		circleMembers = circleMemberList.getMembers();
+	}
 
 	@Override
 	public int getCount() {
-		return list.size();
+		return circleMembers.size();
 	}
 
-	public void setData(List<MemberModle> list) {
-		this.list = list;
+	public void setData(List<CircleMember> list) {
+		this.circleMembers = list;
 		notifyDataSetChanged();
 	}
 
@@ -99,16 +113,16 @@ public class MyAdapter extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-		if (list.get(position).isAuth()) {
+		if (circleMembers.get(position).getAuth().equals("1")) {
 			holder.imgAuth.setVisibility(View.VISIBLE);
 		} else {
 			holder.imgAuth.setVisibility(View.GONE);
 		}
-		String employer = list.get(position).getEmployer();
-		holder.info.setText(employer.equals("") ? list.get(position)
+		String employer = circleMembers.get(position).getEmployer();
+		holder.info.setText(employer.equals("") ? circleMembers.get(position)
 				.getLocation() : employer);
-		holder.name.setText(list.get(position).getName());
-		holder.news.setText(list.get(position).getMobileNum());
+		holder.name.setText(circleMembers.get(position).getName());
+		holder.news.setText(circleMembers.get(position).getCellphone());
 		showAlpha(position, holder);
 		if (position % 2 == 0) {
 			holder.changeBg.setBackgroundColor(Color.WHITE);
@@ -116,7 +130,7 @@ public class MyAdapter extends BaseAdapter {
 			holder.changeBg.setBackgroundColor(context.getResources().getColor(
 					R.color.f6));
 		}
-		String path = list.get(position).getImg();
+		String path = circleMembers.get(position).getAvatar();
 		if (path.equals("") || path == null) {
 			holder.img.setImageResource(R.drawable.head_bg);
 		} else {
@@ -127,10 +141,10 @@ public class MyAdapter extends BaseAdapter {
 
 	private void showAlpha(int position, ViewHolder holder) {
 		// 当前联系人的sortKey
-		String currentStr = getAlpha(list.get(position).getSort_key());
+		String currentStr = getAlpha(circleMembers.get(position).getSortkey());
 		// 上一个联系人的sortKey
-		String previewStr = (position - 1) >= 0 ? getAlpha(list.get(
-				position - 1).getSort_key()) : " ";
+		String previewStr = (position - 1) >= 0 ? getAlpha(circleMembers.get(
+				position - 1).getSortkey()) : " ";
 		/**
 		 * 判断显示#、A-Z的TextView隐藏与可�?
 		 */
