@@ -164,7 +164,14 @@ public class GrowthList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (Growth growth : growths) {
+				if (growth.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.GROWTH_MAX_CACHE_COUNT_PER_CIRCLE) {
+					growth.setStatus(Status.DEL);
+				}
 				growth.write(db);
 			}
 

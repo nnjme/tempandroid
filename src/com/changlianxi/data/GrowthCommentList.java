@@ -181,7 +181,14 @@ public class GrowthCommentList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (GrowthComment comment : comments) {
+				if (comment.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.GROWTH_COMMENT_MAX_CACHE_COUNT_PER_ITEM) {
+					comment.setStatus(Status.DEL);
+				}
 				comment.write(db);
 			}
 

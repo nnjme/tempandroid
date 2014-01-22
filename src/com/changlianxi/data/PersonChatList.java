@@ -49,7 +49,7 @@ public class PersonChatList extends AbstractData {
 	private int partner = 0;
 	private long startTime = 0L; // data start time, in milliseconds
 	private long endTime = 0L; // data end time
-	private long lastReqTime = 0L; // last request time of chat data // TODO need this?
+	private long lastReqTime = 0L; // last request time of chat data
 	private int total = 0;
 	private List<PersonChat> chats = new ArrayList<PersonChat>();
 
@@ -167,7 +167,14 @@ public class PersonChatList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (PersonChat chat : chats) {
+				if (chat.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.CHAT_MAX_CACHE_COUNT_PER_PERSON) {
+					chat.setStatus(Status.DEL);
+				}
 				chat.write(db);
 			}
 

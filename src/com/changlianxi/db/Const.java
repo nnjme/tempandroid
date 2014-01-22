@@ -71,4 +71,11 @@ public class Const {
 	public static final String AMENDMENT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
 			+ " amid integer, cid integer, uid integer, content varchar, time varchar";
 
+	
+	public static final int DYNAMIC_MAX_CACHE_COUNT_PER_CIRCLE = 100;
+	public static final int GROWTH_MAX_CACHE_COUNT_PER_CIRCLE = 40;
+	public static final int GROWTH_COMMENT_MAX_CACHE_COUNT_PER_ITEM = 20;
+	public static final int CHAT_MAX_CACHE_COUNT_PER_CIRCLE = 200;
+	public static final int CHAT_MAX_CACHE_COUNT_PER_PERSON = 40;
+	
 }

@@ -167,7 +167,14 @@ public class CircleChatList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (CircleChat chat : chats) {
+				if (chat.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.CHAT_MAX_CACHE_COUNT_PER_CIRCLE) {
+					chat.setStatus(Status.DEL);
+				}
 				chat.write(db);
 			}
 
