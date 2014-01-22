@@ -12,11 +12,12 @@ import org.json.JSONObject;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,6 +30,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.changlianxi.R;
 import com.changlianxi.inteface.UpLoadPic;
 import com.changlianxi.modle.SelectPicModle;
 import com.changlianxi.popwindow.SelectPicPopwindow;
@@ -44,8 +50,15 @@ import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.GrowthImgGridView;
 import com.changlianxi.view.RoundAngleImageView;
-import com.changlianxi.R;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
+/**
+ * 发布成长界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class ReleaseGrowthActivity extends BaseActivity implements
 		OnClickListener, UpLoadPic, OnItemClickListener {
 	private EditText time;
@@ -68,11 +81,39 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 	private List<String> imgID = new ArrayList<String>();
 	private SelectPicPopwindow pop;
 	private TextView titleTxt;
+	private DisplayImageOptions options;
+	private ImageLoader imageLoader;
+	private LocationClient mClient;
+	private LocationClientOption mOption;
+	private String mLBSAddress;
+	private Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+			switch (msg.what) {
+			case 0:
+				if (mClient.isStarted()) {
+					mClient.stop();
+				}
+				if (mLBSAddress != null) {
+					location.setText(mLBSAddress);
+
+				}
+				break;
+			}
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_release_growth_main);
+		imageLoader = CLXApplication.getImageLoader();
+		options = new DisplayImageOptions.Builder()
+				.showStubImage(R.drawable.empty_photo)
+				.showImageForEmptyUri(R.drawable.empty_photo)
+				.showImageOnFail(R.drawable.empty_photo).cacheInMemory(true)
+				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
+				.build();
 		time = (EditText) findViewById(R.id.time);
 		location = (EditText) findViewById(R.id.location);
 		content = (EditText) findViewById(R.id.content);
@@ -84,17 +125,33 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 		}
 		cid = getIntent().getStringExtra("cid");
 		btnUpload = (Button) findViewById(R.id.btnUpload);
-		btnUpload.setOnClickListener(this);
 		btnback = (ImageView) findViewById(R.id.back);
-		btnback.setOnClickListener(this);
 		gridView = (GrowthImgGridView) findViewById(R.id.imgGridview);
-		gridView.setOnItemClickListener(this);
 		adapter = new MyAdapter();
 		gridView.setAdapter(adapter);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("发布成长记录");
 		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+		initLBS();
+		setListener();
+		mClient.start();
+		mClient.requestLocation();
+	}
 
+	private void setListener() {
+		btnback.setOnClickListener(this);
+		btnUpload.setOnClickListener(this);
+		gridView.setOnItemClickListener(this);
+		mClient.registerLocationListener(new BDLocationListener() {
+			public void onReceivePoi(BDLocation arg0) {
+
+			}
+
+			public void onReceiveLocation(BDLocation arg0) {
+				mLBSAddress = arg0.getAddrStr();
+				handler.sendEmptyMessage(0);
+			}
+		});
 	}
 
 	/**
@@ -112,12 +169,22 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 			PicModle modle = new PicModle();
 			modle.setPath(urlPath.get(i));
 			modle.setFilePath(Utils.createFilePath(urlPath.get(i)));
-			Bitmap bm = BitmapFactory.decodeFile(Utils.createFilePath(urlPath
-					.get(i)));
-			modle.setBmp(bm);
 			modle.setImgID(imgID.get(i));
 			listBmp.add(listBmp.size() - 1, modle);
 		}
+	}
+
+	private void initLBS() {
+		mOption = new LocationClientOption();
+		mOption.setOpenGps(true);
+		mOption.setCoorType("bd09ll");
+		mOption.setAddrType("all");
+		mOption.setScanSpan(100);
+		mOption.disableCache(true);
+		mOption.setPoiNumber(20);
+		mOption.setPoiDistance(1000);
+		mOption.setPoiExtraInfo(true);
+		mClient = new LocationClient(this, mOption);
 	}
 
 	@Override
@@ -151,6 +218,7 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 	class UpDataTask extends AsyncTask<String, Integer, String> {
 		// 可变长的输入参数，与AsyncTask.exucute()对应
 		UpLoadGrowthPicTask picTask;
+		String errCode = "";
 
 		@Override
 		protected String doInBackground(String... params) {
@@ -170,6 +238,8 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 				rt = jsonobject.getString("rt");
 				if (rt.equals("1")) {
 					gid = jsonobject.getString("gid");
+				} else {
+					errCode = jsonobject.getString("err");
 				}
 			} catch (JSONException e) {
 				Logger.error(this, e);
@@ -217,7 +287,7 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 				picTask.setGrowthCallBack(ReleaseGrowthActivity.this);
 				picTask.execute();
 			} else {
-				Utils.showToast("发布失败!");
+				Utils.showToast(ErrorCodeUtil.convertToChines(errCode));
 				progressDialog.dismiss();
 				finish();
 				Utils.rightOut(ReleaseGrowthActivity.this);
@@ -370,10 +440,14 @@ public class ReleaseGrowthActivity extends BaseActivity implements
 				holder.del.setVisibility(View.GONE);
 				holder.img.setImageResource(R.drawable.add_pic);
 			} else {
-				Bitmap bmp = listBmp.get(position).getBmp();
-				holder.img.setImageBitmap(bmp);
 				holder.del.setVisibility(View.VISIBLE);
-				// holder.del.setOnClickListener(new BtnDelClick(position));
+				String imgPath = listBmp.get(position).getPath();
+				if (imgPath.startsWith("http")) {
+					imageLoader.displayImage(imgPath, holder.img, options);
+				} else {
+					Bitmap bmp = listBmp.get(position).getBmp();
+					holder.img.setImageBitmap(bmp);
+				}
 			}
 			return convertView;
 		}

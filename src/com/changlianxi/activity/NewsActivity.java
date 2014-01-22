@@ -24,6 +24,8 @@ import com.changlianxi.db.DBUtils;
 import com.changlianxi.inteface.GetNewsList;
 import com.changlianxi.modle.NewsModle;
 import com.changlianxi.task.GetNewsListTask;
+import com.changlianxi.util.BroadCast;
+import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.view.PullDownView;
@@ -135,9 +137,10 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.back:
-			finish();
-			this.getParent().overridePendingTransition(R.anim.right_in,
-					R.anim.right_out);
+			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
+			// finish();
+			// this.getParent().overridePendingTransition(R.anim.right_in,
+			// R.anim.right_out);
 			break;
 		default:
 			break;
@@ -208,11 +211,13 @@ public class NewsActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			finish();
-			getParent().overridePendingTransition(R.anim.right_in,
-					R.anim.right_out);
+			// finish();
+			// getParent().overridePendingTransition(R.anim.right_in,
+			// R.anim.right_out);
+			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
+
 		}
-		return super.onKeyDown(keyCode, event);
+		return true;
 
 	}
 

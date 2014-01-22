@@ -68,7 +68,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@null"
-                                android:singleLine="true" >
+                                android:singleLine="true"
+                                android:textColor="#a0a0a0" >
                             </EditText>
                         </LinearLayout>
 
@@ -94,7 +95,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@null"
-                                android:singleLine="true" >
+                                android:singleLine="true"
+                                android:textColor="#a0a0a0" >
                             </EditText>
                         </LinearLayout>
                     </LinearLayout>
@@ -132,7 +134,8 @@
                         android:background="@null"
                         android:inputType="number"
                         android:maxLength="13"
-                        android:singleLine="true" >
+                        android:singleLine="true"
+                        android:textColor="#a0a0a0" >
                     </EditText>
                 </LinearLayout>
 
@@ -157,7 +160,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@null"
-                        android:singleLine="true" >
+                        android:inputType="textEmailAddress"
+                        android:singleLine="true"
+                        android:textColor="#a0a0a0" >
                     </EditText>
                 </LinearLayout>
 

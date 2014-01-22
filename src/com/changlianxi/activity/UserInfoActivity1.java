@@ -60,7 +60,7 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 	private String cid;// 圈子id
 	private String username;
 	private List<String> showGroupkey = new ArrayList<String>();
-	private List<List<Info>> listData = new ArrayList<List<Info>>();
+	private List<Info> listData = new ArrayList<Info>();
 	private List<Info> showBasicList = new ArrayList<Info>();// 存放基本信息数据
 	private List<Info> showContactList = new ArrayList<Info>();// 存放联系方式数据
 	private List<Info> showSocialList = new ArrayList<Info>();// 存放社交账号数据
@@ -83,6 +83,7 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 	private RelativeLayout layParent;
 	private RelativeLayout layTop;
 	private TextView txtnews;
+	private int count;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -191,24 +192,12 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 	}
 
 	private void addData() {
-		if (showBasicList.size() > 0) {
-			listData.add(showBasicList);
-		}
-		if (showContactList.size() > 0) {
-			listData.add(showContactList);
-		}
-		if (showSocialList.size() > 0) {
-			listData.add(showSocialList);
-		}
-		if (showAddressList.size() > 0) {
-			listData.add(showAddressList);
-		}
-		if (showEduList.size() > 0) {
-			listData.add(showEduList);
-		}
-		if (showWorkList.size() > 0) {
-			listData.add(showWorkList);
-		}
+		listData.addAll(showBasicList);
+		listData.addAll(showContactList);
+		listData.addAll(showSocialList);
+		listData.addAll(showAddressList);
+		listData.addAll(showEduList);
+		listData.addAll(showWorkList);
 	}
 
 	private void setAvatar() {
@@ -228,7 +217,7 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
 				if (bmp == null) {
-					avatar.setImageResource(R.drawable.pic);
+					avatar.setImageResource(R.drawable.head_bg);
 					return;
 				}
 				avatar.setImageBitmap(bmp);
@@ -315,9 +304,9 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 	}
 
 	class ValueAdapter extends BaseAdapter {
-		List<List<Info>> valuesList = new ArrayList<List<Info>>();
+		List<Info> valuesList = new ArrayList<Info>();
 
-		public ValueAdapter(List<List<Info>> listData) {
+		public ValueAdapter(List<Info> listData) {
 			this.valuesList = listData;
 		}
 
@@ -326,7 +315,7 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 			return valuesList.size();
 		}
 
-		public void setData(List<List<Info>> valuesList) {
+		public void setData(List<Info> valuesList) {
 			this.valuesList = valuesList;
 			notifyDataSetChanged();
 		}
@@ -346,25 +335,25 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 			ViewHolderValues holderValues = null;
 			if (convertView == null) {
 				convertView = LayoutInflater.from(UserInfoActivity1.this)
-						.inflate(R.layout.user_info_show_1_item, null);
+						.inflate(R.layout.user_info_show_1_item_item, null);
 				holderValues = new ViewHolderValues();
 				holderValues.layParent = (LinearLayout) convertView
-						.findViewById(R.id.layoutParent);
-				holderValues.layBg = (LinearLayout) convertView
-						.findViewById(R.id.bg);
+						.findViewById(R.id.parent);
+				holderValues.txtTitleKey = (TextView) convertView
+						.findViewById(R.id.titleKey);
+				holderValues.txtKey = (TextView) convertView
+						.findViewById(R.id.key);
+				holderValues.txtValue = (TextView) convertView
+						.findViewById(R.id.value);
 				convertView.setTag(holderValues);
-
 			} else {
 				holderValues = (ViewHolderValues) convertView.getTag();
 			}
-			if (position % 2 == 0) {
-				holderValues.layBg.setBackgroundColor(Color.WHITE);
-			} else {
-				holderValues.layBg.setBackgroundColor(UserInfoActivity1.this
-						.getResources().getColor(R.color.f6));
-			}
-			holderValues.layParent.removeAllViews();
-			addView(listData.get(position), holderValues.layParent);
+			holderValues.txtTitleKey.setText(valuesList.get(position)
+					.getTitleKey());
+			holderValues.txtKey.setText(valuesList.get(position).getKey());
+			holderValues.txtValue.setText(valuesList.get(position).getValue());
+			showTitlekey(holderValues, valuesList, position);
 			return convertView;
 		}
 	}
@@ -406,7 +395,7 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 				txtKey.setText(key);
 				txtTitleKey.setText(titleKey);
 				txtValue.setText(value);
-				showTitlekey(txtTitleKey, list, i);
+				// showTitlekey(txtTitleKey, list, i);
 				layParent.addView(view);
 			}
 		}
@@ -441,7 +430,7 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 			txtKey.setText(key);
 			txtTitleKey.setText(titleKey);
 			txtValue.setText(value);
-			showTitlekey(txtTitleKey, list, i);
+			// showTitlekey(txtTitleKey, list, i);
 			layParent.addView(view);
 		}
 	}
@@ -499,12 +488,13 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 			txtValue.setText(value);
 			txtendTime.setText(endTime);
 			txtstartTime.setText(startTime);
-			showTitlekey(txtTitleKey, list, i);
+			// showTitlekey(h, list, i);
 			layParent.addView(view);
 		}
 	}
 
-	private void showTitlekey(TextView titleKey, List<Info> list, int position) {
+	private void showTitlekey(ViewHolderValues holder, List<Info> list,
+			int position) {
 		// 当前titleKey
 		String currentStr = list.get(position).getTitleKey();
 		// 上一个titleKey
@@ -512,15 +502,24 @@ public class UserInfoActivity1 extends BaseActivity implements OnClickListener,
 				.getTitleKey() : " ";
 
 		if (!previewStr.equals(currentStr)) {
-			titleKey.setVisibility(View.VISIBLE);
+			holder.txtTitleKey.setVisibility(View.VISIBLE);
+			count += 1;
 		} else {
-			titleKey.setVisibility(View.INVISIBLE);
+			holder.txtTitleKey.setVisibility(View.INVISIBLE);
+		}
+		if (count % 2 == 0) {
+			holder.layParent.setBackgroundColor(Color.WHITE);
+		} else {
+			holder.layParent.setBackgroundColor(this.getResources().getColor(
+					R.color.f6));
 		}
 	}
 
 	class ViewHolderValues {
 		LinearLayout layParent;
-		LinearLayout layBg;
+		TextView txtTitleKey;
+		TextView txtKey;
+		TextView txtValue;
 
 	}
 

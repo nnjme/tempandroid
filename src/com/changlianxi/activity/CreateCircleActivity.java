@@ -48,6 +48,12 @@ import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
 
+/**
+ * 创建圈子界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class CreateCircleActivity extends BaseActivity implements
 		OnClickListener, UpLoadPic, PostCallBack {
 	private List<SmsPrevieModle> contactsList = new ArrayList<SmsPrevieModle>();
@@ -67,6 +73,8 @@ public class CreateCircleActivity extends BaseActivity implements
 	private String cmids = "";// 邀请成员时返回的邀请成员的id
 	private String code = "";// 邀请链接值 需要邀请时有值
 	private TextView titleTxt;
+	private boolean isCamera;
+	private String upLoadPath = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -79,7 +87,7 @@ public class CreateCircleActivity extends BaseActivity implements
 		editCirName = (EditText) findViewById(R.id.circleName);
 		description = (EditText) findViewById(R.id.description);
 		cirImg = (CircularImage) findViewById(R.id.circleIcon);
-		cirImg.setImageResource(R.drawable.pic);
+		cirImg.setImageResource(R.drawable.home_image_bg);
 		cirImg.setOnClickListener(this);
 		createCir = (Button) findViewById(R.id.createCircle);
 		createCir.setOnClickListener(this);
@@ -113,20 +121,24 @@ public class CreateCircleActivity extends BaseActivity implements
 				&& resultCode == RESULT_OK && data != null) {
 			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
 			cirIconPath = modle.getPicPath();
-			// cirImg.setImageBitmap(modle.getBmp());
-			BitmapUtils.startPhotoZoom(this, data.getData());
+			upLoadPath = BitmapUtils.startPhotoZoom(this, data.getData());
+			isCamera = false;
 
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-			if (resultCode != RESULT_OK) {
-				return;
-			}
 			String fileName = popWindow.getTakePhotoPath();
-			// bitmap = BitmapUtils.FitSizeImg(fileName);
 			cirIconPath = fileName;
-			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
-			// cirImg.setImageBitmap(bitmap);
-		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
+			upLoadPath = BitmapUtils.startPhotoZoom(this,
+					Uri.fromFile(new File(fileName)));
+			isCamera = true;
+		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP
+				&& data != null) {
+			if (isCamera) {
+				File file = new File(cirIconPath);
+				if (file.isFile() && file.exists()) {
+					file.delete();
+				}
+			}
 			Bundle extras = data.getExtras();
 			if (extras != null) {
 				Bitmap photo = extras.getParcelable("data");
@@ -240,7 +252,7 @@ public class CreateCircleActivity extends BaseActivity implements
 			if (isCreateSuccess(result)) {
 				// 上传圈子logo
 				CircleLogoAsyncTask cirTask = new CircleLogoAsyncTask(
-						cirIconPath, cid);
+						upLoadPath, cid);
 				cirTask.setCallBack(CreateCircleActivity.this);
 				cirTask.execute();
 			}

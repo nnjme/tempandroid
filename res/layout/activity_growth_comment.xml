@@ -104,7 +104,7 @@
 
                         <LinearLayout
                             android:id="@+id/layedit"
-                            android:layout_width="0dip"
+                            android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:layout_weight="1" >
 

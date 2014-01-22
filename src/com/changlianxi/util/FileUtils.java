@@ -90,4 +90,17 @@ public class FileUtils {
 		return getRootDir() + dir;
 
 	}
+
+	/**
+	 * 获取拍照路径
+	 */
+	public static String getCameraPath() {
+		String sdpath = getRootDir();
+		File destDir = new File(sdpath + "/clx/camera");
+		if (!destDir.exists()) {// 创建文件夹
+			destDir.mkdirs();
+		}
+		return destDir.getAbsolutePath();
+
+	}
 }

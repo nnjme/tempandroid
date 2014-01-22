@@ -9,6 +9,12 @@ import android.widget.TextView;
 import com.changlianxi.R;
 import com.changlianxi.util.Utils;
 
+/**
+ * 关于界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class AboutActivity extends BaseActivity implements OnClickListener {
 	private ImageView back;
 	private TextView titleTxt;
@@ -32,7 +38,6 @@ public class AboutActivity extends BaseActivity implements OnClickListener {
 		case R.id.back:
 			finish();
 			Utils.rightOut(this);
-
 			break;
 
 		default:

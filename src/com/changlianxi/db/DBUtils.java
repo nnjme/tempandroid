@@ -487,12 +487,13 @@ public class DBUtils {
 	 * @param uid
 	 * @return
 	 */
-	public static boolean isAuth(String uid) {
+	public static boolean isAuth(String uid, String cid) {
 		if (!db.isOpen()) {
 			db = dbase.getReadableDatabase();
 		}
-		Cursor cursor = db.query(Constants.USERLIST_TABLE, null, "userID='"
-				+ uid + "'", null, null, null, null);
+		Cursor cursor = db.query(Constants.USERLIST_TABLE, null,
+				"userID=? and cid=?", new String[] { uid, cid }, null, null,
+				null);
 		if (cursor.getCount() > 0) {
 			cursor.moveToFirst();
 			String auth = cursor.getString(cursor.getColumnIndex("auth"));

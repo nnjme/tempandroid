@@ -6,6 +6,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.Application;
 import android.app.NotificationManager;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 
@@ -99,9 +100,9 @@ public class CLXApplication extends Application {
 		}
 		ImageLoader.getInstance().init(builder.build());
 		circlOoptions = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.pic)
-				.showImageForEmptyUri(R.drawable.pic)
-				.showImageOnFail(R.drawable.pic).cacheInMemory(true)
+				.showStubImage(R.drawable.home_image_bg)
+				.showImageForEmptyUri(R.drawable.home_image_bg)
+				.showImageOnFail(R.drawable.home_image_bg).cacheInMemory(true)
 				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
 				.build();
 		userOptions = new DisplayImageOptions.Builder()

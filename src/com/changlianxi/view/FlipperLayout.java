@@ -1,7 +1,9 @@
 package com.changlianxi.view;
 
+import android.R;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -11,12 +13,6 @@ import android.widget.Scroller;
 
 import com.changlianxi.util.Utils;
 
-/**
- * 自己重写的ViewGroup,用与滑动切换界面使用,代码不详解,慢点看的话应该能看懂的...
- * 
- * @author rendongwei
- * 
- */
 public class FlipperLayout extends ViewGroup {
 
 	private Scroller mScroller;
@@ -34,14 +30,12 @@ public class FlipperLayout extends ViewGroup {
 	private int mScrollState = 0;
 	private int mVelocityValue = 0;
 	private boolean mOnClick = false;
-	private onUgcDismissListener mOnUgcDismissListener;
-	private onUgcShowListener mOnUgcShowListener;
 
 	public FlipperLayout(Context context) {
 		super(context);
 		mScroller = new Scroller(context);
-		mWidth = Utils.getSecreenWidth(context) / 2;
-
+		mWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+				178, getResources().getDisplayMetrics());
 	}
 
 	public FlipperLayout(Context context, AttributeSet attrs, int defStyle) {
@@ -71,7 +65,6 @@ public class FlipperLayout extends ViewGroup {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public boolean dispatchTouchEvent(MotionEvent ev) {
 		obtainVelocityTracker(ev);
 		switch (ev.getAction()) {
@@ -120,7 +113,6 @@ public class FlipperLayout extends ViewGroup {
 		return super.dispatchTouchEvent(ev);
 	}
 
-	@SuppressWarnings("deprecation")
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 		obtainVelocityTracker(ev);
 		switch (ev.getAction()) {
@@ -153,7 +145,6 @@ public class FlipperLayout extends ViewGroup {
 		return super.onInterceptTouchEvent(ev);
 	}
 
-	@SuppressWarnings("deprecation")
 	public boolean onTouchEvent(MotionEvent event) {
 		obtainVelocityTracker(event);
 		switch (event.getAction()) {
@@ -171,6 +162,7 @@ public class FlipperLayout extends ViewGroup {
 			mVelocityValue = (int) mVelocityTracker.getXVelocity();
 			getChildAt(1).scrollTo(-(int) event.getX(), 0);
 			break;
+
 		case MotionEvent.ACTION_UP:
 			if (mScrollState == SCROLL_STATE_ALLOW) {
 				if (mVelocityValue > 2000) {
@@ -241,16 +233,6 @@ public class FlipperLayout extends ViewGroup {
 		if (mScroller.computeScrollOffset()) {
 			getChildAt(1).scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
 			postInvalidate();
-		} else {
-			if (mScreenState == SCREEN_STATE_OPEN) {
-				if (mOnUgcDismissListener != null) {
-					mOnUgcDismissListener.dismiss();
-				}
-			} else if (mScreenState == SCREEN_STATE_CLOSE) {
-				if (mOnUgcShowListener != null) {
-					mOnUgcShowListener.show();
-				}
-			}
 		}
 	}
 
@@ -283,22 +265,5 @@ public class FlipperLayout extends ViewGroup {
 
 	public interface OnCloseListener {
 		public abstract void close();
-	}
-
-	public interface onUgcDismissListener {
-		public abstract void dismiss();
-	}
-
-	public interface onUgcShowListener {
-		public abstract void show();
-	}
-
-	public void setOnUgcDismissListener(
-			onUgcDismissListener onUgcDismissListener) {
-		mOnUgcDismissListener = onUgcDismissListener;
-	}
-
-	public void setOnUgcShowListener(onUgcShowListener onUgcShowListener) {
-		mOnUgcShowListener = onUgcShowListener;
 	}
 }

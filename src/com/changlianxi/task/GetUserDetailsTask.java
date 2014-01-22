@@ -121,7 +121,7 @@ public class GetUserDetailsTask extends AsyncTask<String, Integer, String> {
 		info.setId(id);
 		info.setType(key);
 		String typekey = "";
-		for (int i = 0; i < UserInfoUtils.basicUserStr.length; i++) {
+		for (int i = 0; i < UserInfoUtils.basicUserChineseStr.length; i++) {
 			if (key.equals(UserInfoUtils.basicUserStr[i])) {
 				typekey = UserInfoUtils.convertToChines(key);
 				info.setKey(typekey);
@@ -139,7 +139,6 @@ public class GetUserDetailsTask extends AsyncTask<String, Integer, String> {
 			typekey = UserInfoUtils.convertToChines(key);
 			info.setKey(typekey);
 			info.setTitleKey("联系方式");
-
 			contactList.add(info);
 
 		} else if (Arrays.toString(UserInfoUtils.addressStr).contains(key)) {

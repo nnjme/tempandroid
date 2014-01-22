@@ -195,17 +195,14 @@ public class MainActivity extends Activity implements OnOpenListener {
 				String cid = intent.getStringExtra("cid");
 				boolean flag = intent.getBooleanExtra("flag", false);
 				mHome.acceptOrRefuseInvite(cid, flag);
-
 			} else if (action.equals(Constants.EXIT_CIRCLE)) {// 退出圈子
 				String cid = intent.getStringExtra("cid");
 				mHome.exitCircle(cid);
-
 			} else if (action.equals(Constants.REMOVE_PROMPT_COUNT)) {// 减少圈子提示数量
 				String cid = intent.getStringExtra("cid");
 				int position = intent.getIntExtra("position", 0);
 				int promptCount = intent.getIntExtra("promptCount", 0);
 				mHome.remorePromptCount(cid, promptCount, position);
-
 			} else if (action.equals(Constants.PUSH_TYPE)) {// 推送消息
 				String cid = intent.getStringExtra("cid");
 				String type = intent.getStringExtra("type");
@@ -246,10 +243,10 @@ public class MainActivity extends Activity implements OnOpenListener {
 					// mHome.getServerCircleLists();
 					break;
 				case 1:
-					if (mCard == null) {
-						mCard = new MyCard(MainActivity.this);
-						mCard.setOnOpenListener(MainActivity.this);
-					}
+					// if (mCard == null) {
+					mCard = new MyCard(MainActivity.this);
+					mCard.setOnOpenListener(MainActivity.this);
+					// }
 					mRoot.close(mCard.getView());
 
 					break;

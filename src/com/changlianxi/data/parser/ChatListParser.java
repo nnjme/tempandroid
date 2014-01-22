@@ -39,7 +39,6 @@ public class ChatListParser implements IParser {
 			String content = obj.getString("content");
 			String timeStr = obj.getString("time");
 			long time = DateUtils.convertToDate(timeStr);
-
 			Chat c = new Chat(id, cid, Chat.str2Type.get(type), sender,
 					content, time);
 			c.setStatus(Status.NEW);

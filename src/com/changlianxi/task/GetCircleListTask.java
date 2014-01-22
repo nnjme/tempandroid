@@ -17,7 +17,6 @@ import com.changlianxi.modle.CircleModle;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 
 /**
@@ -74,12 +73,10 @@ public class GetCircleListTask extends AsyncTask<String, Integer, String> {
 				}
 				modle.setInviterID(inviter);
 				modle.setCirID(id);
-				modle.setCirIcon(StringUtils.JoinString(logo, "_200x200"));
+				modle.setCirIcon(logo);
 				modle.setCirName(name);
 				serverListModle.add(modle);
-				insertData(id, name, StringUtils.JoinString(logo, "_200x200"),
-						String.valueOf(isNew));
-				// DBUtils.creatTable("circle" + id);
+				insertData(id, name, logo, String.valueOf(isNew));
 				GetCircleUserTask task = new GetCircleUserTask(id);
 				task.execute();
 			}

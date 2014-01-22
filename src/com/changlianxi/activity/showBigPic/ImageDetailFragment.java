@@ -13,15 +13,20 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.R;
-import com.changlianxi.util.LoadImageTask;
+import com.changlianxi.activity.CLXApplication;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 
+/**
+ * 打图预览界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class ImageDetailFragment extends Fragment {
 	private String mImageUrl;
 	private ImageView mImageView;

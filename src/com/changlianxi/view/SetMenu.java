@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,6 @@ import com.changlianxi.util.Constants;
 import com.changlianxi.util.PushMessageReceiver;
 import com.changlianxi.util.PushMessageReceiver.MessagePrompt;
 import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.Utils;
 import com.changlianxi.util.WigdtContorl;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -65,7 +65,7 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 		listview.setAdapter(adapter);
 		listview.setOnItemClickListener(this);
 		avatar = (CircularImage) mDesktop.findViewById(R.id.avatar);
-		avatar.setBackgroundResource(R.drawable.menu_pic);
+		avatar.setBackgroundResource(R.drawable.head_bg);
 		options = CLXApplication.getUserOptions();
 		imageLoader = CLXApplication.getImageLoader();
 	}
@@ -167,16 +167,12 @@ public class SetMenu implements OnItemClickListener, MessagePrompt {
 				holder.angle = (ImageView) convertView.findViewById(R.id.angle);
 				holder.notifyPrompt = (ImageView) convertView
 						.findViewById(R.id.notifyPrompt);
-				WigdtContorl.setLayoutX(
-						holder.angle,
-						Utils.getSecreenWidth(mcontext)
-								/ 2
-								- (int) mcontext.getResources().getDimension(
-										R.dimen.menu));
+				WigdtContorl.setLayoutX(holder.angle, (int) TypedValue
+						.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 170,
+								mcontext.getResources().getDisplayMetrics()));
 				convertView.setTag(holder);
 			} else {
 				holder = (ViewHolder) convertView.getTag();
-
 			}
 			if (menulist.get(position).isAngle()) {
 				holder.angle.setVisibility(View.VISIBLE);

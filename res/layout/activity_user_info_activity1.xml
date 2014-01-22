@@ -144,9 +144,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/tag"
-        android:divider="#dddddd"
-        android:dividerHeight="0.2dip"
-        android:listSelector="@android:color/transparent" >
+        android:divider="@null"
+         android:listSelector="@android:color/transparent" >
     </ListView>
 
 </RelativeLayout>

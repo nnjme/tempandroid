@@ -45,8 +45,14 @@ public class ResolutionPushJson {
 	}
 
 	private static void finish() {
+		// String imei = Utils.getImei(CLXApplication.getInstance());
+		// if (SharedUtils.getString("imei", "").equals(imei)) {
+		// return;
+		// }
+		Utils.showToast("当前账号已在别处登录");
 		SharedUtils.setString("uid", "");
 		SharedUtils.setString("token", "");
+		SharedUtils.setBoolean("isFristLogin", true);
 		CLXApplication.exit(false);
 		Intent intent = new Intent();
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -29,6 +29,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
@@ -38,6 +39,7 @@ import com.changlianxi.task.GetUserDetailsTask.GetValuesTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.UserInfoUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
@@ -297,6 +299,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 
 			}
 
+			@SuppressWarnings("deprecation")
 			@SuppressLint("NewApi")
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
@@ -305,8 +308,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
-
+				layTop.setBackgroundDrawable(BitmapUtils
+						.convertBimapToDrawable(bmp));
 			}
 
 			@Override
@@ -777,6 +780,10 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			Utils.rightOut(this);
 			break;
 		case R.id.btnedit:
+			if (!DBUtils.isAuth(uid, cid)) {
+				Utils.showToast("该成员不是认证成员，不能进行编辑");
+				return;
+			}
 			Intent it = new Intent();
 			it.putExtra("name", username);
 			it.putExtra("cid", cid);
@@ -807,6 +814,14 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			}
 			break;
 		case R.id.btnmessage:
+			if (uid.equals(SharedUtils.getString("uid", ""))) {
+				Utils.showToast("不能给自己发送私信");
+				return;
+			}
+			if (!DBUtils.isAuth(uid, cid)) {
+				Utils.showToast("该成员不是认证成员，不能发送私信");
+				return;
+			}
 			Intent intent = new Intent();
 			intent.putExtra("ruid", uid);
 			intent.putExtra("cid", cid);

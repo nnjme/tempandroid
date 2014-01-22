@@ -83,7 +83,8 @@ public class CircleAdapter extends BaseAdapter {
 		}
 		String imgUrl = listmodle.get(position).getCirIcon();
 		if (imgUrl.equals("")) {
-			holder.circleImg.setImageResource(R.drawable.pic);
+			holder.circleBg.setImageResource(R.drawable.home_image_bg);
+			holder.circleImg.setImageBitmap(null);
 		} else if (!imgUrl.startsWith("http")) {
 			holder.circleBg.setImageResource(R.drawable.pic_add);
 			holder.circleImg.setImageBitmap(null);

@@ -2,7 +2,10 @@ package com.changlianxi.activity;
 
 import android.app.Activity;
 import android.app.ActivityGroup;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,6 +19,7 @@ import android.widget.TextView;
 import com.changlianxi.R;
 import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.ResolutionPushJson;
 import com.changlianxi.util.Utils;
 
 /**
@@ -45,9 +49,10 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	private int newChatCount = 0;// 新聊天数、
 	private int newDynamicCount = 0;// 新动态数、
 	private int newCommentCount = 0;// 新评论数。
-	private boolean firstLT = true;
-	private boolean firstDT = true;
-	private boolean firstCZ = true;
+	private boolean firstLT = true;// 聊天Tab
+	private boolean firstDT = true;// 动态tab
+	private boolean firstCZ = true;// 成长tab
+	private LinearLayout layTab;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -77,6 +82,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 	}
 
 	private void initview() {
+		layTab = (LinearLayout) findViewById(R.id.layTabParent);
 		cy = (TextView) findViewById(R.id.cy);
 		lt = (TextView) findViewById(R.id.lt);
 		cz = (TextView) findViewById(R.id.cz);
@@ -105,6 +111,7 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		mTabHost.addTab(mTabHost.newTabSpec("dt").setIndicator("dt")
 				.setContent(newsIntent));
 		setPrompt();
+		registerBoradcastReceiver();
 	}
 
 	private void setPrompt() {
@@ -174,31 +181,40 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		case R.id.layLT:
 			if (firstLT) {
 				sendBroad(id, newChatCount, 2);
+				newChatCount = 0;
 
 			}
 			mTabHost.setCurrentTab(2);
 			setSelectColor(lt, cy, dt, cz);
 			firstLT = false;
 			hidePrompt(ltPrompt);
+			layTab.setVisibility(View.GONE);
+
 			break;
 		case R.id.layCZ:
 			if (firstCZ) {
 				sendBroad(id, newGrowthCount, 1);
-
+				newGrowthCount = 0;
 			}
 			mTabHost.setCurrentTab(1);
 			setSelectColor(cz, lt, dt, cy);
 			firstCZ = false;
 			hidePrompt(czPrompt);
+			layTab.setVisibility(View.GONE);
+
 			break;
 		case R.id.layDT:
 			if (firstDT) {
 				sendBroad(id, newDynamicCount, 3);
+				newDynamicCount = 0;
+
 			}
 			mTabHost.setCurrentTab(3);
 			setSelectColor(dt, lt, cy, cz);
 			firstDT = false;
 			hidePrompt(dtPrompt);
+			layTab.setVisibility(View.GONE);
+
 			break;
 		case R.id.more:
 			Intent intent = new Intent();
@@ -223,6 +239,62 @@ public class CircleActivity extends ActivityGroup implements OnClickListener {
 		intent.putExtra("cid", cid);
 		BroadCast.sendBroadCast(this, intent);
 
+	}
+
+	/**
+	 * 注册该广播
+	 */
+	public void registerBoradcastReceiver() {
+		IntentFilter myIntentFilter = new IntentFilter();
+		myIntentFilter.addAction(Constants.PUSH_TYPE);
+		myIntentFilter.addAction(Constants.CHANGE_TAB);
+		// 注册广播
+		registerReceiver(mBroadcastReceiver, myIntentFilter);
+	}
+
+	/**
+	 * 定义广播
+	 */
+	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (action.equals(Constants.PUSH_TYPE)) {// 推送消息
+				String cid = intent.getStringExtra("cid");
+				String type = intent.getStringExtra("type");
+				int promptCount = intent.getIntExtra("promptCount", 0);
+				if (!id.equals(cid)) {
+					return;
+				}
+				// setPromptCount(type, promptCount);
+			} else if (action.equals(Constants.CHANGE_TAB)) {// 切换tab页
+				mTabHost.setCurrentTab(0);
+				layTab.setVisibility(View.VISIBLE);
+				setSelectColor(cy, lt, dt, cz);
+
+			}
+		}
+	};
+
+	private void setPromptCount(String type, int promptCount) {
+		if (type.equals(ResolutionPushJson.COMMENT_TYPE)
+				|| type.equals(ResolutionPushJson.GROWTH_TYPE)) {
+			czPrompt.setVisibility(View.VISIBLE);
+			czPrompt.setText(newGrowthCount + newCommentCount + promptCount
+					+ "");
+		} else if (type.equals(ResolutionPushJson.NEW_TYPE)) {
+			dtPrompt.setVisibility(View.VISIBLE);
+			dtPrompt.setText(newDynamicCount + promptCount + "");
+		} else if (type.equals(ResolutionPushJson.CHAT_TYPE)) {
+			ltPrompt.setVisibility(View.VISIBLE);
+			ltPrompt.setText(newChatCount + promptCount + "");
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(mBroadcastReceiver);
+		super.onDestroy();
 	}
 
 	@Override

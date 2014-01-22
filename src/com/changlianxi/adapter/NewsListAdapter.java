@@ -42,7 +42,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 public class NewsListAdapter extends BaseAdapter {
 	private Context mCotext;
 	private List<NewsModle> listModle;
-	private LayoutInflater inflater;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	private final int TYPE_1 = 1;
@@ -51,7 +50,6 @@ public class NewsListAdapter extends BaseAdapter {
 	public NewsListAdapter(Context context, List<NewsModle> listModle) {
 		this.mCotext = context;
 		this.listModle = listModle;
-		inflater = LayoutInflater.from(mCotext);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getUserOptions();
 	}
@@ -79,14 +77,19 @@ public class NewsListAdapter extends BaseAdapter {
 		return TYPE_2;
 	}
 
+	// @Override
+	// public int getViewTypeCount() {
+	// return 2;
+	// }
+
 	@Override
-	public Object getItem(int position) {
+	public Object getItem(int arg0) {
 		return null;
 	}
 
 	@Override
 	public long getItemId(int position) {
-		return 0;
+		return position;
 	}
 
 	@Override
@@ -100,51 +103,50 @@ public class NewsListAdapter extends BaseAdapter {
 		ViewHolderInvite holderInvite = null;
 		ViewHolderOther holderOther = null;
 		int type = getItemViewType(position);
-		if (convertView == null) {
-			switch (type) {
-			case TYPE_1:
-				convertView = inflater.inflate(R.layout.news_invitate1, parent,
-						false);
-				holderInvite = new ViewHolderInvite();
-				holderInvite.avatarInvite = (ImageView) convertView
-						.findViewById(R.id.avatarInvite);
-				holderInvite.contentInvite = (TextView) convertView
-						.findViewById(R.id.contentInvite);
-				holderInvite.timeInvite = (TextView) convertView
-						.findViewById(R.id.timeInvite);
-				holderInvite.btnAgree = (Button) convertView
-						.findViewById(R.id.btnAgree);
-				holderInvite.btnNotAgree = (Button) convertView
-						.findViewById(R.id.btnNotAgree);
-				convertView.setTag(holderInvite);
-				break;
-			case TYPE_2:
-				convertView = inflater.inflate(R.layout.news_list_item, parent,
-						false);
-				holderOther = new ViewHolderOther();
-				holderOther.avatar = (ImageView) convertView
-						.findViewById(R.id.avatar);
-				holderOther.content = (TextView) convertView
-						.findViewById(R.id.content);
-				holderOther.time = (TextView) convertView
-						.findViewById(R.id.time);
-				convertView.setTag(holderOther);
-				break;
-			default:
-				break;
-			}
-		} else {
-			switch (type) {
-			case TYPE_1:
-				holderInvite = (ViewHolderInvite) convertView.getTag();
-				break;
-			case TYPE_2:
-				holderOther = (ViewHolderOther) convertView.getTag();
-				break;
-			default:
-				break;
-			}
+		// if (convertView == null) {
+		switch (type) {
+		case TYPE_1:
+			convertView = LayoutInflater.from(mCotext).inflate(
+					R.layout.news_invitate1, null);
+			holderInvite = new ViewHolderInvite();
+			holderInvite.avatarInvite = (ImageView) convertView
+					.findViewById(R.id.avatarInvite);
+			holderInvite.contentInvite = (TextView) convertView
+					.findViewById(R.id.contentInvite);
+			holderInvite.timeInvite = (TextView) convertView
+					.findViewById(R.id.timeInvite);
+			holderInvite.btnAgreeInvite = (Button) convertView
+					.findViewById(R.id.btnAgree);
+			holderInvite.btnNotAgreeInvite = (Button) convertView
+					.findViewById(R.id.btnNotAgree);
+			convertView.setTag(holderInvite);
+			break;
+		case TYPE_2:
+			convertView = LayoutInflater.from(mCotext).inflate(
+					R.layout.news_list_item, null);
+			holderOther = new ViewHolderOther();
+			holderOther.avatar = (ImageView) convertView
+					.findViewById(R.id.avatar);
+			holderOther.content = (TextView) convertView
+					.findViewById(R.id.content);
+			holderOther.time = (TextView) convertView.findViewById(R.id.time);
+			convertView.setTag(holderOther);
+			break;
+		default:
+			break;
 		}
+		// } else {
+		// switch (type) {
+		// case TYPE_1:
+		// holderInvite = (ViewHolderInvite) convertView.getTag();
+		// break;
+		// case TYPE_2:
+		// holderOther = (ViewHolderOther) convertView.getTag();
+		// break;
+		// default:
+		// break;
+		// }
+		// }
 		switch (type) {
 		case TYPE_1:
 			holderInvite.contentInvite.setText(Html.fromHtml(replaceUser(
@@ -152,17 +154,17 @@ public class NewsListAdapter extends BaseAdapter {
 			holderInvite.timeInvite.setText(DateUtils.interceptDateStr(
 					listModle.get(position).getCreatedTime(), "yyyy-MM-dd"));
 			if (avatarUrl.equals("") || avatarUrl == null) {
-				holderInvite.avatarInvite.setImageResource(R.drawable.hand_pic);
+				holderInvite.avatarInvite.setImageResource(R.drawable.head_bg);
 			} else {
 				imageLoader.displayImage(avatarUrl, holderInvite.avatarInvite,
 						options);
 
 			}
 			String pid = listModle.get(position).getPerson2();
-			holderInvite.btnAgree.setOnClickListener(new BtnClick(pid
+			holderInvite.btnAgreeInvite.setOnClickListener(new BtnClick(pid
 					.equals("0") ? listModle.get(position).getUser1() : pid,
 					listModle.get(position).getCid(), position));
-			holderInvite.btnNotAgree.setOnClickListener(new BtnClick(pid
+			holderInvite.btnNotAgreeInvite.setOnClickListener(new BtnClick(pid
 					.equals("0") ? listModle.get(position).getUser1() : pid,
 					listModle.get(position).getCid(), position));
 			break;
@@ -221,8 +223,8 @@ public class NewsListAdapter extends BaseAdapter {
 		TextView contentInvite;
 		TextView timeInvite;
 		ImageView avatarInvite;
-		Button btnAgree;
-		Button btnNotAgree;
+		Button btnAgreeInvite;
+		Button btnNotAgreeInvite;
 
 	}
 

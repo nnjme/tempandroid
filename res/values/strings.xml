@@ -61,5 +61,6 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_user_info_activity1">UserInfoActivity1</string>
     <string name="title_activity_user_info_edit_activity1">UserInfoEditActivity1</string>
+    <string name="title_activity_main_activity1">MainActivity1</string>
 
 </resources>

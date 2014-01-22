@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/desktop_wallpager"
+    android:id="@+id/lfetMenu"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#262626"
@@ -30,9 +30,8 @@
     <ListView
         android:id="@+id/menulist"
         android:layout_width="fill_parent"
-        android:layout_height="0dip"
+        android:layout_height="fill_parent"
         android:layout_marginTop="60dip"
-        android:layout_weight="1"
         android:divider="#404040"
         android:dividerHeight="0.2dip" >
     </ListView>

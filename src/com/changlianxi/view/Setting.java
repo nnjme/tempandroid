@@ -15,14 +15,13 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import com.changlianxi.R;
 import com.changlianxi.activity.AboutActivity;
 import com.changlianxi.activity.AdviceFeedBackActivity;
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.ChangePassswordActivity;
-import com.changlianxi.activity.LoginActivity;
 import com.changlianxi.activity.NoticesActivity;
 import com.changlianxi.activity.ProblemActivity;
-import com.changlianxi.R;
 import com.changlianxi.popwindow.NewVersionPopWindow;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
@@ -130,7 +129,6 @@ public class Setting implements OnClickListener, PostCallBack {
 			break;
 		case R.id.exitLogin:
 			exit();
-
 			break;
 		default:
 			break;
@@ -203,13 +201,15 @@ public class Setting implements OnClickListener, PostCallBack {
 
 	}
 
-	private void finish() {
+	private void finishApp() {
+		Utils.showToast("退出");
 		SharedUtils.setString("uid", "");
 		SharedUtils.setString("token", "");
-		CLXApplication.exit(false);
-		Intent intent = new Intent();
-		intent.setClass(mContext, LoginActivity.class);
-		mContext.startActivity(intent);
+		SharedUtils.setBoolean("isFristLogin", true);
+		// CLXApplication.exit(true);
+		// Intent intent = new Intent();
+		// intent.setClass(mContext, LoginActivity.class);
+		// mContext.startActivity(intent);
 	}
 
 	@Override
@@ -218,11 +218,11 @@ public class Setting implements OnClickListener, PostCallBack {
 			JSONObject json = new JSONObject(result);
 			int rt = json.getInt("rt");
 			if (rt == 1) {
-				finish();
+				finishApp();
 			} else {
 				String err = json.getString("err");
 				if (err.equals("TOKEN_INVALID")) {
-					finish();
+					finishApp();
 					return;
 				}
 				String errorString = ErrorCodeUtil.convertToChines(err);

@@ -53,7 +53,7 @@ public class UpLoadPicAsyncTask extends AsyncTask<String, Integer, String> {
 		}
 		String result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl + url,
 				map, file, avatar);
-
+		file.delete();
 		try {
 			JSONObject jsonobject = new JSONObject(result);
 			rt = jsonobject.getString("rt");

@@ -143,7 +143,6 @@ public class Chat extends AbstractData {
 		cv.put("type", type.name());
 		cv.put("content", content);
 		cv.put("time", time);
-
 		if (this.status == Status.NEW) {
 			db.insert(dbName, null, cv);
 		} else if (this.status == Status.UPDATE) {

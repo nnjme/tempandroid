@@ -2,12 +2,12 @@ package com.changlianxi.activity;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.changlianxi.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +23,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.changlianxi.R;
+import com.changlianxi.fragment.MainActivity1;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
 import com.changlianxi.util.DialogUtil;
@@ -278,6 +280,13 @@ public class FindPasswordActivity extends BaseActivity implements
 			JSONObject object = new JSONObject(result);
 			int rt = object.getInt("rt");
 			if (rt == 1) {
+				String token = object.getString("token");
+				String uid = object.getString("uid");
+				SharedUtils.setString("token", token);
+				SharedUtils.setString("uid", uid);
+				Intent intent = new Intent();
+				intent.setClass(this, MainActivity1.class);
+				startActivity(intent);
 				finish();
 				Utils.rightOut(this);
 
