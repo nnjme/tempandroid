@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,8 +106,12 @@ public class PersonChatList extends AbstractData {
 		this.chats = chats;
 	}
 
+	private void sort(boolean byTimeAsc) {
+		Collections.sort(this.chats, PersonChat.getComparator(byTimeAsc));
+	}
+	
 	@Override
-	public void read(SQLiteDatabase db) { // TODO sort
+	public void read(SQLiteDatabase db) {
 		if (this.chats == null) {
 			this.chats = new ArrayList<PersonChat>();
 		} else {
@@ -161,6 +166,7 @@ public class PersonChatList extends AbstractData {
 		cursor2.close();
 
 		this.status = Status.OLD;
+		sort(true);
 	}
 
 	@Override
@@ -241,6 +247,7 @@ public class PersonChatList extends AbstractData {
 		}
 
 		this.status = Status.UPDATE;
+		sort(true);
 	}
 
 	/**
@@ -287,7 +294,7 @@ public class PersonChatList extends AbstractData {
 		}
 	}
 
-	public void insert(PersonChat chat) { // TODO how to?
+	public void insert(PersonChat chat) { // TODO how to insert
 		long chatTime = DateUtils.convertToDate(chat.getTime());
 		if (chatTime >= this.endTime) {
 			this.endTime = chatTime;

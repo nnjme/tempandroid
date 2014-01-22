@@ -1,6 +1,10 @@
 package com.changlianxi.data;
 
+import java.util.Comparator;
+
 import com.changlianxi.data.enums.ChatType;
+import com.changlianxi.util.DateUtils;
+import com.changlianxi.util.StringUtils;
 
 /**
  * Abstract Chat data, can be extended by CircleChat and PersonChat
@@ -47,6 +51,20 @@ public class AbstractChat extends AbstractData {
 		return content;
 	}
 
+	public String getImage() {
+		if (type == ChatType.TYPE_IMAGE) {
+			return content;
+		}
+		return "";
+	}
+
+	public String getImage(String size) {
+		if (type == ChatType.TYPE_IMAGE) {
+			return StringUtils.JoinString(content, size);
+		}
+		return "";
+	}
+
 	public void setContent(String content) {
 		this.content = content;
 	}
@@ -54,9 +72,35 @@ public class AbstractChat extends AbstractData {
 	public String getTime() {
 		return time;
 	}
-
+	
+	public String getFormatTime() {
+		return DateUtils.formatTime(time);
+	}
+	
 	public void setTime(String time) {
 		this.time = time;
 	}
 
+	public static Comparator<AbstractChat> getComparator(boolean byTimeAsc) {
+		if (byTimeAsc) {
+			return new Comparator<AbstractChat>() {
+				@Override
+				public int compare(AbstractChat l, AbstractChat r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
+					return lTime > rTime ? 1 : -1;
+				}
+			};
+		} else {
+			return new Comparator<AbstractChat>() {
+				@Override
+				public int compare(AbstractChat l, AbstractChat r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
+					return lTime > rTime ? -1 : 1;
+				}
+			};
+		}
+	}
+	
 }

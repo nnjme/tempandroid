@@ -33,6 +33,7 @@ import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.SimpleResult;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
+import com.changlianxi.util.StringUtils;
 
 /**
  * Circle Member
@@ -185,7 +186,11 @@ public class CircleMember extends AbstractData {
 	public String getAvatar() {
 		return avatar;
 	}
-
+	
+	public String getAvatar(String size) {
+		return StringUtils.JoinString(avatar, size);
+	}
+	
 	public void setAvatar(String avatar) {
 		this.avatar = avatar;
 	}
@@ -953,7 +958,7 @@ public class CircleMember extends AbstractData {
 
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.avatar = ret.getStr();
-			this.status = Status.UPDATE; // TODO change local?
+			this.status = Status.UPDATE;
 			return RetError.NONE;
 		} else {
 			return ret.getErr();

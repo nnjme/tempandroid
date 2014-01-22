@@ -9,11 +9,13 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.text.TextUtils;
 
 /**
  * 
  */
+@SuppressLint("SimpleDateFormat")
 public class DateUtils {
 
 	private static final Map<String, DateFormat> DFS = new HashMap<String, DateFormat>();
@@ -231,4 +233,62 @@ public class DateUtils {
 		return flag;
 
 	}
+	
+	public static final long A_SECOND = 1000;
+	public static final long A_MINUTE = 60 * A_SECOND;
+	public static final long AN_HOUR = 60 * A_MINUTE;
+	public static final long A_DAY = 24 * AN_HOUR;
+
+	public static String formatTime(String time) {
+		Calendar now = Calendar.getInstance();
+		return formatTime(time, now.getTimeInMillis());
+	}
+
+	public static String formatTime(String time, long baseTime) {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			Date date = df.parse(time);
+			long dateTime = date.getTime();
+			long diff = baseTime - dateTime;
+			if (diff < 10 * A_SECOND) {
+				return "刚刚";
+			}
+			if (diff < A_MINUTE) {
+				return diff / A_SECOND + "秒前";
+			}
+			if (diff < AN_HOUR) {
+				return diff / A_MINUTE + "分钟前";
+			}
+			if (diff < A_DAY) {
+				return diff / AN_HOUR + "小时前";
+			}
+			if (diff < 2 * A_DAY) {
+				if (((baseTime - A_DAY) % A_DAY == dateTime % A_DAY)) {
+					return "昨天";
+				} else {
+					return "前天";
+				}
+			}
+			if (diff < 3 * A_DAY) {
+				if (((baseTime - 2 * A_DAY) % A_DAY == dateTime % A_DAY)) {
+					return "前天";
+				}
+			}
+
+			Calendar target = Calendar.getInstance();
+			target.setTimeInMillis(date.getTime());
+			Calendar base = Calendar.getInstance();
+			base.setTimeInMillis(baseTime);
+			if (target.get(Calendar.YEAR) == base.get(Calendar.YEAR)) {
+				SimpleDateFormat df2 = new SimpleDateFormat("MM-dd HH:mm");
+				return df2.format(target.getTime());
+			} else {
+				SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				return df2.format(target.getTime());
+			}
+		} catch (ParseException e) {
+			return time;
+		}
+	}
+	
 }

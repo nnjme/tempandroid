@@ -1,8 +1,5 @@
 package com.changlianxi.data;
 
-import com.changlianxi.db.DataBase;
-
-import android.database.sqlite.SQLiteDatabase;
 
 public abstract class AbstractData implements IData {
 
@@ -11,20 +8,6 @@ public abstract class AbstractData implements IData {
 	};
 
 	protected Status status = Status.NEW;
-
-	@Override
-	public void read(SQLiteDatabase db) {
-		if (!db.isOpen()) {// TODO
-			db = DataBase.getInstance().getReadableDatabase();
-		}
-	}
-
-	@Override
-	public void write(SQLiteDatabase db) {
-		if (!db.isOpen()) {// TODO
-			db = DataBase.getInstance().getWritableDatabase();
-		}
-	}
 
 	@Override
 	public void update(IData data) {

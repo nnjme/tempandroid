@@ -144,6 +144,10 @@ public class CircleDynamic extends AbstractData {
 		return time;
 	}
 
+	public String getFormatTime() {
+		return DateUtils.formatTime(time);
+	}
+
 	public void setTime(String time) {
 		this.time = time;
 	}
@@ -357,18 +361,18 @@ public class CircleDynamic extends AbstractData {
 		if (byTimeAsc) {
 			return new Comparator<CircleDynamic>() {
 				@Override
-				public int compare(CircleDynamic lhs, CircleDynamic rhs) {
-					long lTime = DateUtils.convertToDate(lhs.getTime()), rTime = DateUtils
-							.convertToDate(rhs.getTime());
+				public int compare(CircleDynamic l, CircleDynamic r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
 					return lTime > rTime ? 1 : -1;
 				}
 			};
 		} else {
 			return new Comparator<CircleDynamic>() {
 				@Override
-				public int compare(CircleDynamic lhs, CircleDynamic rhs) {
-					long lTime = DateUtils.convertToDate(lhs.getTime()), rTime = DateUtils
-							.convertToDate(rhs.getTime());
+				public int compare(CircleDynamic l, CircleDynamic r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
 					return lTime > rTime ? -1 : 1;
 				}
 			};

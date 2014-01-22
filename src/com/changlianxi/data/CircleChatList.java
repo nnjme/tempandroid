@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class CircleChatList extends AbstractData {
 	private int cid = 0;
 	private long startTime = 0L; // data start time, in milliseconds
 	private long endTime = 0L; // data end time
-	private long lastReqTime = 0L; // last request time of chat data // TODO need this?
+	private long lastReqTime = 0L; // last request time of chat data
 	private int total = 0;
 
 	private List<CircleChat> chats = null;
@@ -106,8 +107,12 @@ public class CircleChatList extends AbstractData {
 		this.chats = chats;
 	}
 
+	private void sort(boolean byTimeAsc) {
+		Collections.sort(this.chats, CircleChat.getComparator(byTimeAsc));
+	}
+	
 	@Override
-	public void read(SQLiteDatabase db) { // TODO sort
+	public void read(SQLiteDatabase db) {
 		if (this.chats == null) {
 			this.chats = new ArrayList<CircleChat>();
 		} else {
@@ -161,6 +166,7 @@ public class CircleChatList extends AbstractData {
 		cursor2.close();
 
 		this.status = Status.OLD;
+		sort(true);
 	}
 
 	@Override
@@ -242,6 +248,7 @@ public class CircleChatList extends AbstractData {
 		}
 
 		this.status = Status.UPDATE;
+		sort(true);
 	}
 
 	/**
@@ -288,7 +295,7 @@ public class CircleChatList extends AbstractData {
 		}
 	}
 
-	public void insert(CircleChat chat) { // TODO how to 
+	public void insert(CircleChat chat) { // TODO how to  insert
 		long chatTime = DateUtils.convertToDate(chat.getTime());
 		if (chatTime >= this.endTime) {
 			this.endTime = chatTime;
