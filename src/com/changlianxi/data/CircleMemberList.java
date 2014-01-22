@@ -315,12 +315,12 @@ public class CircleMemberList extends AbstractData {
 				break;
 			}
 
+			// update for data merge
+			update(cml);
+
 			if (cml.getTotal() <= cml.getMembers().size()) {
 				break;
 			}
-
-			// update for data merge
-			update(cml);
 
 			startTime = cml.getEndTime() + 1;
 		}
@@ -356,12 +356,12 @@ public class CircleMemberList extends AbstractData {
 				break;
 			}
 
+			// update for data merge
+			update(cml);
+
 			if (cml.getTotal() <= cml.getMembers().size()) {
 				break;
 			}
-
-			// update for data merge
-			update(cml);
 
 			startTime = cml.getEndTime() + 1;
 		}
@@ -397,12 +397,12 @@ public class CircleMemberList extends AbstractData {
 				break;
 			}
 
+			// update for data merge
+			update(cml);
+
 			if (cml.getTotal() <= cml.getMembers().size()) {
 				break;
 			}
-
-			// update for data merge
-			update(cml);
 
 			startTime = cml.getEndTime() + 1;
 		}
