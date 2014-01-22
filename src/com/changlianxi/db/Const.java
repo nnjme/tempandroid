@@ -66,6 +66,9 @@ public class Const {
 	public static final String CIRCLE_DYNAMIC_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
 			+ " id integer, cid integer, uid1 integer, uid2 integer, pid2 integer, type varchar, content varchar,"
 			+ " detail varchar, time varchar, needApproved integer";
-	
+
+	public static final String AMENDMENT_TABLE_NAME = "my_amendments";
+	public static final String AMENDMENT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " amid integer, cid integer, uid integer, content varchar, time varchar";
 
 }
