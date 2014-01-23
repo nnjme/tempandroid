@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.Info;
@@ -80,6 +81,7 @@ public class GetUserDetailsTask extends AsyncTask<String, Integer, String> {
 							object.getString("start"), "yyyy.MM.dd");
 					end = DateUtils.interceptDateStr(object.getString("end"),
 							"yyyy.MM.dd");
+					
 				}
 				valuesClassification(id, key, value, start, end);
 				DBUtils.insertUserDetails(cid, id, pid, key, value, start, end);

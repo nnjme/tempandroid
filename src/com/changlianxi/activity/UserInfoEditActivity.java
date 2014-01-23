@@ -1,6 +1,13 @@
 package com.changlianxi.activity;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +35,7 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,12 +51,18 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.data.CircleMember;
+import com.changlianxi.data.PersonDetail;
+import com.changlianxi.data.enums.PersonDetailType;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow.OnSelectKey;
+import com.changlianxi.task.BaseAsyncTask;
 import com.changlianxi.task.PostAsyncTask;
 import com.changlianxi.task.PostAsyncTask.PostCallBack;
+import com.changlianxi.task.UpLoadCircleMemberIdetailTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
@@ -109,29 +123,32 @@ public class UserInfoEditActivity extends BaseActivity implements
 	private DataBase dbase = DataBase.getInstance();
 	private SQLiteDatabase db = dbase.getWritableDatabase();
 	private RelativeLayout layTop;
+	private CircleMember circleMember;
+	private CircleMember newCircleMember;
+	private List<PersonDetail> newDetails;
 
-	private Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case 0:
-				for (int i = basicList.size() - 1; i >= 0; i--) {
-					String type = basicList.get(i).getType();
-					if (type.equals("D_NAME")) {
-						basicList.remove(i);
-						break;
-					}
-				}
-				setValuesAdapter();
-				break;
-			case 1:
-				getData();
-				break;
-			default:
-				break;
-			}
-		}
-	};
+//	private Handler mHandler = new Handler() {
+//		@Override
+//		public void handleMessage(Message msg) {
+//			switch (msg.what) {
+//			case 0:
+//				for (int i = basicList.size() - 1; i >= 0; i--) {
+//					String type = basicList.get(i).getType();
+//					if (type.equals("D_NAME")) {
+//						basicList.remove(i);
+//						break;
+//					}
+//				}
+//				setValuesAdapter();
+//				break;
+//			case 1:
+//				getData();
+//				break;
+//			default:
+//				break;
+//			}
+//		}
+//	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -148,7 +165,40 @@ public class UserInfoEditActivity extends BaseActivity implements
 		setListener();
 		editName.setText(strName);
 		setAvatar();
-		mHandler.sendEmptyMessageDelayed(1, 100);
+		filldata();
+		//mHandler.sendEmptyMessageDelayed(1, 100);
+	}
+	private void filldata() {
+		circleMember = (CircleMember) getIntent().getSerializableExtra("circleMumber");
+		List<PersonDetail> details = circleMember.getDetails();
+		for(PersonDetail detail : details){
+			valuesClassification(detail.getId()+"", detail.getType().name(), detail.getValue(), detail.getStart(), detail.getEnd());
+		}
+		for (int i = basicList.size() - 1; i >= 0; i--) {
+			String type = basicList.get(i).getType();
+			if (type.equals("D_NAME")) {
+				basicList.remove(i);
+				break;
+			}
+		}
+		setValuesAdapter();
+		//复制一个相同的对象
+		try {
+			ByteArrayOutputStream
+			byteOut = new ByteArrayOutputStream(); 
+			ObjectOutputStream out
+			= new ObjectOutputStream(byteOut); 
+			out.writeObject(circleMember); 
+
+			ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray()); 
+			ObjectInputStream in
+			=new ObjectInputStream(byteIn); 
+			newCircleMember = (CircleMember) in.readObject();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		newDetails = newCircleMember.getDetails();
 	}
 	/**设置页面统计
 	 * 
@@ -254,15 +304,15 @@ public class UserInfoEditActivity extends BaseActivity implements
 
 	}
 
-	private void getData() {
-		new Thread() {
-			public void run() {
-				getUserDetails(pid);
-				mHandler.sendEmptyMessage(0);
-			}
-		}.start();
-
-	}
+//	private void getData() {
+//		new Thread() {
+//			public void run() {
+//				getUserDetails(pid);
+//				mHandler.sendEmptyMessage(0);
+//			}
+//		}.start();
+//
+//	}
 
 	public void initData() {
 		for (int i = 0; i < UserInfoUtils.infoTitleKey.length; i++) {
@@ -635,9 +685,10 @@ public class UserInfoEditActivity extends BaseActivity implements
 				}
 			}
 			holderValues.value.setText(value);
-			holderValues.startTime.setText(valuesList.get(position)
-					.getStartDate());
-			holderValues.endTime.setText(valuesList.get(position).getEndDate());
+			String end = DateUtils.interceptDateStr(valuesList.get(position).getEndDate(),"yyyy.MM.dd");
+			String start = DateUtils.interceptDateStr(valuesList.get(position).getStartDate(),"yyyy.MM.dd");
+			holderValues.startTime.setText(start);
+			holderValues.endTime.setText(end);
 			int editType = valuesList.get(position).getEditType();
 			holderValues.value.addTextChangedListener(new EditTextWatcher(
 					valuesList, position, editType));
@@ -932,62 +983,74 @@ public class UserInfoEditActivity extends BaseActivity implements
 		@Override
 		public void onClick(View v) {
 			if (tag.equals(groupkey.get(0))) {
-				if (basicList.get(position).getEditType() != 2) {
-					BuildDelJson(basicList.get(position).getType(), basicList
-							.get(position).getValue(), basicList.get(position)
-							.getId());
-				}
-				basicList.remove(position);
+				Info remove = basicList.remove(position);
 				basicAdapter.notifyDataSetChanged();
+				if (basicList.get(position).getEditType() != 2) {
+//					BuildDelJson(basicList.get(position).getType(), basicList
+//							.get(position).getValue(), basicList.get(position)
+//							.getId());
+					basicList.get(position).setEditType(1);
+					basicList.add(remove);
+				}
 				Utils.setListViewHeightBasedOnChildren(basicListView);
 			} else if (tag.equals(groupkey.get(1))) {
-				if (contactList.get(position).getEditType() != 2) {
-					BuildDelJson(contactList.get(position).getType(),
-							contactList.get(position).getValue(), contactList
-									.get(position).getId());
-				}
-				contactList.remove(position);
+				Info remove = contactList.remove(position);
 				contactAdapter.notifyDataSetChanged();
+				if (contactList.get(position).getEditType() != 2) {
+//					BuildDelJson(contactList.get(position).getType(),
+//							contactList.get(position).getValue(), contactList
+//									.get(position).getId());
+					basicList.get(position).setEditType(1);
+					basicList.add(remove);
+				}
 				Utils.setListViewHeightBasedOnChildren(contactListView);
 
 			} else if (tag.equals(groupkey.get(2))) {
-				if (socialList.get(position).getEditType() != 2) {
-					BuildDelJson(socialList.get(position).getType(), socialList
-							.get(position).getValue(), socialList.get(position)
-							.getId());
-				}
-				socialList.remove(position);
+				Info remove = socialList.remove(position);
 				socialAdapter.notifyDataSetChanged();
+				if (socialList.get(position).getEditType() != 2) {
+//					BuildDelJson(socialList.get(position).getType(), socialList
+//							.get(position).getValue(), socialList.get(position)
+//							.getId());
+					basicList.get(position).setEditType(1);
+					basicList.add(remove);
+				}
 				Utils.setListViewHeightBasedOnChildren(socialListView);
 
 			} else if (tag.equals(groupkey.get(3))) {
-				if (addressList.get(position).getEditType() != 2) {
-					BuildDelJson(addressList.get(position).getType(),
-							addressList.get(position).getValue(), addressList
-									.get(position).getId());
-				}
-				addressList.remove(position);
+				Info remove = addressList.remove(position);
 				addressAdapter.notifyDataSetChanged();
+				if (addressList.get(position).getEditType() != 2) {
+//					BuildDelJson(addressList.get(position).getType(),
+//							addressList.get(position).getValue(), addressList
+//									.get(position).getId());
+					basicList.get(position).setEditType(1);
+					basicList.add(remove);
+				}
 				Utils.setListViewHeightBasedOnChildren(addressListView);
 
 			} else if (tag.equals(groupkey.get(4))) {
-				if (eduList.get(position).getEditType() != 2) {
-					BuildDelJson(eduList.get(position).getType(),
-							eduList.get(position).getValue(),
-							eduList.get(position).getId());
-				}
-				eduList.remove(position);
+				Info remove = eduList.remove(position);
 				eduAdapter.notifyDataSetChanged();
+				if (eduList.get(position).getEditType() != 2) {
+//					BuildDelJson(eduList.get(position).getType(),
+//							eduList.get(position).getValue(),
+//							eduList.get(position).getId());
+					basicList.get(position).setEditType(1);
+					basicList.add(remove);
+				}
 				Utils.setListViewHeightBasedOnChildren(eduListView);
 
 			} else if (tag.equals(groupkey.get(5))) {
-				if (workList.get(position).getEditType() != 2) {
-					BuildDelJson(workList.get(position).getType(), workList
-							.get(position).getValue(), workList.get(position)
-							.getId());
-				}
-				workList.remove(position);
+				Info remove = workList.remove(position);
 				workAdapter.notifyDataSetChanged();
+				if (workList.get(position).getEditType() != 2) {
+//					BuildDelJson(workList.get(position).getType(), workList
+//							.get(position).getValue(), workList.get(position)
+//							.getId());
+					basicList.get(position).setEditType(1);
+					basicList.add(remove);
+				}
 				Utils.setListViewHeightBasedOnChildren(workListView);
 
 			}
@@ -1140,7 +1203,9 @@ public class UserInfoEditActivity extends BaseActivity implements
 	/**
 	 * 构建上传的字符串
 	 */
+	//TODO 分类上传数据
 	private void BuildJson() {
+		
 		for (int i = 0; i < basicList.size(); i++) {
 			int editType = basicList.get(i).getEditType();
 			if (editType == 2) {
@@ -1150,8 +1215,10 @@ public class UserInfoEditActivity extends BaseActivity implements
 					Utils.showToast(basicList.get(i).getKey() + "不能为空");
 					return;
 				}
-				insertDB(keyType, value, "", "");
-				BuildAddJson(keyType, value);
+				PersonDetail detail = new PersonDetail(0, circleMember.getCid(),PersonDetailType.convertToType(keyType),value);
+				newDetails.add(detail);
+				//insertDB(keyType, value, "", "");
+				//BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = basicList.get(i).getType();
 				String value = basicList.get(i).getValue();
@@ -1160,10 +1227,27 @@ public class UserInfoEditActivity extends BaseActivity implements
 					Utils.showToast(basicList.get(i).getKey() + "不能为空");
 					return;
 				}
-				ContentValues cv = new ContentValues();
-				cv.put("value", value);
-				upDateDB(cv, tid);
-				BuildEditJson(keyType, value, tid);
+				for(PersonDetail detail : newDetails){
+					if(detail.getId() == Integer.parseInt(tid)){
+						detail.setType(PersonDetailType.convertToType(keyType));
+						detail.setValue(value);
+						break;
+					}
+				}
+//				ContentValues cv = new ContentValues();
+//				cv.put("value", value);
+//				upDateDB(cv, tid);
+//				BuildEditJson(keyType, value, tid);
+			} else if (editType == 1){
+				String id = basicList.get(i).getId();
+				for(int n = 0; n < newDetails.size(); n++){
+					PersonDetail detail = newDetails.get(n);
+					if(detail.getId() == Integer.parseInt(id)){
+						newDetails.remove(n);
+						break;
+					}
+				}
+				basicList.remove(i);
 			}
 		}
 		for (int i = 0; i < contactList.size(); i++) {
@@ -1175,8 +1259,10 @@ public class UserInfoEditActivity extends BaseActivity implements
 					Utils.showToast(contactList.get(i).getKey() + "不能为空");
 					return;
 				}
-				insertDB(keyType, value, "", "");
-				BuildAddJson(keyType, value);
+				PersonDetail detail = new PersonDetail(0, circleMember.getCid(),PersonDetailType.convertToType(keyType),value);
+				newDetails.add(detail);
+//				insertDB(keyType, value, "", "");
+//				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = contactList.get(i).getType();
 				String value = contactList.get(i).getValue();
@@ -1185,10 +1271,27 @@ public class UserInfoEditActivity extends BaseActivity implements
 					return;
 				}
 				String tid = contactList.get(i).getId();
-				ContentValues cv = new ContentValues();
-				cv.put("value", value);
-				upDateDB(cv, tid);
-				BuildEditJson(keyType, value, tid);
+				for(PersonDetail detail : newDetails){
+					if(detail.getId() == Integer.parseInt(tid)){
+						detail.setType(PersonDetailType.convertToType(keyType));
+						detail.setValue(value);
+						break;
+					}
+				}
+//				ContentValues cv = new ContentValues();
+//				cv.put("value", value);
+//				upDateDB(cv, tid);
+//				BuildEditJson(keyType, value, tid);
+			}else if (editType == 1){
+				String id = basicList.get(i).getId();
+				for(int n = 0; n < newDetails.size(); n++){
+					PersonDetail detail = newDetails.get(n);
+					if(detail.getId() == Integer.parseInt(id)){
+						newDetails.remove(n);
+						break;
+					}
+				}
+				contactList.remove(i);
 			}
 
 		}
@@ -1201,8 +1304,10 @@ public class UserInfoEditActivity extends BaseActivity implements
 					Utils.showToast(socialList.get(i).getKey() + "不能为空");
 					return;
 				}
-				insertDB(keyType, value, "", "");
-				BuildAddJson(keyType, value);
+				PersonDetail detail = new PersonDetail(0, circleMember.getCid(),PersonDetailType.convertToType(keyType),value);
+				newDetails.add(detail);
+//				insertDB(keyType, value, "", "");
+//				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = socialList.get(i).getType();
 				String value = socialList.get(i).getValue();
@@ -1211,10 +1316,27 @@ public class UserInfoEditActivity extends BaseActivity implements
 					return;
 				}
 				String tid = socialList.get(i).getId();
-				ContentValues cv = new ContentValues();
-				cv.put("value", value);
-				upDateDB(cv, tid);
-				BuildEditJson(keyType, value, tid);
+				for(PersonDetail detail : newDetails){
+					if(detail.getId() == Integer.parseInt(tid)){
+						detail.setType(PersonDetailType.convertToType(keyType));
+						detail.setValue(value);
+						break;
+					}
+				}
+//				ContentValues cv = new ContentValues();
+//				cv.put("value", value);
+//				upDateDB(cv, tid);
+//				BuildEditJson(keyType, value, tid);
+			}else if (editType == 1){
+				String id = basicList.get(i).getId();
+				for(int n = 0; n < newDetails.size(); n++){
+					PersonDetail detail = newDetails.get(n);
+					if(detail.getId() == Integer.parseInt(id)){
+						newDetails.remove(n);
+						break;
+					}
+				}
+				socialList.remove(i);
 			}
 		}
 		for (int i = 0; i < addressList.size(); i++) {
@@ -1226,8 +1348,10 @@ public class UserInfoEditActivity extends BaseActivity implements
 					Utils.showToast(addressList.get(i).getKey() + "不能为空");
 					return;
 				}
-				insertDB(keyType, value, "", "");
-				BuildAddJson(keyType, value);
+				PersonDetail detail = new PersonDetail(0, circleMember.getCid(),PersonDetailType.convertToType(keyType),value);
+				newDetails.add(detail);
+//				insertDB(keyType, value, "", "");
+//				BuildAddJson(keyType, value);
 			} else if (editType == 3) {
 				String keyType = addressList.get(i).getType();
 				String value = addressList.get(i).getValue();
@@ -1236,10 +1360,27 @@ public class UserInfoEditActivity extends BaseActivity implements
 					return;
 				}
 				String tid = addressList.get(i).getId();
-				ContentValues cv = new ContentValues();
-				cv.put("value", value);
-				upDateDB(cv, tid);
-				BuildEditJson(keyType, value, tid);
+				for(PersonDetail detail : newDetails){
+					if(detail.getId() == Integer.parseInt(tid)){
+						detail.setType(PersonDetailType.convertToType(keyType));
+						detail.setValue(value);
+						break;
+					}
+				}
+//				ContentValues cv = new ContentValues();
+//				cv.put("value", value);
+//				upDateDB(cv, tid);
+//				BuildEditJson(keyType, value, tid);
+			}else if (editType == 1){
+				String id = basicList.get(i).getId();
+				for(int n = 0; n < newDetails.size(); n++){
+					PersonDetail detail = newDetails.get(n);
+					if(detail.getId() == Integer.parseInt(id)){
+						newDetails.remove(n);
+						break;
+					}
+				}
+				addressList.remove(i);
 			}
 
 		}
@@ -1263,14 +1404,33 @@ public class UserInfoEditActivity extends BaseActivity implements
 				return;
 			}
 			if (editType == 2) {
-				insertDB(keyType, value, start, end);
-				BuildAddEduAndWorkJson(keyType, value, start, end);
+				PersonDetail detail = new PersonDetail(0, circleMember.getCid(),PersonDetailType.convertToType(keyType),value);
+				newDetails.add(detail);
+//				insertDB(keyType, value, start, end);
+//				BuildAddEduAndWorkJson(keyType, value, start, end);
 			} else if (editType == 3) {
 				String tid = eduList.get(i).getId();
-				ContentValues cv = new ContentValues();
-				cv.put("value", value);
-				upDateDB(cv, tid);
-				BuildEditEduAndWorkJson(keyType, value, tid, start, end);
+				for(PersonDetail detail : newDetails){
+					if(detail.getId() == Integer.parseInt(tid)){
+						detail.setType(PersonDetailType.convertToType(keyType));
+						detail.setValue(value);
+						break;
+					}
+				}
+//				ContentValues cv = new ContentValues();
+//				cv.put("value", value);
+//				upDateDB(cv, tid);
+//				BuildEditEduAndWorkJson(keyType, value, tid, start, end);
+			}else if (editType == 1){
+				String id = basicList.get(i).getId();
+				for(int n = 0; n < newDetails.size(); n++){
+					PersonDetail detail = newDetails.get(n);
+					if(detail.getId() == Integer.parseInt(id)){
+						newDetails.remove(n);
+						break;
+					}
+				}
+				eduList.remove(i);
 			}
 		}
 		for (int i = 0; i < workList.size(); i++) {
@@ -1292,17 +1452,36 @@ public class UserInfoEditActivity extends BaseActivity implements
 				return;
 			}
 			if (editType == 2) {
-				insertDB(keyType, value, start, end);
-				BuildAddEduAndWorkJson(keyType, value, start, end);
+				PersonDetail detail = new PersonDetail(0, circleMember.getCid(),PersonDetailType.convertToType(keyType),value);
+				newDetails.add(detail);
+//				insertDB(keyType, value, start, end);
+//				BuildAddEduAndWorkJson(keyType, value, start, end);
 			} else if (editType == 3) {
 				String tid = workList.get(i).getId();
-				ContentValues cv = new ContentValues();
-				cv.put("value", value);
-				upDateDB(cv, tid);
-				BuildEditEduAndWorkJson(keyType, value, tid, start, end);
+				for(PersonDetail detail : newDetails){
+					if(detail.getId() == Integer.parseInt(tid)){
+						detail.setType(PersonDetailType.convertToType(keyType));
+						detail.setValue(value);
+						break;
+					}
+				}
+//				ContentValues cv = new ContentValues();
+//				cv.put("value", value);
+//				upDateDB(cv, tid);
+//				BuildEditEduAndWorkJson(keyType, value, tid, start, end);
+			}else if (editType == 1){
+				String id = basicList.get(i).getId();
+				for(int n = 0; n < newDetails.size(); n++){
+					PersonDetail detail = newDetails.get(n);
+					if(detail.getId() == Integer.parseInt(id)){
+						newDetails.remove(n);
+						break;
+					}
+				}
+				workList.remove(i);
 			}
 		}
-		upLoadEditDetails();
+//		upLoadEditDetails();
 	}
 
 	private void upLoadEditDetails() {
@@ -1339,12 +1518,42 @@ public class UserInfoEditActivity extends BaseActivity implements
 		case R.id.btnSave:
 
 			BuildJson();
+			dialog = DialogUtil.getWaitDialog(this, "请稍后");
+			dialog.show();
+			UpLoadCircleMemberIdetailTask loadCircleMemberIdetailTask = new UpLoadCircleMemberIdetailTask();
+			loadCircleMemberIdetailTask.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
+
+				@Override
+				public void taskFinish(RetError result) {
+					// TODO Auto-generated method stub
+					dialog.dismiss();
+					if(result == RetError.UNKOWN){
+						//给出适当提醒  : 数据库写入失败
+					}
+					updateSucceed();
+				}
+			});
+			loadCircleMemberIdetailTask.executeWithCheckNet(circleMember,newCircleMember);
 			break;
 		default:
 			break;
 		}
 	}
-
+	private void updateSucceed(){
+		Utils.showToast("修改成功");
+		Intent it = new Intent();
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("basicList", (Serializable) basicList);
+		bundle.putSerializable("contactList", (Serializable) contactList);
+		bundle.putSerializable("socialList", (Serializable) socialList);
+		bundle.putSerializable("addressList", (Serializable) addressList);
+		bundle.putSerializable("eduList", (Serializable) eduList);
+		bundle.putSerializable("workList", (Serializable) workList);
+		it.putExtras(bundle);
+		setResult(2, it);
+		finish();
+		Utils.rightOut(this);
+	}
 	@Override
 	public void taskFinish(String result) {
 		dialog.dismiss();

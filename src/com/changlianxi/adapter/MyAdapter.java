@@ -119,7 +119,7 @@ public class MyAdapter extends BaseAdapter {
 			holder.imgAuth.setVisibility(View.GONE);
 		}
 		String employer = circleMembers.get(position).getEmployer();
-		holder.info.setText(employer.equals("") ? circleMembers.get(position)
+		holder.info.setText("".equals(employer)||"null".equals(employer)? circleMembers.get(position)
 				.getLocation() : employer);
 		holder.name.setText(circleMembers.get(position).getName());
 		holder.news.setText(circleMembers.get(position).getCellphone());

@@ -75,7 +75,7 @@ public class CircleUserActivity extends BaseActivity implements
 	//private List<MemberModle> listModles = new ArrayList<MemberModle>();// 存储成员列表
 	private List<CircleMember> searchListModles = new ArrayList<CircleMember>();// 存储搜索列表
 	private int position;// 当前字母子listview中所对应的位置
-	private String cid;// 圈子ID
+	private int cid;// 圈子ID
 	private ImageView btadd;
 	private ImageView btback;
 	private TextView txtciecleName;
@@ -93,7 +93,7 @@ public class CircleUserActivity extends BaseActivity implements
 
 	private void filldata() {
 		if(circleMemberList == null)
-			circleMemberList = new CircleMemberList(Integer.parseInt(cid));
+			circleMemberList = new CircleMemberList(cid);
 		if (circleMemberList.getMembers().size() == 0) {
 			progressDialog = DialogUtil.getWaitDialog(this, "请稍后");
 			progressDialog.show();
@@ -103,7 +103,6 @@ public class CircleUserActivity extends BaseActivity implements
 
 			@Override
 			public void taskFinish(RetError result) {
-				// TODO Auto-generated method stub
 				layInvitate.setVisibility(View.GONE);
 				progressDialog.dismiss();
 				adapter = new MyAdapter(CircleUserActivity.this, circleMemberList);
@@ -118,7 +117,7 @@ public class CircleUserActivity extends BaseActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		cid = getIntent().getStringExtra("cirID");
+		cid = Integer.parseInt(getIntent().getStringExtra("cirID"));
 		isnew = getIntent().getBooleanExtra("is_New", false);
 		inviterID = getIntent().getStringExtra("inviterID");
 		initView();
@@ -167,7 +166,6 @@ public class CircleUserActivity extends BaseActivity implements
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 		// MobclickAgent.onPause(this);
@@ -313,6 +311,7 @@ public class CircleUserActivity extends BaseActivity implements
 			username = circleMemberList.getMembers().get(position).getName();
 			pid = circleMemberList.getMembers().get(position).getPid();
 		}
+		//TODO 跳转到圈子成员详情页面
 		Intent it = new Intent();
 		it.setClass(this, UserInfoActivity.class);
 		it.putExtra("cid", cid);
@@ -458,7 +457,6 @@ public class CircleUserActivity extends BaseActivity implements
 
 	@Override
 	public void taskFinish(String result) {
-		// TODO Auto-generated method stub
 		
 	}
 

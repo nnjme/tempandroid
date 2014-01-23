@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -29,14 +30,21 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.data.CircleMember;
+import com.changlianxi.data.PersonDetail;
+import com.changlianxi.data.enums.PersonDetailType;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow.OnSelectKey;
+import com.changlianxi.task.BaseAsyncTask;
+import com.changlianxi.task.CircleMemberIdetailTask;
 import com.changlianxi.task.GetUserDetailsTask;
 import com.changlianxi.task.GetUserDetailsTask.GetValuesTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.UserInfoUtils;
 import com.changlianxi.util.Utils;
@@ -56,9 +64,9 @@ import com.umeng.analytics.MobclickAgent;
 public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		GetValuesTask {
 	private String iconPath;
-	private String pid;// 用户pid
-	private String uid;// 用户uid
-	private String cid;// 圈子id
+	private int pid;// 用户pid
+	private int uid;// 用户uid
+	private int cid;// 圈子id
 	private String username;
 	private List<String> showGroupkey = new ArrayList<String>();
 	private List<Info> showBasicList = new ArrayList<Info>();// 存放基本信息数据
@@ -100,20 +108,22 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private RelativeLayout layParent;
 	private RelativeLayout layTop;
 	private TextView txtnews;
-	private Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case 0:
-				getUserDetails(pid);
-				setValuesAdapter();
-				getDetailsFromServer();
-				break;
-			default:
-				break;
-			}
-		}
-	};
+	private CircleMemberIdetailTask task;
+//	private Handler mHandler = new Handler() {
+//		@Override
+//		public void handleMessage(Message msg) {
+//			switch (msg.what) {
+//			case 0:
+//				getUserDetails(pid+"");
+//				setValuesAdapter();
+//				getDetailsFromServer();
+//				break;
+//			default:
+//				break;
+//			}
+//		}
+//	};
+	private CircleMember circleMember;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -122,16 +132,46 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		setContentView(R.layout.user_info_show);
 		iconPath = getIntent().getStringExtra("iconImg");
 		username = getIntent().getStringExtra("username");
-		pid = getIntent().getStringExtra("pid");
-		cid = getIntent().getStringExtra("cid");
-		uid = getIntent().getStringExtra("uid");
+		pid = getIntent().getIntExtra("pid", 0);
+		cid = getIntent().getIntExtra("cid",0);
+		uid = getIntent().getIntExtra("uid",0);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getUserOptions();
 		initView();
+		setValuesAdapter();
+		filldata();
 		setOnClickListener();
 		initData();
-		mHandler.sendEmptyMessageDelayed(0, 100);
+		//mHandler.sendEmptyMessageDelayed(0, 100);
 
+	}
+	private void filldata() {
+		dialog = DialogUtil.getWaitDialog(this, "请稍后");
+		dialog.show();
+		circleMember = new CircleMember(cid, pid, uid);
+		if(task == null)
+			task = new CircleMemberIdetailTask();
+		if(task.getStatus() == Status.RUNNING){
+			task.cancel(true);
+		}
+		task.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
+
+			@Override
+			public void taskFinish(RetError result) {
+				// TODO Auto-generated method stub
+				dialog.dismiss();
+				//分类
+				List<PersonDetail> details = circleMember.getDetails();
+				for(PersonDetail detail : details){
+					valuesClassification(detail.getId()+"",detail.getType().name(),detail.getValue(),detail.getStart(),detail.getEnd());
+				}
+				notifyData(showBasicList, showContactList, showSocialList, showAddressList, showEduList,
+						showWorkList);
+			}
+
+		});
+		task.executeWithCheckNet(circleMember);
+		
 	}
 	/**设置页面统计
 	 * 
@@ -184,7 +224,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			dialog = DialogUtil.getWaitDialog(this, "请稍后");
 			dialog.show();
 		}
-		GetUserDetailsTask task = new GetUserDetailsTask(cid, pid);
+		GetUserDetailsTask task = new GetUserDetailsTask(cid+"", pid+"");
 		task.setTaskCallBack(this);
 		task.execute();
 
@@ -301,6 +341,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	}
 
 	private void setAvatar() {
+
 		imageLoader.loadImage(iconPath, options, new ImageLoadingListener() {
 
 			@Override
@@ -322,7 +363,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 				}
 				avatar.setImageBitmap(bmp);
 				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
-
+				
 			}
 
 			@Override
@@ -689,10 +730,10 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			String values = eduValuesList.get(position).getValue();
 			holderValues.key.setText(eduValuesList.get(position).getKey());
 			holderValues.value.setText(values);
-			holderValues.endTime.setText(eduValuesList.get(position)
-					.getEndDate());
-			holderValues.startTime.setText(eduValuesList.get(position)
-					.getStartDate());
+			String end = DateUtils.interceptDateStr(eduValuesList.get(position).getEndDate(),"yyyy.MM.dd");
+			String start = DateUtils.interceptDateStr(eduValuesList.get(position).getStartDate(),"yyyy.MM.dd");
+			holderValues.endTime.setText(end);
+			holderValues.startTime.setText(start);
 			return convertView;
 		}
 	}
@@ -798,6 +839,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			it.putExtra("cid", cid);
 			it.putExtra("pid", pid);
 			it.putExtra("avatar", iconPath);
+			it.putExtra("circleMumber", circleMember);
 			it.setClass(this, UserInfoEditActivity.class);
 			startActivityForResult(it, 2);
 			Utils.leftOutRightIn(this);
@@ -870,13 +912,13 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private void notifyData(List<Info> basicList, List<Info> contactList,
 			List<Info> socialList, List<Info> addressList, List<Info> eduList,
 			List<Info> workList) {
-		clearData();
-		this.showBasicList.addAll(basicList);
-		this.showContactList.addAll(contactList);
-		this.showSocialList.addAll(socialList);
-		this.showAddressList.addAll(addressList);
-		this.showEduList.addAll(eduList);
-		this.showWorkList.addAll(workList);
+//		clearData();
+//		this.showBasicList.addAll(basicList);
+//		this.showContactList.addAll(contactList);
+//		this.showSocialList.addAll(socialList);
+//		this.showAddressList.addAll(addressList);
+//		this.showEduList.addAll(eduList);
+//		this.showWorkList.addAll(workList);
 		delName();
 		basicAdapter.notifyDataSetChanged();
 		socialAdapter.notifyDataSetChanged();
