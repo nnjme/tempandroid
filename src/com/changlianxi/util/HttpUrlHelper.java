@@ -205,7 +205,6 @@ public class HttpUrlHelper {
 		Iterator<?> mapite = map.entrySet().iterator();
 		FileBody fileBody = new FileBody(file);
 		mpEntity.addPart(avatar, fileBody);
-
 		try {
 			while (mapite.hasNext()) {// 循环遍历需要传递给服务器的请求参数
 				@SuppressWarnings("rawtypes")

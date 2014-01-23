@@ -11,7 +11,6 @@ import android.media.MediaPlayer;
 
 import com.changlianxi.BuildConfig;
 import com.changlianxi.R;
-import com.changlianxi.util.CrashHandler;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Logger.Level;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;

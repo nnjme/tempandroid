@@ -385,7 +385,7 @@ public class SelectContactsActivity extends BaseActivity implements
 				if (rt.equals("1")) {
 					getDetails(details, contactsList);
 					if (code.contains("null") && smsList.size() == 0) {
-						Utils.showToast("邀请成员已存在圈子中");
+						Utils.showToast("添加成功");
 						finish();
 						CLXApplication.exitSmsInvite();
 						Utils.rightOut(SelectContactsActivity.this);
