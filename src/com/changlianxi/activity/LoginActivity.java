@@ -31,7 +31,7 @@ import com.umeng.analytics.MobclickAgent;
 
 /**
  * µÇÂ¼½çÃæ
- *             
+ * 
  * @author teeker_bin
  * 
  */
@@ -51,11 +51,8 @@ public class LoginActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
-<<<<<<< HEAD
 		CLXApplication.addActivity(this);
-=======
 		MobclickAgent.openActivityDurationTrack(false);
->>>>>>> 729aaf0cdd6612eadceb0fb2558c3d358c778b85
 		uid = SharedUtils.getString("uid", "");
 		token = SharedUtils.getString("token", "");
 		if (!uid.equals("") && !token.equals("")) {
@@ -65,11 +62,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 			finish();
 		}
 		initView();
-<<<<<<< HEAD
 		SharedUtils.setString("imei", Utils.getImei(this));
-=======
-		PushMessageReceiver.setPushOnBind(this);
-		SharedUtils.setInt("imei", 1);
 	}
 
 	/**
@@ -89,7 +82,6 @@ public class LoginActivity extends Activity implements OnClickListener,
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 		MobclickAgent.onPause(this);
->>>>>>> 729aaf0cdd6612eadceb0fb2558c3d358c778b85
 	}
 
 	/**
