@@ -1,6 +1,7 @@
 package com.changlianxi.activity;
 
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 import android.os.Bundle;
 import android.view.View;
@@ -40,5 +41,21 @@ public class ProblemActivity extends BaseActivity {
 		wb = (WebView) findViewById(R.id.webView1);
 		wb.loadUrl("file:///android_asset/problem.html");
 	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 
 }

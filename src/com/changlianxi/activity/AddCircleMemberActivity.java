@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 选择添加成员方式界面
@@ -47,6 +48,22 @@ public class AddCircleMemberActivity extends BaseActivity implements
 			cirName = getIntent().getStringExtra("cirName");
 		}
 	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 
 	@Override
 	public void onClick(View v) {

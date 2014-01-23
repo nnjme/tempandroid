@@ -47,6 +47,7 @@ import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.Switch;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 通过输入方式添加圈子成员界面
@@ -96,6 +97,22 @@ public class AddOneMemberActivity extends BaseActivity implements
 		setListener();
 		initData();
 	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 
 	/**
 	 * 初始化控件

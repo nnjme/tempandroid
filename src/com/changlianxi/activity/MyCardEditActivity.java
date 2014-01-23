@@ -71,6 +71,7 @@ import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.umeng.analytics.MobclickAgent;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 
@@ -178,6 +179,21 @@ public class MyCardEditActivity extends BaseActivity implements
 		mHandler.sendEmptyMessageDelayed(1, 100);
 	}
 
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
+	@SuppressWarnings("unchecked")
 	private void getData() {
 		new Thread() {
 			public void run() {

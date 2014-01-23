@@ -47,6 +47,8 @@ import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
+import com.changlianxi.view.Home;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 创建圈子界面
@@ -94,7 +96,22 @@ public class CreateCircleActivity extends BaseActivity implements
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("创建圈子");
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	/**
 	 * 得到上一个activi传过来的值
 	 */

@@ -31,6 +31,7 @@ import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.Utils;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 圈子信息界面
@@ -82,6 +83,22 @@ public class CircleInfoActivity extends BaseActivity implements
 		}
 		getServerData();
 	}
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 
 	private void setvalue(String name, String cirIcon, String des,
 			String total, String ver) {

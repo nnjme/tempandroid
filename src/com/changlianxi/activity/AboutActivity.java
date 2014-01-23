@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.changlianxi.R;
 import com.changlianxi.util.Utils;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 关于界面
@@ -31,7 +32,19 @@ public class AboutActivity extends BaseActivity implements OnClickListener {
 		version = (TextView) findViewById(R.id.version);
 		version.setText("常联系 " + Utils.getVersionName(this) + " For Android");
 	}
-
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {

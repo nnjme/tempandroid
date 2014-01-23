@@ -66,6 +66,7 @@ import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.MyListView;
 import com.changlianxi.view.MyListView.OnRefreshListener;
+import com.umeng.analytics.MobclickAgent;
 import com.changlianxi.R;
 
 /**
@@ -147,7 +148,22 @@ public class MessageActivity extends BaseActivity implements OnClickListener,
 		messageThread.start();
 		getDBMessage();
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	private void getIntentData() {
 		ruid = getIntent().getStringExtra("ruid");
 		cid = getIntent().getStringExtra("cid");

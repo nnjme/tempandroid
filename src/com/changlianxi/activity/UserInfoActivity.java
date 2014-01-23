@@ -47,6 +47,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
+import com.umeng.analytics.MobclickAgent;
 
 /**
  * 用户资料显示界面
@@ -134,7 +135,22 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		mHandler.sendEmptyMessageDelayed(0, 100);
 
 	}
-
+	/**设置页面统计
+	 * 
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onPageStart(getClass().getName() + "");
+	}
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPageEnd(getClass().getName() + "");
+	}
+	
 	/**
 	 * 获取成员资料信息
 	 * 
