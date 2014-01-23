@@ -6,12 +6,12 @@ import java.util.List;
 import android.app.Activity;
 import android.app.Application;
 import android.app.NotificationManager;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 
 import com.changlianxi.BuildConfig;
 import com.changlianxi.R;
+import com.changlianxi.util.CrashHandler;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Logger.Level;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
