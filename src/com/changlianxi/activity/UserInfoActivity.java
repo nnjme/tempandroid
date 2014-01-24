@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,12 +40,14 @@ import com.changlianxi.task.GetUserDetailsTask.GetValuesTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.UserInfoUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.DiscCacheUtil;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 import com.umeng.analytics.MobclickAgent;
@@ -135,7 +138,9 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		mHandler.sendEmptyMessageDelayed(0, 100);
 
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -144,13 +149,14 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
+
 	/**
 	 * 获取成员资料信息
 	 * 
@@ -303,8 +309,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	}
 
 	private void setAvatar() {
-		imageLoader.loadImage(iconPath, options, new ImageLoadingListener() {
 
+		imageLoader.loadImage(iconPath, options, new ImageLoadingListener() {
 			@Override
 			public void onLoadingStarted(String arg0, View arg1) {
 
@@ -925,4 +931,5 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 				workList);
 
 	}
+
 }

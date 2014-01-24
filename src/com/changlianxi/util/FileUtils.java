@@ -4,6 +4,9 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.DiscCacheUtil;
+
 import android.os.Environment;
 
 public class FileUtils {
@@ -102,5 +105,16 @@ public class FileUtils {
 		}
 		return destDir.getAbsolutePath();
 
+	}
+
+	/**
+	 * 获取缓存图片的路径
+	 * 
+	 * @param imgUrl
+	 */
+	public static String getCachePath(String imgUrl) {
+		File discCache = DiscCacheUtil.findInCache(imgUrl, ImageLoader
+				.getInstance().getDiscCache());
+		return discCache == null ? null : discCache.getAbsolutePath();
 	}
 }
