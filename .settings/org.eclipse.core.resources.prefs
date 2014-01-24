@@ -1,4 +1,7 @@
-#Thu Jan 16 09:49:20 CST 2014
+#Fri Jan 24 12:14:33 CST 2014
+=\=\=\=\=\=\=
+<<<<<<<=HEAD
+>>>>>>>=4ec9c6abe7ca797326dfbc96ac32b9d93ec2b3b6
 eclipse.preferences.version=1
 encoding//src/com/changlianxi/activity=Gbk
 encoding//src/com/changlianxi/activity/CLXApplication.java=UTF-8
@@ -32,4 +35,5 @@ encoding//src/com/changlianxi/util/MemoryCache.java=Gbk
 encoding//src/com/changlianxi/util/MyComparator.java=Gbk
 encoding//src/com/changlianxi/util/UserInfoUtils.java=Gbk
 encoding//src/com/changlianxi/util/WigdtContorl.java=Gbk
+encoding/<project>=UTF-8
 encoding/src=UTF-8

@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import com.changlianxi.activity.CLXApplication;
 import com.changlianxi.activity.GrowthCommentActivity;
+import com.changlianxi.activity.ShareActivity;
 import com.changlianxi.activity.GrowthCommentActivity.RecordOperation;
 import com.changlianxi.R;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
@@ -105,6 +106,8 @@ public class GrowthAdapter extends BaseAdapter {
 			holder.img = (ImageView) convertView.findViewById(R.id.img);
 			holder.layLocation = (LinearLayout) convertView
 					.findViewById(R.id.layLocation);
+			holder.btnShare = (TextView) convertView
+					.findViewById(R.id.btnShare);
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
@@ -180,6 +183,10 @@ public class GrowthAdapter extends BaseAdapter {
 		holder.praise.setText("赞（" + listData.get(position).getPraise() + "）");
 		holder.comment.setText("评论（" + listData.get(position).getComment()
 				+ "）");
+
+		holder.btnShare.setOnClickListener(new BtnShareClick(content, listData
+				.get(position).getImgModle().size() > 0 ? listData
+				.get(position).getImgModle().get(0).getImg_200() : ""));
 		return convertView;
 	}
 
@@ -196,6 +203,26 @@ public class GrowthAdapter extends BaseAdapter {
 		CircularImage avatar;
 		TextView location;
 		ImageView img;
+		TextView btnShare;
+	}
+
+	class BtnShareClick implements OnClickListener {
+		String content;
+		String imgPath;
+
+		public BtnShareClick(String content, String imgPath) {
+			this.content = content;
+			this.imgPath = imgPath;
+		}
+
+		@Override
+		public void onClick(View v) {
+			Intent intent1 = new Intent(mContext, ShareActivity.class);
+			intent1.putExtra("content", content);
+			intent1.putExtra("imgUrl", imgPath);
+			mContext.startActivity(intent1);
+		}
+
 	}
 
 	class ImgOnClick implements OnClickListener {

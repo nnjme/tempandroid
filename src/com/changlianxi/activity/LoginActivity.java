@@ -18,6 +18,11 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
+import cn.sharesdk.framework.ShareSDK;
+import cn.sharesdk.onekeyshare.OnekeyShare;
+
+import com.baidu.android.pushservice.PushConstants;
+import com.baidu.android.pushservice.PushManager;
 import com.changlianxi.R;
 import com.changlianxi.fragment.MainActivity1;
 import com.changlianxi.task.PostAsyncTask;
@@ -51,6 +56,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
+		ShareSDK.initSDK(this);
 		CLXApplication.addActivity(this);
 		MobclickAgent.openActivityDurationTrack(false);
 		uid = SharedUtils.getString("uid", "");

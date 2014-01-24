@@ -44,6 +44,7 @@ import com.changlianxi.task.PraiseAndCanclePraiseTask.PraiseAndCancle;
 import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -439,6 +440,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 			finish();
 			Utils.rightOut(this);
 			break;
+
 		case R.id.btPublish:
 			String str = edtContent.getText().toString();
 			if (str.length() == 0) {
