@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.LayoutInflater;
@@ -109,20 +110,20 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private RelativeLayout layTop;
 	private TextView txtnews;
 	private CircleMemberIdetailTask task;
-//	private Handler mHandler = new Handler() {
-//		@Override
-//		public void handleMessage(Message msg) {
-//			switch (msg.what) {
-//			case 0:
-//				getUserDetails(pid+"");
-//				setValuesAdapter();
-//				getDetailsFromServer();
-//				break;
-//			default:
-//				break;
-//			}
-//		}
-//	};
+	// private Handler mHandler = new Handler() {
+	// @Override
+	// public void handleMessage(Message msg) {
+	// switch (msg.what) {
+	// case 0:
+	// getUserDetails(pid+"");
+	// setValuesAdapter();
+	// getDetailsFromServer();
+	// break;
+	// default:
+	// break;
+	// }
+	// }
+	// };
 	private CircleMember circleMember;
 
 	@SuppressLint("NewApi")
@@ -130,11 +131,14 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_info_show);
+		//debug内存分析
+//		Debug.startMethodTracing();
+		
 		iconPath = getIntent().getStringExtra("iconImg");
 		username = getIntent().getStringExtra("username");
 		pid = getIntent().getIntExtra("pid", 0);
-		cid = getIntent().getIntExtra("cid",0);
-		uid = getIntent().getIntExtra("uid",0);
+		cid = getIntent().getIntExtra("cid", 0);
+		uid = getIntent().getIntExtra("uid", 0);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getUserOptions();
 		initView();
@@ -142,16 +146,22 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		filldata();
 		setOnClickListener();
 		initData();
-		//mHandler.sendEmptyMessageDelayed(0, 100);
+		// mHandler.sendEmptyMessageDelayed(0, 100);
 
 	}
+//	@Override
+//	protected void onDestroy() {
+//		// TODO Auto-generated method stub
+//		super.onDestroy();
+//		Debug.stopMethodTracing();
+//	}
 	private void filldata() {
 		dialog = DialogUtil.getWaitDialog(this, "请稍后");
 		dialog.show();
 		circleMember = new CircleMember(cid, pid, uid);
-		if(task == null)
+		if (task == null)
 			task = new CircleMemberIdetailTask();
-		if(task.getStatus() == Status.RUNNING){
+		if (task.getStatus() == Status.RUNNING) {
 			task.cancel(true);
 		}
 		task.setTaskCallBack(new BaseAsyncTask.PostCallBack<RetError>() {
@@ -160,20 +170,24 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			public void taskFinish(RetError result) {
 				// TODO Auto-generated method stub
 				dialog.dismiss();
-				//分类
+				// 分类
 				List<PersonDetail> details = circleMember.getDetails();
-				for(PersonDetail detail : details){
-					valuesClassification(detail.getId()+"",detail.getType().name(),detail.getValue(),detail.getStart(),detail.getEnd());
+				for (PersonDetail detail : details) {
+					valuesClassification(detail.getId() + "", detail.getType()
+							.name(), detail.getValue(), detail.getStart(),
+							detail.getEnd());
 				}
-				notifyData(showBasicList, showContactList, showSocialList, showAddressList, showEduList,
-						showWorkList);
+				notifyData(showBasicList, showContactList, showSocialList,
+						showAddressList, showEduList, showWorkList);
 			}
 
 		});
 		task.executeWithCheckNet(circleMember);
-		
+
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -182,13 +196,14 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
+
 	/**
 	 * 获取成员资料信息
 	 * 
@@ -224,7 +239,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			dialog = DialogUtil.getWaitDialog(this, "请稍后");
 			dialog.show();
 		}
-		GetUserDetailsTask task = new GetUserDetailsTask(cid+"", pid+"");
+		GetUserDetailsTask task = new GetUserDetailsTask(cid + "", pid + "");
 		task.setTaskCallBack(this);
 		task.execute();
 
@@ -363,7 +378,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 				}
 				avatar.setImageBitmap(bmp);
 				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
-				
+
 			}
 
 			@Override
@@ -730,8 +745,10 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			String values = eduValuesList.get(position).getValue();
 			holderValues.key.setText(eduValuesList.get(position).getKey());
 			holderValues.value.setText(values);
-			String end = DateUtils.interceptDateStr(eduValuesList.get(position).getEndDate(),"yyyy.MM.dd");
-			String start = DateUtils.interceptDateStr(eduValuesList.get(position).getStartDate(),"yyyy.MM.dd");
+			String end = DateUtils.interceptDateStr(eduValuesList.get(position)
+					.getEndDate(), "yyyy.MM.dd");
+			String start = DateUtils.interceptDateStr(
+					eduValuesList.get(position).getStartDate(), "yyyy.MM.dd");
 			holderValues.endTime.setText(end);
 			holderValues.startTime.setText(start);
 			return convertView;
@@ -750,20 +767,68 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == 2 && data != null) {
-			Bundle bundle = data.getExtras();
-			List<Info> basicList = (List<Info>) bundle
-					.getSerializable("basicList");
-			List<Info> contactList = (List<Info>) bundle
-					.getSerializable("contactList");
-			List<Info> socialList = (List<Info>) bundle
-					.getSerializable("socialList");
-			List<Info> addressList = (List<Info>) bundle
-					.getSerializable("addressList");
-			List<Info> eduList = (List<Info>) bundle.getSerializable("eduList");
-			List<Info> workList = (List<Info>) bundle
-					.getSerializable("workList");
-			notifyData(basicList, contactList, socialList, addressList,
-					eduList, workList);
+			boolean[] flag = data.getBooleanArrayExtra("flag");
+			 Bundle bundle = data.getExtras();
+			 circleMember = (CircleMember) data.getSerializableExtra("circleMember");
+			if(flag[0]){
+				List<Info> basicList = (List<Info>) bundle
+						.getSerializable("basicList");
+				showBasicList.clear();
+				showBasicList.addAll(basicList);
+				basicAdapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(basicListView);
+			}
+			if(flag[1]){
+				List<Info> contactList = (List<Info>) bundle
+						.getSerializable("contactList");
+				showContactList.clear();
+				showContactList.addAll(contactList);
+				contactAdapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(contactListView);
+				
+			}
+			if(flag[2]){
+				List<Info> socialList = (List<Info>) bundle
+						.getSerializable("socialList");
+				showSocialList.clear();
+				showSocialList.addAll(socialList);
+				socialAdapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(socialListView);
+				
+			}
+			if(flag[3]){
+				List<Info> addressList = (List<Info>) bundle
+						.getSerializable("addressList");
+				showAddressList.clear();
+				showAddressList.addAll(addressList);
+				addressAdapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(addressListView);
+				
+			}
+			if(flag[4]){
+				List<Info> eduList = (List<Info>) bundle.getSerializable("eduList");
+				showEduList.clear();
+				showEduList.addAll(eduList);
+				eduAdapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(eduListView);
+			}
+			if(flag[5]){
+				List<Info> workList = (List<Info>) bundle
+						.getSerializable("workList");
+				showWorkList.clear();
+				showWorkList.addAll(workList);
+				workAdapter.notifyDataSetChanged();
+				Utils.setListViewHeightBasedOnChildren(workListView);
+				
+			}
+			if (showContactList.size() > 0) {
+				txtnews.setText("移动电话：" + showContactList.get(0).getValue());
+			}
+			setLayVisible();
+		
+//			 notifyData(showBasicList, showContactList, showSocialList,
+//			 showAddressList,
+//			 showEduList, showWorkList);
 		}
 	}
 
@@ -912,13 +977,13 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private void notifyData(List<Info> basicList, List<Info> contactList,
 			List<Info> socialList, List<Info> addressList, List<Info> eduList,
 			List<Info> workList) {
-//		clearData();
-//		this.showBasicList.addAll(basicList);
-//		this.showContactList.addAll(contactList);
-//		this.showSocialList.addAll(socialList);
-//		this.showAddressList.addAll(addressList);
-//		this.showEduList.addAll(eduList);
-//		this.showWorkList.addAll(workList);
+		// clearData();
+		// this.showBasicList.addAll(basicList);
+		// this.showContactList.addAll(contactList);
+		// this.showSocialList.addAll(socialList);
+		// this.showAddressList.addAll(addressList);
+		// this.showEduList.addAll(eduList);
+		// this.showWorkList.addAll(workList);
 		delName();
 		basicAdapter.notifyDataSetChanged();
 		socialAdapter.notifyDataSetChanged();

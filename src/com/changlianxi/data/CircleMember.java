@@ -358,19 +358,23 @@ public class CircleMember extends AbstractData {
 	}
 
 	public void readDetails(SQLiteDatabase db) {
-		List<PersonDetail> detials = new ArrayList<PersonDetail>();
-		String[] ids = this.detailIds.split(",");
-		if (ids.length > 0) {
-			for (String pdid : ids) {
-				if (!"".equals(pdid) && Integer.parseInt(pdid) > 0) {
-					PersonDetail detail = new PersonDetail(Integer.parseInt(pdid),
-							cid);
-					detail.read(db);
-					detials.add(detail);
+		List<PersonDetail> mDetials = new ArrayList<PersonDetail>();
+		if(detailIds==null||"".equals(detailIds)||"null".equals(detailIds)){
+			detailIds="";
+		}else{
+			String[] ids = this.detailIds.split(",");
+			if (ids.length > 0) {
+				for (String pdid : ids) {
+					if (!"".equals(pdid) && Integer.parseInt(pdid) > 0) {
+						PersonDetail detail = new PersonDetail(Integer.parseInt(pdid),
+								cid);
+						detail.read(db);
+						mDetials.add(detail);
+					}
 				}
 			}
 		}
-		this.setDetails(details);
+		this.setDetails(mDetials);
 		this.syncBasicAndDetail(true);
 	}
 
@@ -836,7 +840,13 @@ public class CircleMember extends AbstractData {
 
 			List<PersonDetail> details = new ArrayList<PersonDetail>();
 			for (int i = 0; i < changedDetails.length(); i++) {
-				int propid = (Integer) ret.get(i);
+				Object o = ret.get(i);
+				int propid;
+				if(o instanceof Integer){
+					propid = (Integer)ret.get(i);
+				}else{
+					propid = Integer.parseInt((String)ret.get(i));
+				}
 				if (propid > 0) {
 					try {
 						PersonDetail pd = new PersonDetail(propid, cid);

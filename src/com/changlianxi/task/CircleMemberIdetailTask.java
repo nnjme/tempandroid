@@ -16,6 +16,7 @@ public class CircleMemberIdetailTask extends
 		try {
 			CircleMember circleMember = arg0[0];
 			circleMember.read(DBUtils.db);
+			circleMember.readDetails(DBUtils.db);
 			RetError refresh = circleMember.refresh(CLXApplication.circleMemberLastRefreshTime);
 			circleMember.writeDetails(DBUtils.db);
 			circleMember.write(DBUtils.db);

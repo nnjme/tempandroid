@@ -35,6 +35,7 @@
         android:smallScreens="true" />
 
     <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
 
     <application
         android:name=".activity.CLXApplication"

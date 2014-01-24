@@ -106,7 +106,7 @@ public class PersonDetail extends AbstractData {
 			String start = cursor.getString(cursor.getColumnIndex("start"));
 			String end = cursor.getString(cursor.getColumnIndex("end"));
 			String remark = cursor.getString(cursor.getColumnIndex("remark"));
-
+			
 			this.type = PersonDetailType.convertToType(type);
 			this.value = value;
 			this.start = start;
@@ -132,6 +132,7 @@ public class PersonDetail extends AbstractData {
 
 		ContentValues cv = new ContentValues();
 		cv.put("id", id);
+		cv.put("cid",cid);
 		cv.put("type", type.name());
 		cv.put("value", value);
 		cv.put("start", start);

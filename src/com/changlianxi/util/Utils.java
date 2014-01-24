@@ -115,8 +115,13 @@ public class Utils {
 		if (imm == null) {
 			return;
 		}
-		imm.hideSoftInputFromWindow(((Activity) context).getCurrentFocus()
-				.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+		try {
+			imm.hideSoftInputFromWindow(((Activity) context).getCurrentFocus()
+					.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/***
