@@ -1,4 +1,4 @@
-#Thu Jan 09 15:22:54 CST 2014
+#Wed Jan 22 09:51:51 CST 2014
 eclipse.preferences.version=1
 encoding//src/com/changlianxi/activity=Gbk
 encoding//src/com/changlianxi/activity/CLXApplication.java=UTF-8
@@ -33,4 +33,5 @@ encoding//src/com/changlianxi/util/MyComparator.java=Gbk
 encoding//src/com/changlianxi/util/UserInfoUtils.java=Gbk
 encoding//src/com/changlianxi/util/WigdtContorl.java=Gbk
 encoding//src/com/changlianxi/view/SliderMenu.java=UTF-8
+encoding/<project>=UTF-8
 encoding/src=UTF-8

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <color name="default_font_color">#828282</color>
+    <color name="sliding_menu_item_down">#ff39393b</color>
+    <color name="sliding_menu_item_release">#00000000</color>
+    <color name="sliding_menu_background">#ff2c2c2e</color>
+    <color name="sliding_menu_body_background">#fff5f5f5</color>
+    
+     <color name="default_font_color">#828282</color>
     <color name="transparent">#00000000</color>
     <color name="gold">#b89766</color>
     <color name="f6">#F6F6F6</color>
@@ -22,5 +26,8 @@
     <color name="versionbg">#d8d9d4</color>
     <color name="red">#ff00ff</color>
     <color name="tabfond">#828282</color>
-    
+    <color name="sliding_menu_item_down">#ff39393b</color>
+    <color name="sliding_menu_item_release">#00000000</color>
+    <color name="sliding_menu_background">#ff2c2c2e</color>
+    <color name="sliding_menu_body_background">#fff5f5f5</color>
 </resources>

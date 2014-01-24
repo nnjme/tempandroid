@@ -120,7 +120,9 @@ public class GrowthCommentActivity extends BaseActivity implements
 		task.execute();
 
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -129,13 +131,14 @@ public class GrowthCommentActivity extends BaseActivity implements
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
+
 	/**
 	 * . 初始化控件
 	 */
@@ -145,6 +148,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 		edit.setOnClickListener(this);
 		del = (Button) findViewById(R.id.del);
 		del.setOnClickListener(this);
+		findViewById(R.id.button_share).setOnClickListener(this);
 		btnPublis = (Button) findViewById(R.id.btPublish);
 		btnPublis.setOnClickListener(this);
 		edtContent = (EditText) findViewById(R.id.editContent);
@@ -432,6 +436,13 @@ public class GrowthCommentActivity extends BaseActivity implements
 		case R.id.back:
 			finish();
 			Utils.rightOut(this);
+			break;
+		case R.id.button_share:
+			Intent intent1 = new Intent(GrowthCommentActivity.this,
+					ShareActivity.class);
+			intent1.putExtra("content", content.getText());
+			intent1.putExtra("imgUrl", modle.getImgModle().get(0).getImg());
+			startActivity(intent1);
 			break;
 		case R.id.btPublish:
 			String str = edtContent.getText().toString();

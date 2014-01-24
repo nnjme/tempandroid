@@ -18,6 +18,9 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
+import cn.sharesdk.framework.ShareSDK;
+import cn.sharesdk.onekeyshare.OnekeyShare;
+
 import com.baidu.android.pushservice.PushConstants;
 import com.baidu.android.pushservice.PushManager;
 import com.changlianxi.R;
@@ -57,6 +60,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_login);
+		ShareSDK.initSDK(this);
 		MobclickAgent.openActivityDurationTrack(false);
 		uid = SharedUtils.getString("uid", "");
 		token = SharedUtils.getString("token", "");
@@ -178,7 +182,7 @@ public class LoginActivity extends Activity implements OnClickListener,
 		}
 
 	}
-
+	
 	/**
 	 * 百度推送绑定回调
 	 */
