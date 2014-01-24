@@ -932,4 +932,13 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 
 	}
 
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		System.out
+				.println("path::::::::::::::"
+						+ FileUtils
+								.getCachePath("http://clxpic.teeker.com//gh/1/140108/16e6852a321791de9ead32768fb50b8d.jpg"));
+		super.onDestroy();
+	}
 }

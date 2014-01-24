@@ -117,6 +117,7 @@
             android:background="@drawable/record_com_bg" >
 
             <LinearLayout
+                android:id="@+id/linearLayout1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -176,6 +177,17 @@
                         android:textSize="@dimen/scale26sp" />
                 </LinearLayout>
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnShare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_toLeftOf="@+id/linearLayout1"
+                android:paddingRight="20dip"
+                android:text="分享"
+                android:textColor="@color/font81"
+                android:textSize="@dimen/scale26sp" />
         </RelativeLayout>
     </LinearLayout>
 

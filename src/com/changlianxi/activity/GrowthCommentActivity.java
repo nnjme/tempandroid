@@ -44,6 +44,7 @@ import com.changlianxi.task.PraiseAndCanclePraiseTask.PraiseAndCancle;
 import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.HttpUrlHelper;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.SharedUtils;
@@ -150,7 +151,6 @@ public class GrowthCommentActivity extends BaseActivity implements
 		edit.setOnClickListener(this);
 		del = (Button) findViewById(R.id.del);
 		del.setOnClickListener(this);
-		findViewById(R.id.button_share).setOnClickListener(this);
 		btnPublis = (Button) findViewById(R.id.btPublish);
 		btnPublis.setOnClickListener(this);
 		edtContent = (EditText) findViewById(R.id.editContent);
@@ -440,13 +440,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 			finish();
 			Utils.rightOut(this);
 			break;
-		case R.id.button_share:
-			Intent intent1 = new Intent(GrowthCommentActivity.this,
-					ShareActivity.class);
-			intent1.putExtra("content", content.getText());
-			intent1.putExtra("imgUrl", modle.getImgModle().get(0).getImg());
-			startActivity(intent1);
-			break;
+
 		case R.id.btPublish:
 			String str = edtContent.getText().toString();
 			if (str.length() == 0) {

@@ -186,12 +186,6 @@
                 android:layout_marginTop="@dimen/scale23dip"
                 android:orientation="vertical" >
 
-                <Button
-                    android:id="@+id/button_share"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="分享到" />
-
                 <ImageView
                     android:id="@+id/imageView1"
                     android:layout_width="wrap_content"
