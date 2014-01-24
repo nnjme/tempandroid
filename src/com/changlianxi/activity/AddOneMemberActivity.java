@@ -97,7 +97,9 @@ public class AddOneMemberActivity extends BaseActivity implements
 		setListener();
 		initData();
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -106,13 +108,13 @@ public class AddOneMemberActivity extends BaseActivity implements
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
 
 	/**
 	 * 初始化控件
@@ -324,9 +326,11 @@ public class AddOneMemberActivity extends BaseActivity implements
 				Utils.showToast("请输入有效的手机号码");
 				return;
 			}
-			if (!Utils.isEmail(email)) {
-				Utils.showToast("邮箱格式不正确");
-				return;
+			if (email.length() != 0) {
+				if (!Utils.isEmail(email)) {
+					Utils.showToast("邮箱格式不正确");
+					return;
+				}
 			}
 			if (type.equals("create")) {
 				MemberInfoModle modle = new MemberInfoModle();
