@@ -85,8 +85,7 @@ public class GetCircleUserTask extends AsyncTask<String, Integer, String> {
 				modle.setAuth(auth.equals("1") ? true : false);
 				modle.setLocation(location);
 				listModles.add(modle);
-				DBUtils.insertCircleUser(cid, id, uid, name,
-						StringUtils.JoinString(logo, "_100x100"), employer,
+				DBUtils.insertCircleUser(cid, id, uid, name, logo, employer,
 						mobileNum, auth, location, sortkey, pinyin);
 			}
 			MyComparator compartor = new MyComparator();

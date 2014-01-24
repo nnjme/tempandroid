@@ -105,10 +105,8 @@ public class SelectPicPopwindow implements OnClickListener {
 					Constants.REQUEST_CODE_GETIMAGE_BYSDCARD);
 			break;
 		case R.id.btn_take_photo:
-			String dir = "/clx/camera/";
-			FileUtils.createDir(dir);
 			String name = FileUtils.getFileName() + ".jpg";
-			fileName = FileUtils.getgetAbsoluteDir(dir) + name;
+			fileName = FileUtils.getCameraPath() + File.separator + name;
 			Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 			// 下面这句指定调用相机拍照后的照片存储的路径
 			intent.putExtra(MediaStore.EXTRA_OUTPUT,

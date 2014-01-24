@@ -233,6 +233,10 @@ public class MyDetailChange implements OnClickListener, GetChangedDetail {
 							} else {
 								Utils.showToast("已忽略");
 							}
+							if (listModles.size() == 0) {
+								callBack.onChangeBackClick(0);
+
+							}
 						} else {
 							String err = object.getString("err");
 							Utils.showToast(ErrorCodeUtil.convertToChines(err));
@@ -252,7 +256,7 @@ public class MyDetailChange implements OnClickListener, GetChangedDetail {
 		this.callBack = callBack;
 	}
 
-	interface OnBackClick {
+	public interface OnBackClick {
 		void onChangeBackClick(int size);
 	}
 

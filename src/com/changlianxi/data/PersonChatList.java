@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class PersonChatList extends AbstractData {
 	private int partner = 0;
 	private long startTime = 0L; // data start time, in milliseconds
 	private long endTime = 0L; // data end time
-	private long lastReqTime = 0L; // last request time of chat data // TODO need this?
+	private long lastReqTime = 0L; // last request time of chat data
 	private int total = 0;
 	private List<PersonChat> chats = new ArrayList<PersonChat>();
 
@@ -105,8 +106,12 @@ public class PersonChatList extends AbstractData {
 		this.chats = chats;
 	}
 
+	private void sort(boolean byTimeAsc) {
+		Collections.sort(this.chats, PersonChat.getComparator(byTimeAsc));
+	}
+	
 	@Override
-	public void read(SQLiteDatabase db) { // TODO sort
+	public void read(SQLiteDatabase db) {
 		if (this.chats == null) {
 			this.chats = new ArrayList<PersonChat>();
 		} else {
@@ -161,13 +166,21 @@ public class PersonChatList extends AbstractData {
 		cursor2.close();
 
 		this.status = Status.OLD;
+		sort(true);
 	}
 
 	@Override
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (PersonChat chat : chats) {
+				if (chat.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.CHAT_MAX_CACHE_COUNT_PER_PERSON) {
+					chat.setStatus(Status.DEL);
+				}
 				chat.write(db);
 			}
 
@@ -234,6 +247,7 @@ public class PersonChatList extends AbstractData {
 		}
 
 		this.status = Status.UPDATE;
+		sort(true);
 	}
 
 	/**
@@ -280,7 +294,7 @@ public class PersonChatList extends AbstractData {
 		}
 	}
 
-	public void insert(PersonChat chat) { // TODO how to?
+	public void insert(PersonChat chat) { // TODO how to insert
 		long chatTime = DateUtils.convertToDate(chat.getTime());
 		if (chatTime >= this.endTime) {
 			this.endTime = chatTime;

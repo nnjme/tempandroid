@@ -28,12 +28,17 @@ import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
 import com.changlianxi.util.ErrorCodeUtil;
 import com.changlianxi.util.SharedUtils;
-import com.changlianxi.util.StringUtils;
 import com.changlianxi.util.Utils;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
 
+/**
+ * 圈子信息界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class CircleInfoActivity extends BaseActivity implements
 		OnClickListener, GetCircleIdetail, PostCallBack {
 	private TextView circleName;// 圈子名称
@@ -100,8 +105,10 @@ public class CircleInfoActivity extends BaseActivity implements
 		circleDescription.setText(des);
 		circleName.setText(name);
 		titleName.setText(name);
-		String logo = StringUtils.JoinString(cirIcon, "_200x200");
-		imageLoader.displayImage(logo, circleLogo, options);
+		if (!cirIcon.startsWith("http")) {
+			cirIcon = "file://" + cirIcon;
+		}
+		imageLoader.displayImage(cirIcon, circleLogo, options);
 		setCount(total, ver);
 	}
 

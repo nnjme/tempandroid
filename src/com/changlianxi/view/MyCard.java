@@ -43,7 +43,6 @@ public class MyCard implements OnButtonClickListener, OnBackClick {
 
 	private void findViewById() {
 		rGroup = (MyViewGroup) mCard.findViewById(R.id.infoGroup);
-
 	}
 
 	public void setOnOpenListener(OnOpenListener onOpenListener) {

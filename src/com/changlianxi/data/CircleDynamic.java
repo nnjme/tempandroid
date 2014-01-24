@@ -144,6 +144,10 @@ public class CircleDynamic extends AbstractData {
 		return time;
 	}
 
+	public String getFormatTime() {
+		return DateUtils.formatTime(time);
+	}
+
 	public void setTime(String time) {
 		this.time = time;
 	}
@@ -164,7 +168,6 @@ public class CircleDynamic extends AbstractData {
 		this.isPassed = isPassed;
 	}
 
-	@Override
 	public String toString() {
 		return "CircleDynamic [id=" + id + ", cid=" + cid + ", type=" + type
 				+ ", content=" + content + ", time=" + time + "]";
@@ -206,8 +209,6 @@ public class CircleDynamic extends AbstractData {
 
 	@Override
 	public void write(SQLiteDatabase db) {
-		super.write(db);
-
 		String dbName = Const.CIRCLE_DYNAMIC_TABLE_NAME;
 		if (this.status == Status.OLD) {
 			return;
@@ -357,18 +358,18 @@ public class CircleDynamic extends AbstractData {
 		if (byTimeAsc) {
 			return new Comparator<CircleDynamic>() {
 				@Override
-				public int compare(CircleDynamic lhs, CircleDynamic rhs) {
-					long lTime = DateUtils.convertToDate(lhs.getTime()), rTime = DateUtils
-							.convertToDate(rhs.getTime());
+				public int compare(CircleDynamic l, CircleDynamic r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
 					return lTime > rTime ? 1 : -1;
 				}
 			};
 		} else {
 			return new Comparator<CircleDynamic>() {
 				@Override
-				public int compare(CircleDynamic lhs, CircleDynamic rhs) {
-					long lTime = DateUtils.convertToDate(lhs.getTime()), rTime = DateUtils
-							.convertToDate(rhs.getTime());
+				public int compare(CircleDynamic l, CircleDynamic r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
 					return lTime > rTime ? -1 : 1;
 				}
 			};

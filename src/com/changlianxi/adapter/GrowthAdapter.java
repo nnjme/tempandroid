@@ -103,6 +103,8 @@ public class GrowthAdapter extends BaseAdapter {
 			holder.avatar = (CircularImage) convertView
 					.findViewById(R.id.avatar);
 			holder.img = (ImageView) convertView.findViewById(R.id.img);
+			holder.layLocation = (LinearLayout) convertView
+					.findViewById(R.id.layLocation);
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
@@ -149,7 +151,13 @@ public class GrowthAdapter extends BaseAdapter {
 				}
 			});
 		}
-		holder.location.setText(listData.get(position).getLocation());
+		String location = listData.get(position).getLocation();
+		if (location.equals("")) {
+			holder.layLocation.setVisibility(View.GONE);
+		} else {
+			holder.layLocation.setVisibility(View.VISIBLE);
+			holder.location.setText(listData.get(position).getLocation());
+		}
 		holder.layParise.setOnClickListener(new BtnClick(holder, position));
 		holder.layComment.setOnClickListener(new BtnClick(position));
 		String path = listData.get(position).getPersonImg();
@@ -164,6 +172,9 @@ public class GrowthAdapter extends BaseAdapter {
 		String content = StringUtils.ToDBC(listData.get(position).getContent());
 		if (content.length() == 0) {
 			holder.content.setVisibility(View.GONE);
+		} else {
+			holder.content.setVisibility(View.VISIBLE);
+
 		}
 		holder.content.setText(content);
 		holder.praise.setText("赞（" + listData.get(position).getPraise() + "）");
@@ -175,6 +186,7 @@ public class GrowthAdapter extends BaseAdapter {
 	class ViewHolder {
 		LinearLayout layParise;
 		LinearLayout layComment;
+		LinearLayout layLocation;
 		TextView name;
 		TextView time;
 		TextView content;

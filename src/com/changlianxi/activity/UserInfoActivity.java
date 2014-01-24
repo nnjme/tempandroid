@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +30,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.changlianxi.R;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.db.DataBase;
 import com.changlianxi.modle.Info;
 import com.changlianxi.popwindow.AddKeyAndValuePopwindow;
@@ -38,11 +40,14 @@ import com.changlianxi.task.GetUserDetailsTask.GetValuesTask;
 import com.changlianxi.util.BitmapUtils;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DialogUtil;
+import com.changlianxi.util.FileUtils;
+import com.changlianxi.util.SharedUtils;
 import com.changlianxi.util.UserInfoUtils;
 import com.changlianxi.util.Utils;
 import com.changlianxi.view.CircularImage;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.DiscCacheUtil;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 import com.umeng.analytics.MobclickAgent;
@@ -133,7 +138,9 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		mHandler.sendEmptyMessageDelayed(0, 100);
 
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -142,13 +149,14 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
+
 	/**
 	 * 获取成员资料信息
 	 * 
@@ -301,8 +309,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	}
 
 	private void setAvatar() {
-		imageLoader.loadImage(iconPath, options, new ImageLoadingListener() {
 
+		imageLoader.loadImage(iconPath, options, new ImageLoadingListener() {
 			@Override
 			public void onLoadingStarted(String arg0, View arg1) {
 
@@ -313,6 +321,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 
 			}
 
+			@SuppressWarnings("deprecation")
 			@SuppressLint("NewApi")
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
@@ -321,8 +330,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
-
+				layTop.setBackgroundDrawable(BitmapUtils
+						.convertBimapToDrawable(bmp));
 			}
 
 			@Override
@@ -793,6 +802,10 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			Utils.rightOut(this);
 			break;
 		case R.id.btnedit:
+			if (!DBUtils.isAuth(uid, cid)) {
+				Utils.showToast("该成员不是认证成员，不能进行编辑");
+				return;
+			}
 			Intent it = new Intent();
 			it.putExtra("name", username);
 			it.putExtra("cid", cid);
@@ -823,6 +836,14 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			}
 			break;
 		case R.id.btnmessage:
+			if (uid.equals(SharedUtils.getString("uid", ""))) {
+				Utils.showToast("不能给自己发送私信");
+				return;
+			}
+			if (!DBUtils.isAuth(uid, cid)) {
+				Utils.showToast("该成员不是认证成员，不能发送私信");
+				return;
+			}
 			Intent intent = new Intent();
 			intent.putExtra("ruid", uid);
 			intent.putExtra("cid", cid);
@@ -910,4 +931,5 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 				workList);
 
 	}
+
 }

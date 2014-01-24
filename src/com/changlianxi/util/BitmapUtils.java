@@ -1,6 +1,5 @@
 package com.changlianxi.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -501,7 +500,9 @@ public class BitmapUtils {
 	 * @param uri
 	 */
 
-	public static void startPhotoZoom(Context context, Uri uri) {
+	public static String startPhotoZoom(Context context, Uri uri) {
+		String name = FileUtils.getFileName() + ".jpg";
+		String fileName = FileUtils.getCameraPath() + File.separator + name;
 		Intent intent = new Intent("com.android.camera.action.CROP");
 		intent.setDataAndType(uri, "image/*");
 		// 下面这个crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
@@ -513,50 +514,11 @@ public class BitmapUtils {
 		intent.putExtra("outputX", 300);
 		intent.putExtra("outputY", 300);
 		intent.putExtra("return-data", true);
+		intent.putExtra("output", Uri.fromFile(new File(fileName)));// 保存到原文件
+		intent.putExtra("outputFormat", "JPEG");// 返回格式
 		((Activity) context).startActivityForResult(intent,
 				Constants.REQUEST_CODE_GETIMAGE_DROP);
-	}
-
-	/**
-	 * 质量压缩
-	 * 
-	 * @param image
-	 * @return
-	 */
-	private static File compressImage(Bitmap image, String picPath) {
-		String fileName = picPath.substring(picPath.lastIndexOf("/"));
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		image.compress(Bitmap.CompressFormat.JPEG, 50, baos);// 质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
-		int options = 100;
-		while (baos.toByteArray().length / 1024 > 50) { // 循环判断如果压缩后图片是否大于100kb,大于继续压缩
-			baos.reset();// 重置baos即清空baos
-			image.compress(Bitmap.CompressFormat.JPEG, options, baos);// 这里压缩options%，把压缩后的数据存放到baos中
-			options -= 10;// 每次都减少10
-		}
-		ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());// 把压缩后的数据baos存放到ByteArrayInputStream中
-		Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);// 把ByteArrayInputStream数据生成图片
-		// 保存入sdCard
-		String filePthh = FileUtils.getRootDir() + "/clx" + fileName;
-		File file = new File(filePthh);
-		try {
-			FileOutputStream out = new FileOutputStream(file);
-			if (bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)) {
-				out.flush();
-				out.close();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new File(picPath);
-		} finally {
-			if (bitmap != null && !bitmap.isRecycled()) {
-				bitmap.recycle();
-			}
-			if (bitmap != null && !bitmap.isRecycled()) {
-				bitmap.recycle();
-			}
-		}
-		return file;
+		return fileName;
 	}
 
 	public static File getImageFile(String srcPath) {
@@ -600,7 +562,7 @@ public class BitmapUtils {
 		String filePthh = FileUtils.getRootDir() + "/clx" + fileName;
 		File file = new File(filePthh);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		int options = 80;// 个人喜欢从80开始,
+		int options = 70;// 个人喜欢从80开始,
 		bmp.compress(Bitmap.CompressFormat.JPEG, options, baos);
 		while (baos.toByteArray().length / 1024 > 100) {
 			baos.reset();

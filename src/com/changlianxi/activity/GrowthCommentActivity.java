@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.adapter.GrowthImgAdapter;
 import com.changlianxi.db.DBUtils;
+import com.changlianxi.inteface.ConfirmDialog;
 import com.changlianxi.modle.CommentsModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
@@ -82,8 +83,8 @@ public class GrowthCommentActivity extends BaseActivity implements
 	private EditText edtContent;// 评论内容
 	private Button edit;// 编辑按钮
 	private Button del;// 删除按钮
-	private ArrayList<String> urlPath = new ArrayList<String>();// 存放图片的地址的本地图片路径编辑时使用
-	private ArrayList<String> imgID = new ArrayList<String>();// 存放图片的地址的ID编辑时使用
+	private ArrayList<String> urlPath = null;// 存放图片的地址的本地图片路径编辑时使用
+	private ArrayList<String> imgID = null;// 存放图片的地址的ID编辑时使用
 	private int pisition = 0;
 	private static RecordOperation callBack;
 	private TextView titleTxt;
@@ -93,6 +94,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 	private LinearLayout layParise;
 	private ImageView oneImg;
 	private LinearLayout layEdit;
+	private String imgPath;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -102,7 +104,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 		modle = (GrowthModle) bundle.getSerializable("modle");
 		pisition = getIntent().getIntExtra("position", 0);
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		cid = modle.getCid();
 		gid = modle.getId();
 		uid = modle.getUid();
@@ -175,10 +177,11 @@ public class GrowthCommentActivity extends BaseActivity implements
 			content.setVisibility(View.GONE);
 		}
 		if (average == 1) {
-			String imgPath = modle.getImgModle().get(0).getImg_200();
+			imgPath = modle.getImgModle().get(0).getImg();
+			String path = modle.getImgModle().get(0).getImg_200();
 			oneImg.setVisibility(View.VISIBLE);
 			gridView.setVisibility(View.GONE);
-			imageLoader.displayImage(imgPath, oneImg, options);
+			imageLoader.displayImage(path, oneImg, options);
 		} else {
 			oneImg.setVisibility(View.GONE);
 			gridView.setVisibility(View.VISIBLE);
@@ -454,11 +457,11 @@ public class GrowthCommentActivity extends BaseActivity implements
 
 			break;
 		case R.id.edit:
-			if (isPermission(modle.getUid())) {
-				for (int i = 0; i < modle.getImgModle().size(); i++) {
-					urlPath.add(modle.getImgModle().get(i).getImg_100());
-					imgID.add(modle.getImgModle().get(i).getId());
-				}
+			urlPath = new ArrayList<String>();
+			imgID = new ArrayList<String>();
+			for (int i = 0; i < modle.getImgModle().size(); i++) {
+				urlPath.add(modle.getImgModle().get(i).getImg_100());
+				imgID.add(modle.getImgModle().get(i).getId());
 				Intent intent = new Intent();
 				Bundle bundle = new Bundle();
 				bundle.putStringArrayList("path", urlPath);
@@ -476,11 +479,20 @@ public class GrowthCommentActivity extends BaseActivity implements
 			Utils.showToast("您没有编辑权限！");
 			break;
 		case R.id.del:
-			if (isPermission(modle.getUid())) {
-				new DelCommentsTask().execute();
-				return;
-			}
-			Utils.showToast("您没有删除权限！");
+			Dialog dialog = DialogUtil.confirmDialog(this, "确认", "确认要删除本条记录吗？",
+					new ConfirmDialog() {
+
+						@Override
+						public void onOKClick() {
+							new DelCommentsTask().execute();
+						}
+
+						@Override
+						public void onCancleClick() {
+
+						}
+					});
+			dialog.show();
 			break;
 		case R.id.layParise:
 			if (!modle.isIspraise()) {
@@ -491,6 +503,9 @@ public class GrowthCommentActivity extends BaseActivity implements
 			}
 			PraiseAndCancle(modle.getCid(), modle.getId(), "cancle",
 					"/growth/icancelPraise");
+			break;
+		case R.id.oneImg:
+			imageBrower(1, new String[] { imgPath });
 			break;
 		default:
 			break;

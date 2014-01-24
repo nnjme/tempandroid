@@ -395,15 +395,13 @@ public class SelectContactsActivity extends BaseActivity implements
 		dialog.show();
 		IinviteUserTask task = new IinviteUserTask(cid, contactsList);
 		task.setTaskCallBack(new IinviteUser() {
-
 			@Override
 			public void inviteUser(String rt, String details, String err) {
 				dialog.dismiss();
 				if (rt.equals("1")) {
 					getDetails(details, contactsList);
-					setModle(contactsList);
 					if (code.contains("null") && smsList.size() == 0) {
-						Utils.showToast("邀请成员已存在圈子中");
+						Utils.showToast("添加成功");
 						finish();
 						CLXApplication.exitSmsInvite();
 						Utils.rightOut(SelectContactsActivity.this);
@@ -416,26 +414,6 @@ public class SelectContactsActivity extends BaseActivity implements
 			}
 		});
 		task.execute();
-	}
-
-	/**
-	 * 添加完成之后的返回值 供列表界面刷新使用
-	 * 
-	 * @return
-	 */
-	private void setModle(List<SmsPrevieModle> contactsList) {
-		List<MemberModle> listModles = new ArrayList<MemberModle>();
-		for (int i = 0; i < contactsList.size(); i++) {
-			MemberModle modle = new MemberModle();
-			String name = contactsList.get(i).getName();
-			modle.setName(name);
-			modle.setImg("");
-			modle.setSort_key(PinyinUtils.getPinyin(name));
-			listModles.add(modle);
-		}
-		finish();
-		Utils.rightOut(this);
-
 	}
 
 	/**

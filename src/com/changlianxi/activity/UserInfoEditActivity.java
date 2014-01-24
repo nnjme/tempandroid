@@ -37,6 +37,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
@@ -64,6 +65,12 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 import com.umeng.analytics.MobclickAgent;
 
+/**
+ * 圈子成员信息编辑界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class UserInfoEditActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
 	private ListView basicListView;
@@ -303,6 +310,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 
 			}
 
+			@SuppressWarnings("deprecation")
 			@SuppressLint("NewApi")
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
@@ -311,7 +319,9 @@ public class UserInfoEditActivity extends BaseActivity implements
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				// layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				layTop.setBackgroundDrawable(BitmapUtils
+						.convertBimapToDrawable(bmp));
 			}
 
 			@Override
@@ -414,12 +424,13 @@ public class UserInfoEditActivity extends BaseActivity implements
 									R.layout.user_info_edit_gendar, null);
 					holder1.btnDel = (ImageView) convertView
 							.findViewById(R.id.btnDel);
-					holder1.btnDel.setTag(tag);
 					holder1.key = (TextView) convertView.findViewById(R.id.key);
 					holder1.radioBoy = (RadioButton) convertView
 							.findViewById(R.id.radioboy);
 					holder1.radioGirl = (RadioButton) convertView
 							.findViewById(R.id.radiogirl);
+					holder1.layBg = (LinearLayout) convertView
+							.findViewById(R.id.layBg);
 					convertView.setTag(holder1);
 					break;
 				case TYPE_2:
@@ -431,10 +442,11 @@ public class UserInfoEditActivity extends BaseActivity implements
 					holder2 = new ViewHolder2();
 					holder2.btnDel = (ImageView) convertView
 							.findViewById(R.id.btnDel);
-					holder2.btnDel.setTag(tag);
 					holder2.key = (TextView) convertView.findViewById(R.id.key);
 					holder2.value = (EditText) convertView
 							.findViewById(R.id.value);
+					holder2.layBg = (LinearLayout) convertView
+							.findViewById(R.id.layBg);
 					convertView.setTag(holder2);
 					break;
 				default:
@@ -459,6 +471,8 @@ public class UserInfoEditActivity extends BaseActivity implements
 				holder1.btnDel.setEnabled(false);
 				holder1.radioBoy.setClickable(false);
 				holder1.radioGirl.setClickable(false);
+				holder1.layBg.setBackgroundColor(UserInfoEditActivity.this
+						.getResources().getColor(R.color.f6));
 				if (valuesList.get(position).getValue().equals("1")) {
 					holder1.radioBoy.setChecked(true);
 				} else if (valuesList.get(position).getValue().equals("2")) {
@@ -466,11 +480,15 @@ public class UserInfoEditActivity extends BaseActivity implements
 				}
 				break;
 			case TYPE_2:
-
 				if (key.equals("昵称") || key.equals("备注")) {
 					holder2.btnDel.setEnabled(true);
 					holder2.value.setEnabled(true);
+					holder2.layBg.setBackgroundColor(UserInfoEditActivity.this
+							.getResources().getColor(R.color.white));
 					holder2.key.setText(key);
+					holder2.btnDel.setTag(tag);
+					holder2.btnDel.setOnClickListener(new BtnDelClick(position,
+							holder2.btnDel.getTag().toString()));
 					holder2.value.setText(valuesList.get(position).getValue());
 					int editType = valuesList.get(position).getEditType();
 					holder2.value.addTextChangedListener(new EditTextWatcher(
@@ -478,6 +496,8 @@ public class UserInfoEditActivity extends BaseActivity implements
 				} else {
 					holder2.value.setFocusable(false);
 					holder2.btnDel.setEnabled(false);
+					holder2.layBg.setBackgroundColor(UserInfoEditActivity.this
+							.getResources().getColor(R.color.f6));
 					holder2.key.setText(key);
 					holder2.value.setText(valuesList.get(position).getValue());
 				}
@@ -497,12 +517,14 @@ public class UserInfoEditActivity extends BaseActivity implements
 		RadioButton radioBoy;
 		RadioButton radioGirl;
 		ImageView btnDel;
+		LinearLayout layBg;
 	}
 
 	class ViewHolder2 {
 		TextView key;
 		EditText value;
 		ImageView btnDel;
+		LinearLayout layBg;
 	}
 
 	class ValueAdapter extends BaseAdapter {
@@ -544,22 +566,36 @@ public class UserInfoEditActivity extends BaseActivity implements
 						.findViewById(R.id.key);
 				holderValues.value = (EditText) convertView
 						.findViewById(R.id.value);
+				holderValues.layBg = (LinearLayout) convertView
+						.findViewById(R.id.layBg);
+
 				convertView.setTag(holderValues);
 			} else {
 				holderValues = (ViewHolderValues) convertView.getTag();
 			}
-
+			holderValues.btnDel.setTag(tag);
 			holderValues.btnDel.setOnClickListener(new BtnDelClick(position,
 					(String) holderValues.btnDel.getTag()));
-			holderValues.btnDel.setTag(tag);
 			int editType = valuesList.get(position).getEditType();
 			String key = valuesList.get(position).getKey();
-			if (Arrays.toString(UserInfoUtils.contacChinesetStr).contains(key)) {
+			if (key.equals("QQ")) {
+				holderValues.value.setInputType(InputType.TYPE_CLASS_NUMBER);
+			} else if (Arrays.toString(UserInfoUtils.contacChinesetStr)
+					.contains(key)) {
 				holderValues.value.setInputType(InputType.TYPE_CLASS_NUMBER);
 			} else if (Arrays.toString(UserInfoUtils.socialChineseStr)
 					.contains(key)) {
 				holderValues.value
 						.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
+			}
+			if (valuesList.get(position).getType().equals("D_CELLPHONE")) {
+				holderValues.value.setEnabled(false);
+				holderValues.layBg.setBackgroundColor(UserInfoEditActivity.this
+						.getResources().getColor(R.color.f6));
+			} else {
+				holderValues.value.setEnabled(true);
+				holderValues.layBg.setBackgroundColor(UserInfoEditActivity.this
+						.getResources().getColor(R.color.white));
 			}
 			holderValues.key.setText(key);
 			holderValues.value.addTextChangedListener(new EditTextWatcher(
@@ -573,6 +609,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 		TextView key;
 		EditText value;
 		ImageView btnDel;
+		LinearLayout layBg;
 
 	}
 
@@ -693,9 +730,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 			cal.set(Calendar.MONTH, monthOfYear);
 			cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 			updateDate(valuesList, position, tag, editType);
-
 		}
-
 	}
 
 	private void showDateDialog(List<Info> valuesList, int position,
@@ -942,9 +977,13 @@ public class UserInfoEditActivity extends BaseActivity implements
 				Utils.setListViewHeightBasedOnChildren(basicListView);
 			} else if (tag.equals(groupkey.get(1))) {
 				if (contactList.get(position).getEditType() != 2) {
-					BuildDelJson(contactList.get(position).getType(),
-							contactList.get(position).getValue(), contactList
-									.get(position).getId());
+					String ketType = contactList.get(position).getType();
+					if (ketType.equals("D_CELLPHONE")) {
+						Utils.showToast("注册手机号不能被删除");
+						return;
+					}
+					BuildDelJson(ketType, contactList.get(position).getValue(),
+							contactList.get(position).getId());
 				}
 				contactList.remove(position);
 				contactAdapter.notifyDataSetChanged();
@@ -1041,6 +1080,17 @@ public class UserInfoEditActivity extends BaseActivity implements
 				for (int i = 0; i < basicList.size(); i++) {
 					if (arrayList.contains(basicList.get(i).getKey())) {
 						arrayList.remove(basicList.get(i).getKey());
+					}
+				}
+				array = (arrayList.toArray(new String[arrayList.size()]));
+				break;
+			case 1:
+				list = Arrays.asList(UserInfoUtils.contacChinesetStr);
+				arrayList = new ArrayList<String>(list);
+				for (int i = 0; i < arrayList.size(); i++) {
+					if (arrayList.get(i).equals("注册手机号")) {
+						arrayList.remove(i);
+						break;
 					}
 				}
 				array = (arrayList.toArray(new String[arrayList.size()]));
@@ -1337,7 +1387,6 @@ public class UserInfoEditActivity extends BaseActivity implements
 			Utils.rightOut(this);
 			break;
 		case R.id.btnSave:
-
 			BuildJson();
 			break;
 		default:
@@ -1347,6 +1396,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 
 	@Override
 	public void taskFinish(String result) {
+		System.out.println("result:::" + result);
 		dialog.dismiss();
 		String rt = "";
 		String errCode = "";

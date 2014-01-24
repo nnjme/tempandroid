@@ -269,7 +269,7 @@ public class MyCard extends CircleMember {
 
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.setAvatar(ret.getStr());
-			this.setStatus(Status.UPDATE); // TODO change local?
+			this.setStatus(Status.UPDATE);
 			return RetError.NONE;
 		} else {
 			return ret.getErr();

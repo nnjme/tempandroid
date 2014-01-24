@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,8 +107,12 @@ public class GrowthList extends AbstractData {
 		}
 	}
 
+	private void sort(boolean byTimeAsc) {
+		Collections.sort(this.growths, Growth.getPublishedComparator(byTimeAsc));
+	}
+	
 	@Override
-	public void read(SQLiteDatabase db) { // TODO how to sort?
+	public void read(SQLiteDatabase db) {
 		if (growths == null) {
 			growths = new ArrayList<Growth>();
 		} else {
@@ -158,13 +163,21 @@ public class GrowthList extends AbstractData {
 		cursor2.close();
 
 		this.status = Status.OLD;
+		sort(true);
 	}
 
 	@Override
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (Growth growth : growths) {
+				if (growth.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.GROWTH_MAX_CACHE_COUNT_PER_CIRCLE) {
+					growth.setStatus(Status.DEL);
+				}
 				growth.write(db);
 			}
 
@@ -231,6 +244,7 @@ public class GrowthList extends AbstractData {
 		}
 
 		this.status = Status.UPDATE;
+		sort(true);
 	}
 
 	/**

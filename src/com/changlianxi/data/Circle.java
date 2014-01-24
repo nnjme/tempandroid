@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.SimpleResult;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.StringUtils;
 
 /**
@@ -150,7 +152,7 @@ public class Circle extends AbstractData {
 	public String getLogo() {
 		return logo;
 	}
-
+	
 	public String getLogo(String size) {
 		return StringUtils.JoinString(logo, size);
 	}
@@ -652,7 +654,7 @@ public class Circle extends AbstractData {
 
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.logo = ret.getStr();
-			this.status = Status.UPDATE;// TODO change local?
+			this.status = Status.UPDATE;
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
@@ -703,5 +705,26 @@ public class Circle extends AbstractData {
 		}
 	}
 
+	public static Comparator<Circle> getComparator(boolean byTimeAsc) {
+		if (byTimeAsc) {
+			return new Comparator<Circle>() {
+				@Override
+				public int compare(Circle l, Circle r) {
+					long lTime = DateUtils.convertToDate(l.getJoinTime()), rTime = DateUtils
+							.convertToDate(r.getJoinTime());
+					return lTime > rTime ? 1 : -1;
+				}
+			};
+		} else {
+			return new Comparator<Circle>() {
+				@Override
+				public int compare(Circle l, Circle r) {
+					long lTime = DateUtils.convertToDate(l.getJoinTime()), rTime = DateUtils
+							.convertToDate(r.getJoinTime());
+					return lTime > rTime ? -1 : 1;
+				}
+			};
+		}
+	}
 
 }

@@ -33,6 +33,7 @@ import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.SharedUtils;
+import com.changlianxi.util.Utils;
 import com.changlianxi.view.PullDownView;
 import com.changlianxi.view.PullDownView.OnPullDownListener;
 import com.umeng.analytics.MobclickAgent;
@@ -103,6 +104,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	
 	@Override
 	protected void onRestart() {
+		System.out.println("onRestartonRestart");
 		isRefresh = false;
 		loadMore = false;
 		listData.clear();
@@ -155,6 +157,10 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		Intent it = new Intent();
 		switch (v.getId()) {
 		case R.id.btnRelease:
+			if (!DBUtils.isAuth(SharedUtils.getString("uid", ""), cid)) {
+				Utils.showToast("您不是认证人员，不能发布成长");
+				return;
+			}
 			it.setClass(this, ReleaseGrowthActivity.class);
 			it.putExtra("cid", cid);
 			it.putExtra("type", "add");
@@ -163,9 +169,10 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 					R.anim.out_to_left);
 			break;
 		case R.id.back:
-			finish();
-			this.getParent().overridePendingTransition(R.anim.right_in,
-					R.anim.right_out);
+			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
+			// finish();
+			// this.getParent().overridePendingTransition(R.anim.right_in,
+			// R.anim.right_out);
 			break;
 		case R.id.promptCount:
 			it.setClass(this, CommentsListActivity.class);
@@ -263,11 +270,10 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			finish();
-			getParent().overridePendingTransition(R.anim.right_in,
-					R.anim.right_out);
+			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
+
 		}
-		return super.onKeyDown(keyCode, event);
+		return true;
 
 	}
 

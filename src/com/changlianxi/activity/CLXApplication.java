@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +12,10 @@ import android.media.MediaPlayer;
 
 import com.changlianxi.BuildConfig;
 import com.changlianxi.R;
+import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Logger.Level;
+import com.nostra13.universalimageloader.cache.disc.impl.FileCountLimitedDiscCache;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -48,7 +51,6 @@ public class CLXApplication extends Application {
 		initImageLoader();
 		super.onCreate();
 	}
-	
 
 	// 添加Activity到容器中
 	public static void addActivity(Activity activity) {
@@ -91,18 +93,23 @@ public class CLXApplication extends Application {
 	private void initImageLoader() {
 		// 初始化图片缓存
 		ImageLoaderConfiguration.Builder builder = new ImageLoaderConfiguration.Builder(
-				this).threadPriority(Thread.NORM_PRIORITY - 2)
+				this)
+				.threadPriority(Thread.NORM_PRIORITY - 2)
 				.denyCacheImageMultipleSizesInMemory()
 				.discCacheFileNameGenerator(new Md5FileNameGenerator())
+				.discCache(
+						new FileCountLimitedDiscCache(new File(FileUtils
+								.getRootDir() + "/clx/cache"), 100))//
+
 				.tasksProcessingOrder(QueueProcessingType.LIFO);
 		if (BuildConfig.DEBUG) {
 			builder.writeDebugLogs();
 		}
 		ImageLoader.getInstance().init(builder.build());
 		circlOoptions = new DisplayImageOptions.Builder()
-				.showStubImage(R.drawable.pic)
-				.showImageForEmptyUri(R.drawable.pic)
-				.showImageOnFail(R.drawable.pic).cacheInMemory(true)
+				.showStubImage(R.drawable.home_image_bg)
+				.showImageForEmptyUri(R.drawable.home_image_bg)
+				.showImageOnFail(R.drawable.home_image_bg).cacheInMemory(true)
 				.cacheOnDisc(true).bitmapConfig(Bitmap.Config.ARGB_8888)
 				.build();
 		userOptions = new DisplayImageOptions.Builder()

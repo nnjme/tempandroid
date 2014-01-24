@@ -12,6 +12,12 @@ import com.changlianxi.R;
 import com.changlianxi.util.Utils;
 import com.umeng.analytics.MobclickAgent;
 
+/**
+ * 选择添加成员方式界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class AddCircleMemberActivity extends BaseActivity implements
 		OnClickListener {
 	private Button add;

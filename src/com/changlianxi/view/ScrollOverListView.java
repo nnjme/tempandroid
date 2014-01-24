@@ -527,7 +527,7 @@ public class ScrollOverListView extends ListView implements OnScrollListener {
 			arrowImageView.clearAnimation();
 			arrowImageView.setImageResource(R.drawable.arrow);
 			tipsTextview.setText("下拉刷新");
-			lastUpdatedTextView.setVisibility(View.VISIBLE);
+			lastUpdatedTextView.setVisibility(           View.VISIBLE);
 
 			Log.v(TAG, "当前状态，done");
 			break;

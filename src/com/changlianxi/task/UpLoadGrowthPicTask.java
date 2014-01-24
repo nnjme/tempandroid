@@ -51,6 +51,7 @@ public class UpLoadGrowthPicTask extends AsyncTask<String, Integer, String> {
 			if (file != null) {
 				result = HttpUrlHelper.upLoadPic(HttpUrlHelper.strUrl
 						+ "/growth/iuploadImage", map, file, "img");
+				file.delete();
 			}
 			try {
 				JSONObject jsonobject = new JSONObject(result);

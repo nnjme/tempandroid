@@ -75,6 +75,12 @@ import com.umeng.analytics.MobclickAgent;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 
+/**
+ * 我的名片修改界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 @TargetApi(16)
 public class MyCardEditActivity extends BaseActivity implements
 		OnClickListener, PostCallBack, UpLoadPic {
@@ -127,6 +133,9 @@ public class MyCardEditActivity extends BaseActivity implements
 	private DataBase dbase = DataBase.getInstance();
 	private SQLiteDatabase db = dbase.getWritableDatabase();
 	private RelativeLayout layTop;
+	private boolean isCamera;
+	private String upLoadPath = "";
+	private Bitmap loadBmp = null;
 	private Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -155,7 +164,7 @@ public class MyCardEditActivity extends BaseActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_info_edit);
 		imageLoader = CLXApplication.getImageLoader();
-		options = CLXApplication.getOptions();
+		options = CLXApplication.getUserOptions();
 		modle = new MyCardAvatar();
 		pid = DBUtils.getPidByUid(SharedUtils.getString("uid", ""));
 		strName = getIntent().getStringExtra("name");
@@ -168,7 +177,6 @@ public class MyCardEditActivity extends BaseActivity implements
 		initData();
 		setListener();
 		mHandler.sendEmptyMessageDelayed(1, 100);
-
 	}
 
 	/**设置页面统计
@@ -356,15 +364,18 @@ public class MyCardEditActivity extends BaseActivity implements
 
 			}
 
+			@SuppressWarnings("deprecation")
 			@SuppressLint("NewApi")
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
 				if (bmp == null) {
-					avatar.setImageResource(R.drawable.pic);
+					avatar.setImageResource(R.drawable.head_bg);
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				// layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				layTop.setBackgroundDrawable(BitmapUtils
+						.convertBimapToDrawable(bmp));
 
 			}
 
@@ -506,8 +517,10 @@ public class MyCardEditActivity extends BaseActivity implements
 				holder2.btnDel.setOnClickListener(new BtnDelClick(position,
 						(String) holder2.btnDel.getTag()));
 				int editType = valuesList.get(position).getEditType();
-				if (Arrays.toString(UserInfoUtils.contacChinesetStr).contains(
-						key)) {
+				if (key.equals("QQ")) {
+					holder2.value.setInputType(InputType.TYPE_CLASS_NUMBER);
+				} else if (Arrays.toString(UserInfoUtils.contacChinesetStr)
+						.contains(key)) {
 					holder2.value.setInputType(InputType.TYPE_CLASS_NUMBER);
 				} else if (Arrays.toString(UserInfoUtils.socialChineseStr)
 						.contains(key)) {
@@ -526,83 +539,7 @@ public class MyCardEditActivity extends BaseActivity implements
 			default:
 				break;
 			}
-			// ViewHolderValues holderValues = null;
-			// String key = valuesList.get(position).getKey();
-			// if (key.equals("性別")) {
-			// holderValues = new ViewHolderValues();
-			// convertView = LayoutInflater.from(MyCardEditActivity.this)
-			// .inflate(R.layout.user_info_edit_gendar, null);
-			// holderValues.btnDel = (ImageView) convertView
-			// .findViewById(R.id.btnDel);
-			// holderValues.btnDel.setTag(tag);
-			// holderValues.key = (TextView) convertView
-			// .findViewById(R.id.key);
-			// holderValues.btnDel.setOnClickListener(new BtnDelClick(
-			// position, (String) holderValues.btnDel.getTag()));
-			// holderValues.key.setText(valuesList.get(position).getKey());
-			// holderValues.gendarGroup = (RadioGroup) convertView
-			// .findViewById(R.id.gendarRradioGroup);
-			// holderValues.radioBoy = (RadioButton) convertView
-			// .findViewById(R.id.radioboy);
-			// holderValues.radioGirl = (RadioButton) convertView
-			// .findViewById(R.id.radiogirl);
-			// if (valuesList.get(position).getValue().equals("1")) {
-			// holderValues.radioBoy.setChecked(true);
-			// } else if (valuesList.get(position).getValue().equals("2")) {
-			// holderValues.radioGirl.setChecked(true);
-			// }
-			// holderValues.gendarGroup
-			// .setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			// @Override
-			// public void onCheckedChanged(RadioGroup group,
-			// int checkedId) {
-			// // 获取变更后的选中项的ID
-			// int radioButtonId = group
-			// .getCheckedRadioButtonId();
-			// if (valuesList.get(position).getEditType() != 2) {
-			// valuesList.get(position).setEditType(3);
-			// }
-			// if (radioButtonId == R.id.radioboy) {
-			// valuesList.get(position).setValue("1");
-			// } else if (radioButtonId == R.id.radiogirl) {
-			// valuesList.get(position).setValue("2");
-			// }
-			// }
-			// });
-			// } else {
-			// convertView = LayoutInflater.from(MyCardEditActivity.this)
-			// .inflate(R.layout.user_info_edit_list_item_key_value,
-			// null);
-			// holderValues = new ViewHolderValues();
-			// holderValues.btnDel = (ImageView) convertView
-			// .findViewById(R.id.btnDel);
-			// holderValues.btnDel.setTag(tag);
-			// holderValues.key = (TextView) convertView
-			// .findViewById(R.id.key);
-			// holderValues.value = (EditText) convertView
-			// .findViewById(R.id.value);
-			// holderValues.btnDel.setTag(tag);
-			// holderValues.btnDel.setOnClickListener(new BtnDelClick(
-			// position, (String) holderValues.btnDel.getTag()));
-			// int editType = valuesList.get(position).getEditType();
-			// if (Arrays.toString(UserInfoUtils.contacChinesetStr).contains(
-			// key)) {
-			// holderValues.value
-			// .setInputType(InputType.TYPE_CLASS_NUMBER);
-			// } else if (Arrays.toString(UserInfoUtils.socialChineseStr)
-			// .contains(key)) {
-			// holderValues.value
-			// .setInputType(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
-			// } else if (key.equals("生日")) {
-			// holderValues.value.setFocusable(false);
-			// holderValues.value.setOnClickListener(new OnTimeClick("生日",
-			// valuesList, position, editType));
-			// }
-			// holderValues.key.setText(key);
-			// holderValues.value.addTextChangedListener(new EditTextWatcher(
-			// valuesList, position, editType));
-			// holderValues.value.setText(valuesList.get(position).getValue());
-			// }
+
 			return convertView;
 		}
 	}
@@ -986,9 +923,13 @@ public class MyCardEditActivity extends BaseActivity implements
 				Utils.setListViewHeightBasedOnChildren(basicListView);
 			} else if (tag.equals(groupkey.get(1))) {
 				if (contactList.get(position).getEditType() != 2) {
-					BuildDelJson(contactList.get(position).getType(),
-							contactList.get(position).getValue(), contactList
-									.get(position).getId());
+					String ketType = contactList.get(position).getType();
+					if (ketType.equals("D_CELLPHONE")) {
+						Utils.showToast("注册手机号不能被删除");
+						return;
+					}
+					BuildDelJson(ketType, contactList.get(position).getValue(),
+							contactList.get(position).getId());
 				}
 				contactList.remove(position);
 				contactAdapter.notifyDataSetChanged();
@@ -1392,12 +1333,12 @@ public class MyCardEditActivity extends BaseActivity implements
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		Bitmap bitmap = null;
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			SelectPicModle modle = BitmapUtils.getPickPic(this, data);
 			selectPicPath = modle.getPicPath();
-			BitmapUtils.startPhotoZoom(this, data.getData());
+			upLoadPath = BitmapUtils.startPhotoZoom(this, data.getData());
+			isCamera = false;
 
 		}// 拍摄图片
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
@@ -1406,17 +1347,22 @@ public class MyCardEditActivity extends BaseActivity implements
 			}
 			String fileName = pop.getTakePhotoPath();
 			selectPicPath = fileName;
-			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
+			upLoadPath = BitmapUtils.startPhotoZoom(this,
+					Uri.fromFile(new File(fileName)));
+			isCamera = true;
+
 		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP
 				&& data != null) {
+			if (isCamera) {
+				File file = new File(selectPicPath);
+				if (file.isFile() && file.exists()) {
+					file.delete();
+				}
+			}
 			Bundle extras = data.getExtras();
 			if (extras != null) {
-				Bitmap photo = extras.getParcelable("data");
-				bitmap = photo;
+				loadBmp = extras.getParcelable("data");
 			}
-			modle.setBitmap(bitmap);
-			avatar.setImageBitmap(bitmap);
-			layTop.setBackground(BitmapUtils.convertBimapToDrawable(bitmap));
 
 			upLoadAvatar();
 		}
@@ -1432,7 +1378,7 @@ public class MyCardEditActivity extends BaseActivity implements
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("pid", pid);
 		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-				"/people/iuploadMyAvatar", selectPicPath, "avatar");
+				"/people/iuploadMyAvatar", upLoadPath, "avatar");
 		picTask.setCallBack(this);
 		picTask.execute();
 		dialog = DialogUtil.getWaitDialog(this, "头像上传中");
@@ -1465,11 +1411,17 @@ public class MyCardEditActivity extends BaseActivity implements
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void upLoadFinish(boolean flag) {
 		dialog.dismiss();
 		if (flag) {
 			Utils.showToast("上传成功");
+			modle.setBitmap(loadBmp);
+			avatar.setImageBitmap(loadBmp);
+			// layTop.setBackground(BitmapUtils.convertBimapToDrawable(loadBmp));
+			layTop.setBackgroundDrawable(BitmapUtils
+					.convertBimapToDrawable(loadBmp));
 		}
 	}
 

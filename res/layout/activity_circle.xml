@@ -30,7 +30,7 @@
         android:background="#d7d7d7" />
 
     <LinearLayout
-        android:id="@+id/btParent"
+        android:id="@+id/layTabParent"
         android:layout_width="match_parent"
         android:layout_height="52dip"
         android:layout_gravity="bottom"

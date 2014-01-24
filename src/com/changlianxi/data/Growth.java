@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
+import com.changlianxi.util.DateUtils;
 
 /**
  * circle growth
@@ -161,12 +163,20 @@ public class Growth extends AbstractData {
 		return happened;
 	}
 
+	public String getFormatHappenedTime() {
+		return DateUtils.formatTime(happened);
+	}
+
 	public void setHappened(String happened) {
 		this.happened = happened;
 	}
 
 	public String getPublished() {
 		return published;
+	}
+	
+	public String getFormatPublishedTime() {
+		return DateUtils.formatTime(published);
 	}
 
 	public void setPublished(String published) {
@@ -703,5 +713,49 @@ public class Growth extends AbstractData {
 		}
 	}
 	
+	public static Comparator<Growth> getPublishedComparator(boolean byTimeAsc) {
+		if (byTimeAsc) {
+			return new Comparator<Growth>() {
+				@Override
+				public int compare(Growth l, Growth r) {
+					long lTime = DateUtils.convertToDate(l.getPublished()), rTime = DateUtils
+							.convertToDate(r.getPublished());
+					return lTime > rTime ? 1 : -1;
+				}
+			};
+		} else {
+			return new Comparator<Growth>() {
+				@Override
+				public int compare(Growth l, Growth r) {
+					long lTime = DateUtils.convertToDate(l.getPublished()), rTime = DateUtils
+							.convertToDate(r.getPublished());
+					return lTime > rTime ? -1 : 1;
+				}
+			};
+		}
+	}
+
+	public static Comparator<Growth> getHappenedComparator(boolean byTimeAsc) {
+		if (byTimeAsc) {
+			return new Comparator<Growth>() {
+				@Override
+				public int compare(Growth l, Growth r) {
+					long lTime = DateUtils.convertToDate(l.getHappened()), rTime = DateUtils
+							.convertToDate(r.getHappened());
+					return lTime > rTime ? 1 : -1;
+				}
+			};
+		} else {
+			return new Comparator<Growth>() {
+				@Override
+				public int compare(Growth l, Growth r) {
+					long lTime = DateUtils.convertToDate(l.getHappened()), rTime = DateUtils
+							.convertToDate(r.getHappened());
+					return lTime > rTime ? -1 : 1;
+				}
+			};
+		}
+	}
+
 	// TODO comments for me
 }

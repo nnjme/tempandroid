@@ -59,6 +59,7 @@ import com.changlianxi.task.GetChatListTask.GetChatsList;
 import com.changlianxi.task.SendMessageThread;
 import com.changlianxi.task.UpLoadPicAsyncTask;
 import com.changlianxi.util.BitmapUtils;
+import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.ErrorCodeUtil;
@@ -71,6 +72,12 @@ import com.changlianxi.view.MyListView;
 import com.changlianxi.view.MyListView.OnRefreshListener;
 import com.umeng.analytics.MobclickAgent;
 
+/**
+ * 圈子聊天界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class ChatActivity extends BaseActivity implements OnClickListener,
 		OnItemClickListener, SendMessageAndChatCallBack, PushChat {
 	private ImageView back;
@@ -172,7 +179,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 				.getString("uid", ""));
 		if (modle != null) {
 			avatarPath = modle.getAvator();
-			// selfName = modle.getName();
 		}
 	}
 
@@ -411,9 +417,11 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.back:
-			finish();
-			this.getParent().overridePendingTransition(R.anim.right_in,
-					R.anim.right_out);
+			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
+
+			// finish();
+			// this.getParent().overridePendingTransition(R.anim.right_in,
+			// R.anim.right_out);
 			break;
 		case R.id.imgAdd:
 			if (layAddIsShow) {
@@ -436,7 +444,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 			layAdd.setVisibility(View.GONE);
 			break;
 		case R.id.btnSend:
-			if (!DBUtils.isAuth(SharedUtils.getString("uid", ""))) {
+			if (!DBUtils.isAuth(SharedUtils.getString("uid", ""), cid)) {
 				Utils.showToast("您不是认证人员，没有权限发送消息");
 				return;
 			}
@@ -551,11 +559,13 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			finish();
-			getParent().overridePendingTransition(R.anim.right_in,
-					R.anim.right_out);
+			// finish();
+			// getParent().overridePendingTransition(R.anim.right_in,
+			// R.anim.right_out);
+			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
+
 		}
-		return super.onKeyDown(keyCode, event);
+		return true;
 
 	}
 

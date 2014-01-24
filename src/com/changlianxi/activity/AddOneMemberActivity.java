@@ -1,7 +1,9 @@
 package com.changlianxi.activity;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +12,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -21,9 +25,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
 import com.changlianxi.R;
@@ -42,6 +49,12 @@ import com.changlianxi.util.Utils;
 import com.changlianxi.view.Switch;
 import com.umeng.analytics.MobclickAgent;
 
+/**
+ * 通过输入方式添加圈子成员界面
+ * 
+ * @author teeker_bin
+ * 
+ */
 public class AddOneMemberActivity extends BaseActivity implements
 		OnClickListener, PostCallBack {
 	private List<String> moreInfo = new ArrayList<String>();
@@ -68,6 +81,7 @@ public class AddOneMemberActivity extends BaseActivity implements
 	private TextView titleTxt;
 	private Switch btnswitch;
 	private LinearLayout parent;
+	private Calendar cal = Calendar.getInstance();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -83,7 +97,9 @@ public class AddOneMemberActivity extends BaseActivity implements
 		setListener();
 		initData();
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -92,13 +108,13 @@ public class AddOneMemberActivity extends BaseActivity implements
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
 
 	/**
 	 * 初始化控件
@@ -135,15 +151,14 @@ public class AddOneMemberActivity extends BaseActivity implements
 	}
 
 	private void initData() {
-		moreInfo.add("性别");
+		// moreInfo.add("性别");
 		moreInfo.add("生日");
 		moreInfo.add("工作单位");
 		moreInfo.add("工作职位");
-
 	}
 
 	/**
-	 * 添加职务
+	 * 添加属性
 	 */
 	private void addView(String str) {
 		final View view = LayoutInflater.from(this).inflate(
@@ -156,16 +171,44 @@ public class AddOneMemberActivity extends BaseActivity implements
 
 	}
 
+	private void addGendar() {
+		View view = LayoutInflater.from(this).inflate(
+				R.layout.add_member_gendar, null);
+		RadioGroup gendarGroup = (RadioGroup) view
+				.findViewById(R.id.gendarRradioGroup);
+		gendarGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				// 获取变更后的选中项的ID
+				int radioButtonId = group.getCheckedRadioButtonId();
+
+				if (radioButtonId == R.id.radioboy) {
+					gendar = "1";
+				} else if (radioButtonId == R.id.radiogirl) {
+					gendar = "2";
+				}
+			}
+		});
+		addInfo.addView(view);
+	}
+
 	/**
 	 * 设置标示tag 获取值得时候使用
 	 * 
 	 * @param str
 	 */
-	private void setTag(String str, EditText txt) {
+	private void setTag(String str, final EditText txt) {
 		if (str.equals("性别")) {
 			txt.setTag("gendar");
 		} else if (str.equals("生日")) {
 			txt.setTag("birthday");
+			txt.setFocusable(false);
+			txt.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					showDateDialog(txt);
+				}
+			});
 		} else if (str.equals("工作单位")) {
 			txt.setTag("employer");
 		} else if (str.equals("工作职位")) {
@@ -214,15 +257,50 @@ public class AddOneMemberActivity extends BaseActivity implements
 		AddKeyAndValuePopwindow pop = new AddKeyAndValuePopwindow(this, parent,
 				str, "选择添加属性");
 		pop.setCallBack(new OnSelectKey() {
-
 			@Override
 			public void getSelectKey(String str) {
-				addView(str);
 				moreInfo.remove(str);// 删除所选项 每项只能添加一条
+				if ("性别".equals(str)) {
+					addGendar();
+					return;
+				}
+				addView(str);
 			}
 		});
 		pop.show();
 
+	}
+
+	// 日期选择对话框的 DateSet 事件监听器
+	class DateListener implements OnDateSetListener {
+		EditText edit;
+
+		public DateListener(EditText edit) {
+			this.edit = edit;
+		}
+
+		@Override
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
+				int dayOfMonth) {
+			cal.set(Calendar.YEAR, year);
+			cal.set(Calendar.MONTH, monthOfYear);
+			cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+			updateDate(edit);
+		}
+
+	}
+
+	private void showDateDialog(EditText edit) {
+		new DatePickerDialog(this, new DateListener(edit),
+				cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
+				cal.get(Calendar.DAY_OF_MONTH)).show();
+	}
+
+	// 当 DatePickerDialog 关闭，更新日期显示
+	private void updateDate(EditText edit) {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
+		String date = df.format(cal.getTime());
+		edit.setText(date);
 	}
 
 	@Override
@@ -235,6 +313,11 @@ public class AddOneMemberActivity extends BaseActivity implements
 			getValue();
 			String name = editName.getText().toString();
 			String mobile = editMobile.getText().toString().replace("-", "");
+			String email = editEmail.getText().toString();
+			if (name.length() == 0) {
+				Utils.showToast("姓名不能为空!");
+				return;
+			}
 			if (mobile.length() == 0) {
 				Utils.showToast("手机号不能为空!");
 				return;
@@ -243,15 +326,17 @@ public class AddOneMemberActivity extends BaseActivity implements
 				Utils.showToast("请输入有效的手机号码");
 				return;
 			}
-			if (name.length() == 0) {
-				Utils.showToast("姓名不能为空!");
-				return;
+			if (email.length() != 0) {
+				if (!Utils.isEmail(email)) {
+					Utils.showToast("邮箱格式不正确");
+					return;
+				}
 			}
 			if (type.equals("create")) {
 				MemberInfoModle modle = new MemberInfoModle();
 				modle.setBirthday(birthday);
 				modle.setCellPhone(mobile);
-				modle.setEmail(editEmail.getText().toString());
+				modle.setEmail(email);
 				modle.setEmployer(employer);
 				modle.setGendar(gendar);
 				modle.setJobTitle(jobtitle);

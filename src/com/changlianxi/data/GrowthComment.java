@@ -1,10 +1,13 @@
 package com.changlianxi.data;
 
+import java.util.Comparator;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.changlianxi.db.Const;
+import com.changlianxi.util.DateUtils;
 
 /**
  * Comment in growth.
@@ -74,6 +77,10 @@ public class GrowthComment extends AbstractData {
 		return time;
 	}
 
+	public String getFormatTime() {
+		return DateUtils.formatTime(time);
+	}
+	
 	public void setTime(String time) {
 		this.time = time;
 	}
@@ -179,6 +186,28 @@ public class GrowthComment extends AbstractData {
 		}
 		if (isChange && this.status == Status.OLD) {
 			this.status = Status.UPDATE;
+		}
+	}
+	
+	public static Comparator<GrowthComment> getComparator(boolean byTimeAsc) {
+		if (byTimeAsc) {
+			return new Comparator<GrowthComment>() {
+				@Override
+				public int compare(GrowthComment l, GrowthComment r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
+					return lTime > rTime ? 1 : -1;
+				}
+			};
+		} else {
+			return new Comparator<GrowthComment>() {
+				@Override
+				public int compare(GrowthComment l, GrowthComment r) {
+					long lTime = DateUtils.convertToDate(l.getTime()), rTime = DateUtils
+							.convertToDate(r.getTime());
+					return lTime > rTime ? -1 : 1;
+				}
+			};
 		}
 	}
 

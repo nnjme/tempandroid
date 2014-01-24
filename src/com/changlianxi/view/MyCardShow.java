@@ -117,7 +117,7 @@ public class MyCardShow implements OnClickListener, GetMyDetailValues {
 		options = CLXApplication.getUserOptions();
 		initView();
 		setOnClickListener();
-		mHandler.sendEmptyMessageDelayed(0, 400);
+		mHandler.sendEmptyMessageDelayed(0, 100);
 	}
 
 	/**
@@ -171,6 +171,7 @@ public class MyCardShow implements OnClickListener, GetMyDetailValues {
 
 			}
 
+			@SuppressWarnings("deprecation")
 			@SuppressLint("NewApi")
 			@Override
 			public void onLoadingComplete(String arg0, View arg1, Bitmap bmp) {
@@ -179,8 +180,9 @@ public class MyCardShow implements OnClickListener, GetMyDetailValues {
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
-
+				// layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				layTop.setBackgroundDrawable(BitmapUtils
+						.convertBimapToDrawable(bmp));
 			}
 
 			@Override
@@ -330,10 +332,12 @@ public class MyCardShow implements OnClickListener, GetMyDetailValues {
 		setLayVisible();
 	}
 
+	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
 	public void setAvatar(Bitmap bmp, String avatarPath) {
 		avatar.setImageBitmap(bmp);
-		layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+		// layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+		layTop.setBackgroundDrawable(BitmapUtils.convertBimapToDrawable(bmp));
 		if (!avatarPath.equals("")) {
 			avatarURL = avatarPath;
 		}

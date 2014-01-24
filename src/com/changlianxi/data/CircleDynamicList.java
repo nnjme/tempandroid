@@ -193,7 +193,14 @@ public class CircleDynamicList extends AbstractData {
 	public void write(SQLiteDatabase db) {
 		if (this.status != Status.OLD) {
 			// write one by one
+			int cacheCnt = 0;
 			for (CircleDynamic dynamic : dynamics) {
+				if (dynamic.getStatus() != Status.DEL) {
+					cacheCnt++;
+				}
+				if (cacheCnt > Const.DYNAMIC_MAX_CACHE_COUNT_PER_CIRCLE) {
+					dynamic.setStatus(Status.DEL);
+				}
 				dynamic.write(db);
 			}
 

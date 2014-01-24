@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.changlianxi.db.Const;
+import com.changlianxi.util.StringUtils;
 
 /**
  * Image in growth.
@@ -58,6 +59,10 @@ public class GrowthImage extends AbstractData {
 		return img;
 	}
 
+	public String getImg(String size) {
+		return StringUtils.JoinString(img, size);
+	}
+	
 	public void setImg(String img) {
 		this.img = img;
 	}

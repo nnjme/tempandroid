@@ -58,12 +58,14 @@ public class EditCircleActivity extends BaseActivity implements
 	private String cid;
 	private Dialog pd;
 	private String logoPath = "";
+	private String upLoadPath = "";
 	private ImageView back;
 	private SelectPicPopwindow pop;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	private Bitmap cirBmp = null;
 	private CircleIdetailModle modle = new CircleIdetailModle();
+	private boolean isCamera;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -98,22 +100,10 @@ public class EditCircleActivity extends BaseActivity implements
 		circleName.setText(modle.getName());
 		titleName.setText(modle.getName());
 		String path = modle.getLogo();
-		String logo = "";
-		if (path.startsWith("http")) {
-			logo = StringUtils.JoinString(path, "_200x200");
-		} else {
-			logo = "file://" + path;
+		if (!path.startsWith("http")) {
+			path = "file://" + path;
 		}
-		imageLoader.displayImage(logo, circleLogo, options);
-		// if (!Utils.isNetworkAvailable()) {
-		// Utils.showToast("«ÎºÏ≤ÈÕ¯¬Á");
-		// return;
-		// }
-		// pd = DialogUtil.getWaitDialog(this, "«Î…‘∫Û");
-		// GetCircleIdetailTask task = new GetCircleIdetailTask(cid);
-		// task.setTaskCallBack(this);
-		// task.execute();
-		// pd.show();
+		imageLoader.displayImage(path, circleLogo, options);
 	}
 
 	private void findViewByID() {
@@ -198,7 +188,7 @@ public class EditCircleActivity extends BaseActivity implements
 		map.put("uid", SharedUtils.getString("uid", ""));
 		map.put("token", SharedUtils.getString("token", ""));
 		UpLoadPicAsyncTask picTask = new UpLoadPicAsyncTask(map,
-				"/circles/iuploadLogo", logoPath, "logo");
+				"/circles/iuploadLogo", upLoadPath, "logo");
 		picTask.setCallBack(new UpLoadPic() {
 			@Override
 			public void upLoadFinish(boolean flag) {
@@ -220,21 +210,26 @@ public class EditCircleActivity extends BaseActivity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		SelectPicModle modle = new SelectPicModle();
-		if (resultCode != RESULT_OK || data == null) {
-			return;
-		}
 		if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYSDCARD
 				&& resultCode == RESULT_OK && data != null) {
 			modle = BitmapUtils.getPickPic(this, data);
 			logoPath = modle.getPicPath();
-			BitmapUtils.startPhotoZoom(this, data.getData());
+			upLoadPath = BitmapUtils.startPhotoZoom(this, data.getData());
+			isCamera = false;
 		}// ≈ƒ…„Õº∆¨
 		else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_BYCAMERA) {
-
-			String fileName = pop.getTakePhotoPath();
-			logoPath = fileName;
-			BitmapUtils.startPhotoZoom(this, Uri.fromFile(new File(fileName)));
-		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP) {
+			logoPath = pop.getTakePhotoPath();
+			upLoadPath = BitmapUtils.startPhotoZoom(this,
+					Uri.fromFile(new File(logoPath)));
+			isCamera = true;
+		} else if (requestCode == Constants.REQUEST_CODE_GETIMAGE_DROP
+				&& data != null) {
+			if (isCamera) {
+				File file = new File(logoPath);
+				if (file.isFile() && file.exists()) {
+					file.delete();
+				}
+			}
 			Bundle extras = data.getExtras();
 			if (extras != null) {
 				Bitmap photo = extras.getParcelable("data");

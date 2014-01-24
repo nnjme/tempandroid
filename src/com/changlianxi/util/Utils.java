@@ -20,6 +20,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -275,6 +276,17 @@ public class Utils {
 		}
 		return apiKey;
 	}
+/**
+ * 获取设备imei
+ * @param context
+ * @return
+ */
+	public static String getImei(Context context) {
+		TelephonyManager telephonyManager = (TelephonyManager) context
+				.getSystemService(Context.TELEPHONY_SERVICE);
+		String imei = telephonyManager.getDeviceId();
+		return imei;
+	}
 
 	/**
 	 * 设备型号
@@ -319,11 +331,13 @@ public class Utils {
 		}
 		return version;
 	}
-/**
- * 判断程序是否在后台
- * @param context
- * @return
- */
+
+	/**
+	 * 判断程序是否在后台
+	 * 
+	 * @param context
+	 * @return
+	 */
 	public static boolean isTopActivity(Context context) {
 		String packageName = context.getPackageName();
 		ActivityManager activityManager = (ActivityManager) context

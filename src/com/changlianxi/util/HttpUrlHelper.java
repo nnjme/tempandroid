@@ -46,6 +46,8 @@ public class HttpUrlHelper {
 	public static final String TAG = "HttpUrlHelper";
 	public static final String strUrl = "http://clx.teeker.com";// 服务器地址
 
+	// i.changlianxi.com
+
 	/**
 	 * 获取请求服务端的方法，进行流操作，并接收服务器端返回的相关数据
 	 * 
@@ -68,7 +70,7 @@ public class HttpUrlHelper {
 			HttpResponse httpResponse = httpclient.execute(httpRequest);
 			// 读取超时
 			httpclient.getParams().setParameter(
-					CoreConnectionPNames.SO_TIMEOUT, 10000); // 6秒
+					CoreConnectionPNames.SO_TIMEOUT, 10000);
 			// 判断是否成功
 			if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				strResult = EntityUtils.toString(httpResponse.getEntity());
@@ -203,7 +205,6 @@ public class HttpUrlHelper {
 		Iterator<?> mapite = map.entrySet().iterator();
 		FileBody fileBody = new FileBody(file);
 		mpEntity.addPart(avatar, fileBody);
-
 		try {
 			while (mapite.hasNext()) {// 循环遍历需要传递给服务器的请求参数
 				@SuppressWarnings("rawtypes")

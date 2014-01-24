@@ -56,6 +56,7 @@ public class IinviteUserTask extends AsyncTask<String, Integer, String> {
 		map.put("token", SharedUtils.getString("token", ""));
 		map.put("persons", jsonAry.toString());
 		String json = HttpUrlHelper.postData(map, "/people/iinviteMore");
+
 		try {
 			JSONObject object = new JSONObject(json);
 			rt = object.getString("rt");

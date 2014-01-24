@@ -86,6 +86,7 @@
                         android:textSize="@dimen/scale20sp" />
 
                     <LinearLayout
+                        android:id="@+id/layLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginRight="7dip"

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.changlianxi"
     android:versionCode="1"
-    android:versionName="0.1.19" >
+    android:versionName="0.1.20" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -12,9 +12,9 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- 往sdcard中写入数据的权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" >
     </uses-permission>
-    <!-- 在sdcard中创建/删除文件的权限 -->
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" >
     </uses-permission>
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -31,6 +31,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <supports-screens
         android:anyDensity="true"
@@ -53,7 +56,8 @@
             android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -203,7 +207,6 @@
                 <action android:name="com.baidu.android.pushservice.action.notification.CLICK" />
             </intent-filter>
         </receiver>
-
         <!-- push service -->
         <receiver
             android:name="com.baidu.android.pushservice.PushServiceReceiver"
@@ -275,6 +278,8 @@
             android:name=".activity.UserInfoEditActivity"
             android:label="@string/title_activity_user_info_edit" >
         </activity>
+        <activity android:name=".activity.UserInfoEditActivity1" >
+        </activity>
         <activity
             android:name=".activity.MyCardEditActivity"
             android:label="@string/title_activity_my_card_edit" >
@@ -303,7 +308,8 @@
             android:name=".activity.UserInfoActivity1"
             android:label="@string/title_activity_user_info_activity1" >
         </activity>
-        <activity android:name=".activity.ShareActivity"></activity>
+        <activity android:name=".activity.ShareActivity" >
+        </activity>
         <activity
             android:name="cn.sharesdk.framework.ShareSDKUIShell"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -316,6 +322,22 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
+            android:name=".fragment.MainActivity1"
+            android:label="@string/title_activity_main_activity1" >
+        </activity>
+
+        <service android:name="com.changlianxi.service.UpdateService" >
+            <intent-filter>
+                <action android:name="com.changlianxi.service.versionservice" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" >
+        </service>
+>>>>>>> 4ec9c6abe7ca797326dfbc96ac32b9d93ec2b3b6
     </application>
 
 </manifest>
