@@ -173,7 +173,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 		// MobclickAgent.onPause(this);
 	}
-	
+
 	private void getMyName() {
 		MemberInfoModle modle = DBUtils.selectNameAndImgByID(SharedUtils
 				.getString("uid", ""));
@@ -418,10 +418,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 		switch (v.getId()) {
 		case R.id.back:
 			BroadCast.sendBroadCast(this, Constants.CHANGE_TAB);
-
-			// finish();
-			// this.getParent().overridePendingTransition(R.anim.right_in,
-			// R.anim.right_out);
 			break;
 		case R.id.imgAdd:
 			if (layAddIsShow) {
@@ -439,6 +435,10 @@ public class ChatActivity extends BaseActivity implements OnClickListener,
 			layAdd.setVisibility(View.GONE);
 			break;
 		case R.id.layoutImg:
+			if (!DBUtils.isAuth(SharedUtils.getString("uid", ""), cid)) {
+				Utils.showToast("您不是认证人员，没有权限发图片");
+				return;
+			}
 			pop = new SelectPicPopwindow(this, v);
 			pop.show();
 			layAdd.setVisibility(View.GONE);

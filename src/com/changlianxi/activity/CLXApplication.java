@@ -132,7 +132,6 @@ public class CLXApplication extends Application {
 	public static DisplayImageOptions getUserOptions() {
 		return userOptions;
 	}
-
 	private void initData() {
 		mNotificationManager = (NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
 		mMediaPlayer = MediaPlayer.create(this, R.raw.office);

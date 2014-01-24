@@ -122,7 +122,9 @@ public class GrowthCommentActivity extends BaseActivity implements
 		task.execute();
 
 	}
-	/**设置页面统计
+
+	/**
+	 * 设置页面统计
 	 * 
 	 */
 	@Override
@@ -131,13 +133,14 @@ public class GrowthCommentActivity extends BaseActivity implements
 		super.onResume();
 		MobclickAgent.onPageStart(getClass().getName() + "");
 	}
+
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
 		MobclickAgent.onPageEnd(getClass().getName() + "");
 	}
-	
+
 	/**
 	 * . 初始化控件
 	 */

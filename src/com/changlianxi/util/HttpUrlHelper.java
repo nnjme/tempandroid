@@ -63,7 +63,6 @@ public class HttpUrlHelper {
 		try {
 			HttpGet httpRequest = new HttpGet(urlStr);
 			HttpClient httpclient = new DefaultHttpClient();
-
 			// 请求超时
 			httpclient.getParams().setParameter(
 					CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
