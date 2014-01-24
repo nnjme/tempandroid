@@ -18,7 +18,7 @@ public class Const {
 			+ " cid integer, uid integer, pid integer, name varchar, cellphone varchar, location varchar,"
 			+ " gendar integer, avatar varchar, birthday varchar, employer varchar, jobtitle varchar,"
 			+ " joinTime varchar, lastModTime varchar, leaveTime varchar, roleId integer, state varchar,"
-			+ " detailIds varchar,sortkey varchar,pinyinFir varchar,auth varchar";
+			+ " detailIds varchar, cmid integer, inviteCode varchar, sortkey varchar, pinyinFir varchar, auth varchar";
 
 	public static final String PERSON_DETAIL_TABLE_NAME = "person_details";
 	public static final String PERSON_DETAIL_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
@@ -27,9 +27,55 @@ public class Const {
 	public static final String TIME_RECORD_TABLE_NAME = "time_records";
 	public static final String TIME_RECORD_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
 			+ " key varchar, subkey varchar, time long";
+	public static final String TIME_RECORD_KEY_PREFIX_GROWTH = "growth";
+	public static final String TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER = "cm";
+	public static final String TIME_RECORD_KEY_PREFIX_CIRCLECHAT = "chats";
+	public static final String TIME_RECORD_KEY_PREFIX_PARTNERS = "partners";
+	public static final String TIME_RECORD_KEY_PREFIX_CIRCLEDYNAMIC = "dynamics";
+	
+	
+	public static final String GROWTH_TABLE_NAME = "growths";
+	public static final String GROWTH_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " id integer, cid integer, publisher integer, content varchar, location varchar, happened integer,"
+			+ " published varchar, praiseCnt integer, commentCnt integer, isPraised integer,"
+			+ " lastCommentsReqTime long";
 
-	public static final String CHAT_TABLE_NAME = "chats";
-	public static final String CHAT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT," // TODO
-			+ " chatId varchar, circleId varchar, senderUid varchar, type varchar, content varchar, time integer";
+	public static final String GROWTH_IMAGE_TABLE_NAME = "growth_images";
+	public static final String GROWTH_IMAGE_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " cid integer, gid integer, imgId integer, img varchar";	
 
+	public static final String GROWTH_COMMENT_TABLE_NAME = "growth_comments";
+	public static final String GROWTH_COMMENT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " gid integer, gcid integer, uid integer, replyid integer, content varchar, time varchar";	
+	
+	public static final String CIRCLE_CHAT_TABLE_NAME = "circle_chats";
+	public static final String CIRCLE_CHAT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " chatId integer, cid integer, sender integer, type varchar, content varchar, time varchar";
+
+	public static final String PERSON_CHAT_TABLE_NAME = "person_chats";
+	public static final String PERSON_CHAT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " chatId integer, cid integer, partner integer, sender integer, type varchar, content varchar,"
+			+ " time varchar, isRead integer";
+
+	public static final String CHAT_PARTNER_TABLE_NAME = "person_chat_partners";
+	public static final String CHAT_PARTNER_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " chatId integer, cid integer, partner integer, type varchar, content varchar, time varchar,"
+			+ " unReadCnt integer, lastChatsReqTime long";
+	
+	public static final String CIRCLE_DYNAMIC_TABLE_NAME = "circle_dynamics";
+	public static final String CIRCLE_DYNAMIC_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " id integer, cid integer, uid1 integer, uid2 integer, pid2 integer, type varchar, content varchar,"
+			+ " detail varchar, time varchar, needApproved integer";
+
+	public static final String AMENDMENT_TABLE_NAME = "my_amendments";
+	public static final String AMENDMENT_TABLE_STRUCTURE = "_id integer PRIMARY KEY AUTOINCREMENT,"
+			+ " amid integer, cid integer, uid integer, content varchar, time varchar";
+
+	
+	public static final int DYNAMIC_MAX_CACHE_COUNT_PER_CIRCLE = 100;
+	public static final int GROWTH_MAX_CACHE_COUNT_PER_CIRCLE = 40;
+	public static final int GROWTH_COMMENT_MAX_CACHE_COUNT_PER_ITEM = 20;
+	public static final int CHAT_MAX_CACHE_COUNT_PER_CIRCLE = 200;
+	public static final int CHAT_MAX_CACHE_COUNT_PER_PERSON = 40;
+	
 }

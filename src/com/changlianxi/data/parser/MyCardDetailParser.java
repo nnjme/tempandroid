@@ -37,22 +37,28 @@ public class MyCardDetailParser implements IParser {
 			int id = obj.getInt("id");
 			String type = obj.getString("type");
 			String value = obj.getString("value");
-			String start = obj.getString("start");
-			String end = obj.getString("end");
-			String remark = obj.getString("remark");
 			PersonDetailType pType = PersonDetailType.convertToType(type);
 			if (pType == PersonDetailType.UNKNOWN) {
 				continue;
 			}
 			PersonDetail p = new PersonDetail(id, 0, pType, value);
-			p.setStart(start);
-			p.setEnd(end);
-			p.setRemark(remark);
+			if (obj.has("start")) {
+				p.setStart(obj.getString("start"));
+			}
+			if (obj.has("end")) {
+				p.setEnd(obj.getString("end"));
+			}
+			if (obj.has("remark")) {
+				p.setRemark(obj.getString("remark"));
+			}
 			properties.add(p);
 		}
 
+		int changed = jsonObj.getInt("changed");
+
 		MyCard member = new MyCard(pid, uid);
 		member.setDetails(properties);
+		member.setChanged(changed > 0);
 		Result ret = new Result();
 		ret.setData(member);
 		return ret;

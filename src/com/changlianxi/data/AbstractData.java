@@ -12,6 +12,7 @@ public abstract class AbstractData extends CircleModle implements IData {
 	 */
 	private static final long serialVersionUID = 1L;
 
+
 	public static enum Status {
 		NEW, OLD, UPDATE, DEL
 	};
@@ -20,16 +21,12 @@ public abstract class AbstractData extends CircleModle implements IData {
 
 	@Override
 	public void read(SQLiteDatabase db) {
-		if (!db.isOpen()) {// TODO
-			db = DataBase.getInstance().getReadableDatabase();
-		}
+		return;
 	}
-
+	
 	@Override
 	public void write(SQLiteDatabase db) {
-		if (!db.isOpen()) {// TODO
-			db = DataBase.getInstance().getWritableDatabase();
-		}
+		return;
 	}
 
 	@Override

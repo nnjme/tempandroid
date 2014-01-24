@@ -2,6 +2,7 @@ package com.changlianxi.data;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +21,15 @@ import com.changlianxi.data.enums.RetStatus;
 import com.changlianxi.data.parser.ArrayParser;
 import com.changlianxi.data.parser.CircleParser;
 import com.changlianxi.data.parser.IParser;
+import com.changlianxi.data.parser.SimpleParser;
 import com.changlianxi.data.parser.StringParser;
 import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.ArrayResult;
 import com.changlianxi.data.request.Result;
+import com.changlianxi.data.request.SimpleResult;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
+import com.changlianxi.util.DateUtils;
 import com.changlianxi.util.StringUtils;
 
 /**
@@ -52,27 +56,32 @@ import com.changlianxi.util.StringUtils;
  *    circle1.uploadAfterEdit(circle2);
  *    circle1.write();    
  * 
- * upload logo
+ * upload logo:
  *    // new circle
  *    // ...edit logo...
  *    // new logo
  *    circle.uploadLogo(newLogo);
  *    circle.write();
  *    
- * add new circle
+ * add new circle:
  *    // new circle
  *    // ...set circle info...
  *    circle.uploadForAdd();
  *    circle.write();
+ *    
+ * other operations:
+ *    // new circle
+ *    circle.dissolve();
  * 
  * @author nnjme
  * 
  */
 public class Circle extends AbstractData {
-	public final static String DETAIL_API = "/circles/idetail";
-	public final static String EDIT_API = "/circles/iedit";
-	public final static String EDIT_LOGO_API = "/circles/iuploadLogo";
-	public final static String ADD_API = "/circles/iadd";
+	public final static String DETAIL_API = "circles/idetail";
+	public final static String EDIT_API = "circles/iedit";
+	public final static String EDIT_LOGO_API = "circles/iuploadLogo";
+	public final static String ADD_API = "circles/iadd";
+	public final static String DISSOLVE_API = "circles/idissolve";
 
 	// circle basic info
 	private int id = 0;
@@ -112,6 +121,10 @@ public class Circle extends AbstractData {
 		this.description = description;
 		this.logo = logo;
 	}
+	
+	public boolean isEmpty() {
+		return this.creator == 0;
+	}
 
 	public int getId() {
 		return id;
@@ -140,7 +153,7 @@ public class Circle extends AbstractData {
 	public String getLogo() {
 		return logo;
 	}
-
+	
 	public String getLogo(String size) {
 		return StringUtils.JoinString(logo, size);
 	}
@@ -642,7 +655,7 @@ public class Circle extends AbstractData {
 		StringResult ret = (StringResult) ApiRequest.uploadFileWithToken(Circle.EDIT_LOGO_API, params, file, "logo", parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
 			this.logo = ret.getStr();
-			this.status = Status.UPDATE;// TODO change local?
+			this.status = Status.UPDATE;
 			return RetError.NONE;
 		} else {
 			return ret.getErr();
@@ -672,6 +685,47 @@ public class Circle extends AbstractData {
 			return ret.getErr();
 		}
 	}
+	
+	/**
+	 * dissolve the circle
+	 * 
+	 * @return
+	 */
+	public RetError dissolve() {
+		IParser parser = new SimpleParser();
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("cid", id);
+		SimpleResult ret = (SimpleResult) ApiRequest.requestWithToken(
+				Circle.DISSOLVE_API, params, parser);
 
+		if (ret.getStatus() == RetStatus.SUCC) {
+			this.status = Status.DEL;
+			return RetError.NONE;
+		} else {
+			return ret.getErr();
+		}
+	}
+
+	public static Comparator<Circle> getComparator(boolean byTimeAsc) {
+		if (byTimeAsc) {
+			return new Comparator<Circle>() {
+				@Override
+				public int compare(Circle l, Circle r) {
+					long lTime = DateUtils.convertToDate(l.getJoinTime()), rTime = DateUtils
+							.convertToDate(r.getJoinTime());
+					return lTime > rTime ? 1 : -1;
+				}
+			};
+		} else {
+			return new Comparator<Circle>() {
+				@Override
+				public int compare(Circle l, Circle r) {
+					long lTime = DateUtils.convertToDate(l.getJoinTime()), rTime = DateUtils
+							.convertToDate(r.getJoinTime());
+					return lTime > rTime ? -1 : 1;
+				}
+			};
+		}
+	}
 
 }

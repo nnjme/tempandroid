@@ -39,24 +39,20 @@ public class CircleMemberDetailParser implements IParser {
 			int id = obj.getInt("id");
 			String type = obj.getString("type");
 			String value = obj.getString("value");
-			String start = "";
-			String end = "";
-			String remark ="";
-			try {
-				start = obj.getString("start");
-				end = obj.getString("end");
-				remark = obj.getString("remark");
-			} catch (Exception e) {
-				
-			}
 			PersonDetailType pType = PersonDetailType.convertToType(type);
 			if (pType == PersonDetailType.UNKNOWN) {
 				continue;
 			}
 			PersonDetail p = new PersonDetail(id, cid, pType, value);
-			p.setStart(start);
-			p.setEnd(end);
-			p.setRemark(remark);
+			if (obj.has("start")) {
+				p.setStart(obj.getString("start"));
+			}
+			if (obj.has("end")) {
+				p.setEnd(obj.getString("end"));
+			}
+			if (obj.has("remark")) {
+				p.setRemark(obj.getString("remark"));
+			}
 			properties.add(p);
 		}
 

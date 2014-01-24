@@ -5,6 +5,7 @@ import java.util.Map;
 
 public enum RetError {
 	NONE,
+	UNVALID,
 	UNKOWN,
 	NETWORK_ERROR,
 	NOT_POST_REQUEST,
@@ -36,6 +37,32 @@ public enum RetError {
 			str2Error.put(err.name(), err);
 		}
 	}
+	public static Map<String, String> s2t = new HashMap<String, String>();
+	static {
+		s2t.put("NETWORK_ERROR", "网络错误");
+		s2t.put("NOT_POST_REQUEST", "非post请求");
+		s2t.put("NEED_MORE_PARAMS", "请求参数不完整");
+		s2t.put("NOT_EXIST_USER", "用户不存在");
+		s2t.put("USER_ALREADY_EXIST", "用户已存在");
+		s2t.put("WRONG_PASSWORD", "密码不正确");
+		s2t.put("FAIL_SEND_AUTH_CODE", "发送校验码短信失败");
+		s2t.put("DB_SAVE_ERROR", "数据库操作失败");
+		s2t.put("FAIL_VERIFY_AUTH_CODE", "校验码不正确");
+		s2t.put("FIELD_NOT_EXIST", "字段不存在");
+		s2t.put("NOT_EXIST_PERSON", "成员不存在");
+		s2t.put("PERSON_ALREADY_IN_CIRCLE", "成员已存在圈子中");
+		s2t.put("NOT_EXIST_CIRCLE", "圈子不存在");
+		s2t.put("PERMISSION_DENIED", "权限不够");
+		s2t.put("IMAGE_SAVE_ERROR", "保存图片出错");
+		s2t.put("CREATOR_CANNOT_QUIT_CIRCLE", "创建者不能退出圈子");
+		s2t.put("CIRCLE_CANNOT_DISSOLVE", "圈子不能被解散");
+		s2t.put("REPEAT_OPERATION", "重复操作");
+		s2t.put("TARGET_NOT_EXIST", "目标不存在");
+		s2t.put("MSG_DIST_ERROR", "消息发送出错");
+		s2t.put("CONDITION_NOT_SATISFY", "条件不满足");
+		s2t.put("TOKEN_INVALID", "用户身份验证失败");
+		s2t.put("OLD_PASSWD_WRONG", "老密码错误");
+	}
 
 	public static RetError convert(String err) {
 		if (!str2Error.containsKey(err)) {
@@ -43,6 +70,13 @@ public enum RetError {
 		} else {
 			return str2Error.get(err);
 		}
+	}
+
+	public static String toText(RetError err) {
+		if (s2t.containsKey(err)) {
+			return s2t.get(err);
+		}
+		return "未知错误！";
 	}
 
 }

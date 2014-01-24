@@ -1,6 +1,7 @@
 package com.changlianxi.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,10 @@ public class CircleList extends AbstractData {
 	public void setCircles(List<Circle> circles) {
 		this.circles = circles;
 	}
+	
+	private void sort(boolean byTimeAsc) {
+		Collections.sort(this.circles, Circle.getComparator(byTimeAsc));
+	}
 
 	@Override
 	public void read(SQLiteDatabase db) {
@@ -89,6 +94,7 @@ public class CircleList extends AbstractData {
 		}
 
 		this.status = Status.OLD;
+		sort(true);
 	}
 
 	@Override
@@ -145,6 +151,7 @@ public class CircleList extends AbstractData {
 		}
 
 		this.status = Status.UPDATE;
+		sort(true);
 	}
 
 	/**
