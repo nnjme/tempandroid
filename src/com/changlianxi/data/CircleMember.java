@@ -96,16 +96,16 @@ import com.changlianxi.util.StringUtils;
  * 
  */
 public class CircleMember extends AbstractData {
-	public final static String DETAIL_API = "people/idetail";
-	public final static String BASIC_API = "people/ibasic";
-	public final static String EDIT_API = "people/iedit";
-	public final static String UPLOAD_AVATAR_API = "people/iuploadAvatar";
-	public final static String QUIT_API = "circles/iquit";
-	public final static String ACCETP_INVITATION_API = "circles/iacceptInvitation";
-	public final static String REFUSE_INVITATION_API = "circles/irefuseInvitation";
-	public final static String KICKOUT_API = "circles/ikickOut";
-	public final static String INVITE_ONE_API = "people/iinviteOne";
-	public final static String INVITE_MORE_API = "people/iinviteMore";
+	public final static String DETAIL_API = "/people/idetail";
+	public final static String BASIC_API = "/people/ibasic";
+	public final static String EDIT_API = "/people/iedit";
+	public final static String UPLOAD_AVATAR_API = "/people/iuploadAvatar";
+	public final static String QUIT_API = "/circles/iquit";
+	public final static String ACCETP_INVITATION_API = "/circles/iacceptInvitation";
+	public final static String REFUSE_INVITATION_API = "/circles/irefuseInvitation";
+	public final static String KICKOUT_API = "/circles/ikickOut";
+	public final static String INVITE_ONE_API = "/people/iinviteOne";
+	public final static String INVITE_MORE_API = "/people/iinviteMore";
 
 	private int cid = 0;
 	private int uid = 0;
@@ -496,7 +496,8 @@ public class CircleMember extends AbstractData {
 			}
 			pd.write(db);
 		}
-
+		if(detailIds.length()>0)
+			detailIds.deleteCharAt(detailIds.length()-1);
 		this.detailIds = detailIds.toString();
 		ContentValues cv = new ContentValues();
 		cv.put("detailIds", this.detailIds);
@@ -690,7 +691,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(this.name);
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-1, cid);
 					pd.setType(type);
 					pd.setValue(this.name);
 					this.details.add(pd);
@@ -701,7 +702,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(this.cellphone);
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-2, cid);
 					pd.setType(type);
 					pd.setValue(this.cellphone);
 					this.details.add(pd);
@@ -711,7 +712,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(Gendar.parseGendar2String(this.gendar));
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-3, cid);
 					pd.setType(type);
 					pd.setValue(Gendar.parseGendar2String(this.gendar));
 					this.details.add(pd);
@@ -722,7 +723,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(this.avatar);
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-4, cid);
 					pd.setType(type);
 					pd.setValue(this.avatar);
 					this.details.add(pd);
@@ -733,7 +734,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(this.birthday);
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-5, cid);
 					pd.setType(type);
 					pd.setValue(this.birthday);
 					this.details.add(pd);
@@ -744,7 +745,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(this.employer);
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-6, cid);
 					pd.setType(type);
 					pd.setValue(this.employer);
 					this.details.add(pd);
@@ -755,7 +756,7 @@ public class CircleMember extends AbstractData {
 				if (type2Details.containsKey(type)) {
 					type2Details.get(type).setValue(this.jobtitle);
 				} else {
-					PersonDetail pd = new PersonDetail(0, cid);
+					PersonDetail pd = new PersonDetail(Integer.MAX_VALUE-7, cid);
 					pd.setType(type);
 					pd.setValue(this.jobtitle);
 					this.details.add(pd);

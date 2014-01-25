@@ -220,15 +220,18 @@ public class CircleMemberList extends AbstractData {
 
 			// write last request time
 			ContentValues cv = new ContentValues();
-			cv.put("last_new_req_time", lastNewReqTime);
+			cv.put("time", lastNewReqTime);
+			cv.put("subkey", "last_new_req_time");
 			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
 					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
 			cv.clear();
-			cv.put("last_mod_req_time", lastModReqTime);
+			cv.put("time", lastModReqTime);
+			cv.put("subkey", "last_mod_req_time");
 			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
 					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
 			cv.clear();
-			cv.put("last_del_req_time", lastDelReqTime);
+			cv.put("time", lastDelReqTime);
+			cv.put("subkey", "last_del_req_time");
 			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
 					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
 

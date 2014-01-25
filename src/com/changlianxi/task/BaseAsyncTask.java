@@ -28,7 +28,7 @@ public abstract class BaseAsyncTask<Params, Progress, Result> extends AsyncTask<
 	protected void onPostExecute(Result result) {
 		if(result instanceof RetError){
 			// 任务结束
-			if (result == null || result != RetError.NONE) {
+			if (result == null || result != RetError.NONE ) {
 				Utils.showToast(ErrorCodeUtil.convertToChines(((RetError)result).name()));
 				return;
 			}

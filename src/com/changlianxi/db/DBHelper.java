@@ -69,8 +69,8 @@ public class DBHelper extends SQLiteOpenHelper {
 				+ " ( _id integer PRIMARY KEY AUTOINCREMENT ,cid varchar,personID varchar,userID varchar,userName varchar, userImg varchar,employer varchar,mobileNum varchar,sortkey varchar,pinyinFir varchar,auth varchar,location varchar)");
 		db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_TABLE_NAME
 				+ "( " + Const.CIRCLE_TABLE_STRUCTURE + " )");
-		db.execSQL("create table IF NOT EXISTS " + Const.CHAT_TABLE_NAME + "( "
-				+ Const.CHAT_TABLE_STRUCTURE + " )");
+//		db.execSQL("create table IF NOT EXISTS " + Const.CHAT_TABLE_NAME + "( "
+//				+ Const.CHAT_TABLE_STRUCTURE + " )");
 		db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_ROLE_TABLE_NAME
 				+ "(" + Const.CIRCLE_ROLE_TABLE_STRUCTURE + ")");
 

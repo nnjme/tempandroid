@@ -14,17 +14,17 @@ public class CircleMemberListTask extends BaseAsyncTask<CircleMemberList, Void, 
 		if (isCancelled() || params == null) {
 			return null;
 		}
-		try {
 			CircleMemberList circleMemberList = params[0];
 			circleMemberList.read(DBUtils.db);
 			circleMemberList.refresh(CLXApplication.circleMemberListLastRefreshTime);
+		try {
 			circleMemberList.write(DBUtils.db);
-			return RetError.NONE;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return RetError.UNKOWN;
 		}
-		return RetError.UNKOWN;
+		return RetError.NONE;
 	}
 
 }
