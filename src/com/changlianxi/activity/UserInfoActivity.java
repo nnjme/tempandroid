@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -80,7 +81,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	private TextView name;
-	private CircularImage avatar;
+	//private CircularImage avatar;
+	private ImageView avatar;
 	private LinearLayout btnCall;
 	private LinearLayout btnMessage;
 	private Button btnEdit;
@@ -130,9 +132,13 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.user_info_show);
-		//debugƒ⁄¥Ê∑÷Œˆ
-//		Debug.startMethodTracing();
+		
+		try {
+			setContentView(R.layout.user_info_show);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		iconPath = getIntent().getStringExtra("iconImg");
 		username = getIntent().getStringExtra("username");
@@ -149,12 +155,11 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		// mHandler.sendEmptyMessageDelayed(0, 100);
 
 	}
-//	@Override
-//	protected void onDestroy() {
-//		// TODO Auto-generated method stub
-//		super.onDestroy();
-//		Debug.stopMethodTracing();
-//	}
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+	}
 	private void filldata() {
 		dialog = DialogUtil.getWaitDialog(this, "«Î…‘∫Û");
 		dialog.show();
@@ -251,8 +256,9 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		back = (ImageView) findViewById(R.id.back);
 		btnCall = (LinearLayout) findViewById(R.id.btncall);
 		btnMessage = (LinearLayout) findViewById(R.id.btnmessage);
-		name = (TextView) findViewById(R.id.name);
-		avatar = (CircularImage) findViewById(R.id.avatar);
+		name = (TextView) findViewById(R.id.username);
+		//avatar = (CircularImage) findViewById(R.id.avatar);
+		avatar = (ImageView) findViewById(R.id.avatar);
 		name.setText(username);
 		setAvatar();
 		btnEdit = (Button) findViewById(R.id.btnedit);
@@ -900,10 +906,10 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			break;
 		case R.id.btnedit:
 			Intent it = new Intent();
-			it.putExtra("name", username);
-			it.putExtra("cid", cid);
-			it.putExtra("pid", pid);
-			it.putExtra("avatar", iconPath);
+//			it.putExtra("name", username);
+//			it.putExtra("cid", cid);
+//			it.putExtra("pid", pid);
+//			it.putExtra("avatar", iconPath);
 			it.putExtra("circleMumber", circleMember);
 			it.setClass(this, UserInfoEditActivity.class);
 			startActivityForResult(it, 2);

@@ -20,7 +20,7 @@ public abstract class CircleModle implements Serializable {
 	private String cirIcon = "";// 圈子图标
 	private boolean isNew = false;// 是否是新邀请的圈子
 	private String inviterID = "";
-	private int type = 0;
+	//private int type = 0;
 	private int promptCount = 0;// 圈子提示数量
 	private int newMemberCount = 0;// 新成员数
 	private int newGrowthCount = 0;// 新成长数、

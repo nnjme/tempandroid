@@ -159,14 +159,20 @@ public class UserInfoEditActivity extends BaseActivity implements
 //		Debug.startMethodTracing();
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getUserOptions();
-		cid = getIntent().getStringExtra("cid");
-		pid = getIntent().getStringExtra("pid");
-		strName = getIntent().getStringExtra("name");
-		avatarURL = getIntent().getStringExtra("avatar");
+//		cid = getIntent().getStringExtra("cid");
+//		pid = getIntent().getStringExtra("pid");
+//		strName = getIntent().getStringExtra("name");
+//		avatarURL = getIntent().getStringExtra("avatar");
 		initView();
+		circleMember = (CircleMember) getIntent().getSerializableExtra(
+				"circleMumber");
+		cid = circleMember.getCid()+"";
+		pid = circleMember.getPid()+"";
+		strName = circleMember.getName();
+		avatarURL = circleMember.getAvatar();
+		editName.setText(strName);
 		initData();
 		setListener();
-		editName.setText(strName);
 		setAvatar();
 		filldata();
 		// mHandler.sendEmptyMessageDelayed(1, 100);
@@ -178,8 +184,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 //		Debug.stopMethodTracing();
 //	}
 	private void filldata() {
-		circleMember = (CircleMember) getIntent().getSerializableExtra(
-				"circleMumber");
+		
 		List<PersonDetail> details = circleMember.getDetails();
 		for (PersonDetail detail : details) {
 			valuesClassification(detail.getId() + "", detail.getType().name(),
@@ -1244,7 +1249,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 	 * 构建上传的字符串
 	 */
 	// TODO 分类上传数据
-	private void BuildJson() {
+	private boolean BuildJson() {
 
 		for (int i = 0; i < basicList.size(); i++) {
 			int editType = basicList.get(i).getEditType();
@@ -1253,7 +1258,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = basicList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(basicList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				PersonDetail detail = new PersonDetail(0,
 						circleMember.getCid(),
@@ -1267,7 +1272,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String tid = basicList.get(i).getId();
 				if (value.equals("")) {
 					Utils.showToast(basicList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				for (PersonDetail detail : newDetails) {
 					if (detail.getId() == Integer.parseInt(tid)) {
@@ -1289,7 +1294,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = contactList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(contactList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				PersonDetail detail = new PersonDetail(0,
 						circleMember.getCid(),
@@ -1302,7 +1307,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = contactList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(contactList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				String tid = contactList.get(i).getId();
 				for (PersonDetail detail : newDetails) {
@@ -1325,7 +1330,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = socialList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(socialList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				PersonDetail detail = new PersonDetail(0,
 						circleMember.getCid(),
@@ -1338,7 +1343,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = socialList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(socialList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				String tid = socialList.get(i).getId();
 				for (PersonDetail detail : newDetails) {
@@ -1361,7 +1366,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = addressList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(addressList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				PersonDetail detail = new PersonDetail(0,
 						circleMember.getCid(),
@@ -1374,7 +1379,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				String value = addressList.get(i).getValue();
 				if (value.equals("")) {
 					Utils.showToast(addressList.get(i).getKey() + "不能为空");
-					return;
+					return false;
 				}
 				String tid = addressList.get(i).getId();
 				for (PersonDetail detail : newDetails) {
@@ -1399,15 +1404,15 @@ public class UserInfoEditActivity extends BaseActivity implements
 			String end = eduList.get(i).getEndDate();
 			if (value.equals("")) {
 				Utils.showToast(eduList.get(i).getKey() + "不能为空");
-				return;
+				return false;
 			}
 			if (start.equals("")) {
 				Utils.showToast(eduList.get(i).getKey() + "的开始时间不能为空");
-				return;
+				return false;
 			}
 			if (end.equals("")) {
 				Utils.showToast(eduList.get(i).getKey() + "的结束时间不能为空");
-				return;
+				return false;
 			}
 			if (editType == 2) {
 				PersonDetail detail = new PersonDetail(0,
@@ -1439,15 +1444,15 @@ public class UserInfoEditActivity extends BaseActivity implements
 			String end = workList.get(i).getEndDate();
 			if (value.equals("")) {
 				Utils.showToast(workList.get(i).getKey() + "不能为空");
-				return;
+				return false;
 			}
 			if (start.equals("")) {
 				Utils.showToast(workList.get(i).getKey() + "的开始时间不能为空");
-				return;
+				return false;
 			}
 			if (end.equals("")) {
 				Utils.showToast(workList.get(i).getKey() + "的结束时间不能为空");
-				return;
+				return false;
 			}
 			if (editType == 2) {
 				PersonDetail detail = new PersonDetail(0,
@@ -1471,6 +1476,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 				// BuildEditEduAndWorkJson(keyType, value, tid, start, end);
 			}
 		}
+		return true;
 		// upLoadEditDetails();
 	}
 
@@ -1517,7 +1523,9 @@ public class UserInfoEditActivity extends BaseActivity implements
 			break;
 		case R.id.btnSave:
 
-			BuildJson();
+			if(!BuildJson()){
+				return;
+			}
 			dialog = DialogUtil.getWaitDialog(this, "请稍后");
 			dialog.show();
 			UpLoadCircleMemberIdetailTask loadCircleMemberIdetailTask = new UpLoadCircleMemberIdetailTask();
