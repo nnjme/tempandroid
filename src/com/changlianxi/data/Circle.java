@@ -253,7 +253,7 @@ public class Circle extends AbstractData {
 	public void read(SQLiteDatabase db) {
 		// read circle basic info and member counts
 		Cursor cursor = db.query(Const.CIRCLE_TABLE_NAME, new String[] {
-				"name", "logo", "description", "isNew", "creator", "myinvitor", 
+				"name", "logo", "description", "isNew", "creator", "myInvitor", 
 				"created", "joinTime", "total", "inviting", "verified", "unverified" },
 				"id=?", new String[] { this.id + "" }, null, null, null);
 		if (cursor.getCount() > 0) {

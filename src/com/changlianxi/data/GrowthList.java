@@ -183,9 +183,11 @@ public class GrowthList extends AbstractData {
 
 			// write last request time
 			ContentValues cv = new ContentValues();
-			cv.put("last_req_time", lastReqTime);
-			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { Const.TIME_RECORD_KEY_PREFIX_GROWTH + this.cid });
+			cv.put("time", lastReqTime);
+			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=? and subkey=?",
+					new String[] {
+							Const.TIME_RECORD_KEY_PREFIX_GROWTH + this.cid,
+							"last_req_time" });
 
 			this.status = Status.OLD;
 		}

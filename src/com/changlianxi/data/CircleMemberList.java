@@ -220,17 +220,23 @@ public class CircleMemberList extends AbstractData {
 
 			// write last request time
 			ContentValues cv = new ContentValues();
-			cv.put("last_new_req_time", lastNewReqTime);
-			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
+			cv.put("time", lastNewReqTime);
+			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=? and subkey=?",
+					new String[] {
+							Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER
+									+ this.cid, "last_new_req_time" });
 			cv.clear();
-			cv.put("last_mod_req_time", lastModReqTime);
-			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
+			cv.put("time", lastModReqTime);
+			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=? and subkey=?",
+					new String[] {
+							Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER
+									+ this.cid, "last_mod_req_time" });
 			cv.clear();
-			cv.put("last_del_req_time", lastDelReqTime);
-			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=?",
-					new String[] { Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER + this.cid });
+			cv.put("time", lastDelReqTime);
+			db.update(Const.TIME_RECORD_TABLE_NAME, cv, "key=? and subkey=?",
+					new String[] {
+							Const.TIME_RECORD_KEY_PREFIX_CIRCLEMEMBER
+									+ this.cid, "last_del_req_time" });
 
 			this.status = Status.OLD;
 		}

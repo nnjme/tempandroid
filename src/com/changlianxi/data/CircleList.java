@@ -131,7 +131,7 @@ public class CircleList extends AbstractData {
 			int acId = ac.getId();
 			if (oldCids.contains(acId)) {
 				for (Circle c : this.circles) {
-					if (c.getId()==(acId)) {
+					if (c.getId() == acId) {
 						if (ac.getStatus() != Status.DEL) {
 							c.updateForListChange(ac);
 						} else {
