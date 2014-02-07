@@ -25,12 +25,30 @@ public class GrowthComment extends AbstractData {
 	private String time = "";
 	private int total = 0; // just use to record total comments while pushlish a
 							// new comment
+	private String name ="";
+	private String avatar="";
 
 	public GrowthComment(int gid, int gcid, int uid, String content) {
 		this.gid = gid;
 		this.gcid = gcid;
 		this.uid = uid;
 		this.content = content;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
 	}
 
 	public int getGid() {

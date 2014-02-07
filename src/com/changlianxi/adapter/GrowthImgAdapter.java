@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
 import com.changlianxi.activity.CLXApplication;
+import com.changlianxi.data.Growth;
+import com.changlianxi.data.GrowthImage;
 import com.changlianxi.R;
 import com.changlianxi.modle.GrowthImgModle;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -20,12 +22,12 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class GrowthImgAdapter extends BaseAdapter {
 	private Context mContext;
-	private List<GrowthImgModle> listData;
+	private List<GrowthImage> listData;
 	private int average;
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 
-	public GrowthImgAdapter(Context context, List<GrowthImgModle> data,
+	public GrowthImgAdapter(Context context, List<GrowthImage> data,
 			int average) {
 		this.mContext = context;
 		this.listData = data;
@@ -69,11 +71,11 @@ public class GrowthImgAdapter extends BaseAdapter {
 		String path = "";
 		if (average == 2) {
 			holder.img.setScaleType(ScaleType.CENTER_CROP);
-			path = listData.get(position).getImg_200();
+			path = listData.get(position).getImg();
 			holder.img.setLayoutParams(new FrameLayout.LayoutParams(150, 150));
 		} else {
 			holder.img.setScaleType(ScaleType.FIT_XY);
-			path = listData.get(position).getImg_200();
+			path = listData.get(position).getImg();
 		}
 		imageLoader.displayImage(path, holder.img, options);
 

@@ -32,12 +32,20 @@ import android.widget.TextView;
 
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.adapter.GrowthImgAdapter;
+import com.changlianxi.data.Growth;
+import com.changlianxi.data.GrowthComment;
+import com.changlianxi.data.GrowthCommentList;
+import com.changlianxi.data.enums.RetError;
+import com.changlianxi.data.request.Result;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CommentsModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
+import com.changlianxi.task.BaseAsyncTask;
+import com.changlianxi.task.BaseAsyncTask.PostCallBack;
 import com.changlianxi.task.GetGrowthCommentsTask;
 import com.changlianxi.task.GetGrowthCommentsTask.GetGrowthComments;
+import com.changlianxi.task.GrowthCommentsTask;
 import com.changlianxi.task.PraiseAndCanclePraiseTask;
 import com.changlianxi.task.PraiseAndCanclePraiseTask.PraiseAndCancle;
 import com.changlianxi.util.DateUtils;
@@ -62,13 +70,13 @@ import com.changlianxi.R;
  */
 public class GrowthCommentActivity extends BaseActivity implements
 		OnClickListener, OnItemClickListener, GetGrowthComments {
-	private GrowthModle modle;
+	private Growth modle;
 	private LayoutInflater flater;
 	private ListView listview;
-	private String cid;// 圈子id
-	private String uid;// 用户id
-	private String gid = "";// 成长记录id
-	private List<CommentsModle> cModle = new ArrayList<CommentsModle>();
+	private int cid;// 圈子id
+	private int uid;// 用户id
+	private int gid;// 成长记录id
+	//private List<CommentsModle> cModle = new ArrayList<CommentsModle>();
 	private MyAdapter adapter;// 自定义adapter
 	private TextView name;// 显示發佈人姓名
 	private TextView content;// 显示记录内容
@@ -93,32 +101,57 @@ public class GrowthCommentActivity extends BaseActivity implements
 	private LinearLayout layParise;
 	private ImageView oneImg;
 	private LinearLayout layEdit;
+	private GrowthCommentList commentList;
+	private List<GrowthComment> comments;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_growth_comment);
 		Bundle bundle = getIntent().getExtras();
-		modle = (GrowthModle) bundle.getSerializable("modle");
+		modle = (Growth) bundle.getSerializable("modle");
 		pisition = getIntent().getIntExtra("position", 0);
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getOptions();
 		cid = modle.getCid();
 		gid = modle.getId();
-		uid = modle.getUid();
+		uid = modle.getPublisher();
 		initView();
-		MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
-		if (md != null) {
-			name.setText(md.getName());
-			String path = md.getAvator();
-			imageLoader.displayImage(path, img, options);
-		}
-		adapter = new MyAdapter();
-		listview.setAdapter(adapter);
-		GetGrowthCommentsTask task = new GetGrowthCommentsTask(cid, gid);
-		task.setTaskCallBack(this);
-		task.execute();
+		name.setText(modle.getName());
+		String path = modle.getAvatar();
+		imageLoader.displayImage(path, img, options);
+		//MemberInfoModle md = DBUtils.selectNameAndImgByID(uid+"");
+//		if (md != null) {
+//			name.setText(md.getName());
+//			String path = md.getAvator();
+//			imageLoader.displayImage(path, img, options);
+//		}
+		commentList = modle.getCommentList();
+		filldata();
+//		GetGrowthCommentsTask task = new GetGrowthCommentsTask(cid+"", gid+"");
+//		task.setTaskCallBack(this);
+//		task.execute();
 
+	}
+	private void filldata() {
+		// TODO Auto-generated method stub
+		GrowthCommentsTask commentsTask = new GrowthCommentsTask();
+		commentsTask.setTaskCallBack(new PostCallBack<RetError>() {
+
+			@Override
+			public void taskFinish(RetError result) {
+				// TODO Auto-generated method stub
+				comments = commentList.getComments();
+				if(adapter==null){
+					adapter = new MyAdapter();
+					listview.setAdapter(adapter);
+				}else{
+					adapter.notifyDataSetChanged();
+				}
+				Utils.setListViewHeightBasedOnChildren(listview);
+			}
+		});
+		commentsTask.execute(commentList);
 	}
 	/**设置页面统计
 	 * 
@@ -156,7 +189,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		gridView.setOnItemClickListener(this);
 		content = (TextView) findViewById(R.id.content);
-		int size = modle.getImgModle().size();
+		int size = modle.getImages().size();
 		int average = 0;
 		if (size == 1) {
 			average = 1;
@@ -171,7 +204,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 			content.setVisibility(View.GONE);
 		}
 		if (average == 1) {
-			String imgPath = modle.getImgModle().get(0).getImg_200();
+			String imgPath = modle.getImages().get(0).getImg();
 			oneImg.setVisibility(View.VISIBLE);
 			gridView.setVisibility(View.GONE);
 			imageLoader.displayImage(imgPath, oneImg, options);
@@ -179,7 +212,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 			oneImg.setVisibility(View.GONE);
 			gridView.setVisibility(View.VISIBLE);
 			gridView.setNumColumns(average);
-			gridView.setAdapter(new GrowthImgAdapter(this, modle.getImgModle(),
+			gridView.setAdapter(new GrowthImgAdapter(this, modle.getImages(),
 					average));
 		}
 		praise = (TextView) findViewById(R.id.praise);
@@ -187,10 +220,10 @@ public class GrowthCommentActivity extends BaseActivity implements
 		name = (TextView) findViewById(R.id.name);
 		time = (TextView) findViewById(R.id.time);
 		img = (CircularImage) findViewById(R.id.img);
-		time.setText(DateUtils.publishedTime(modle.getPublish()));
+		time.setText(DateUtils.publishedTime(modle.getPublished()));
 		content.setText(StringUtils.ToDBC(modle.getContent()));
-		comment.setText("评论（" + modle.getComment() + "）");
-		praise.setText("赞（" + modle.getPraise() + "）");
+		comment.setText("评论（" + modle.getCommentCnt() + "）");
+		praise.setText("赞（" + modle.getPraiseCnt() + "）");
 		listview = (ListView) findViewById(R.id.listView);
 		titleTxt = (TextView) findViewById(R.id.titleTxt);
 		titleTxt.setText("成长详情");
@@ -198,7 +231,7 @@ public class GrowthCommentActivity extends BaseActivity implements
 		layParise = (LinearLayout) findViewById(R.id.layParise);
 		layParise.setOnClickListener(this);
 		layEdit = (LinearLayout) findViewById(R.id.layedit);
-		if (!isPermission(uid)) {
+		if (!isPermission(uid+"")) {
 			layEdit.setVisibility(View.GONE);
 		}
 	}
@@ -252,24 +285,24 @@ public class GrowthCommentActivity extends BaseActivity implements
 		@Override
 		protected void onPostExecute(String result) {
 			pd.dismiss();
-			if (result.equals("1")) {
-				comment.setText("评论(" + count + ")");
-				Utils.showToast("评论成功!");
-				callBack.setComment(pisition, count);
-				CommentsModle modle = new CommentsModle();
-				modle.setCid(cid);
-				modle.setUid(SharedUtils.getString("uid", ""));
-				modle.setContent(edtContent.getText().toString());
-				modle.setTime(DateUtils.getCurrDateStr());
-				cModle.add(0, modle);
-				adapter.notifyDataSetChanged();
-				Utils.setListViewHeightBasedOnChildren(listview);
-				scorll.scrollTo(0, 0);
-				edtContent.setText("");
-
-			} else {
-				Utils.showToast("评论失败!");
-			}
+//			if (result.equals("1")) {
+//				comment.setText("评论(" + count + ")");
+//				Utils.showToast("评论成功!");
+//				callBack.setComment(pisition, count);
+//				CommentsModle modle = new CommentsModle();
+//				modle.setCid(cid+"");
+//				modle.setUid(SharedUtils.getString("uid", ""));
+//				modle.setContent(edtContent.getText().toString());
+//				modle.setTime(DateUtils.getCurrDateStr());
+//				cModle.add(0, modle);
+//				adapter.notifyDataSetChanged();
+//				Utils.setListViewHeightBasedOnChildren(listview);
+//				scorll.scrollTo(0, 0);
+//				edtContent.setText("");
+//
+//			} else {
+//				Utils.showToast("评论失败!");
+//			}
 		}
 
 		@Override
@@ -343,7 +376,8 @@ public class GrowthCommentActivity extends BaseActivity implements
 	class MyAdapter extends BaseAdapter {
 		@Override
 		public int getCount() {
-			return cModle.size();
+			//return cModle.size();
+			return comments.size();
 		}
 
 		@Override
@@ -372,10 +406,17 @@ public class GrowthCommentActivity extends BaseActivity implements
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
-			setNameAndImg("circle" + cModle.get(position).getCid(),
-					cModle.get(position).getUid(), holder);
-			holder.content.setText(cModle.get(position).getContent());
-			holder.time.setText(DateUtils.publishedTime(cModle.get(position)
+//			setNameAndImg("circle" + comments.get(position).getCid(),
+//					cModle.get(position).getUid(), holder);
+			holder.name.setText(comments.get(position).getName());
+			String path = comments.get(position).getAvatar();
+			if (path == null || path.equals("")) {
+				holder.img.setImageResource(R.drawable.head_bg);
+			} else {
+				imageLoader.displayImage(path, holder.img, options);
+			}
+			holder.content.setText(comments.get(position).getContent());
+			holder.time.setText(DateUtils.publishedTime(comments.get(position)
 					.getTime()));
 			return convertView;
 		}
@@ -439,14 +480,51 @@ public class GrowthCommentActivity extends BaseActivity implements
 				Utils.showToast("请输入内容！");
 				return;
 			}
-			new PublishCommentsTask().execute(str);
+			final Dialog pd = DialogUtil.getWaitDialog(GrowthCommentActivity.this, "请稍后");
+			pd.show();
+//			new PublishCommentsTask().execute(str);
+			final GrowthComment growthComment = new GrowthComment(gid, 0, uid, str);
+			BaseAsyncTask<Void, Void, RetError> asyncTask = new BaseAsyncTask<Void, Void, RetError>() {
 
+				@Override
+				protected RetError doInBackground(Void... params) {
+					// TODO Auto-generated method stub
+					RetError uploadMyComment = modle.uploadMyComment(growthComment);
+					return uploadMyComment;
+				}
+
+			};
+			asyncTask.setTaskCallBack(new PostCallBack<RetError>() {
+
+				@Override
+				public void taskFinish(RetError result) {
+					// TODO Auto-generated method stub
+					pd.dismiss();
+					if(result==RetError.NONE){
+						comment.setText("评论(" + (modle.getCommentCnt()) + ")");
+						Utils.showToast("评论成功!");
+//						callBack.setComment(pisition, count);
+//						CommentsModle modle = new CommentsModle();
+//						modle.setCid(cid+"");
+//						modle.setUid(SharedUtils.getString("uid", ""));
+//						modle.setContent(edtContent.getText().toString());
+//						modle.setTime(DateUtils.getCurrDateStr());
+//						cModle.add(0, modle);
+						adapter.notifyDataSetChanged();
+						Utils.setListViewHeightBasedOnChildren(listview);
+						scorll.scrollTo(0, 0);
+						edtContent.setText("");
+					}
+				}
+			});
+			asyncTask.executeWithCheckNet();
+			
 			break;
 		case R.id.edit:
-			if (isPermission(modle.getUid())) {
-				for (int i = 0; i < modle.getImgModle().size(); i++) {
-					urlPath.add(modle.getImgModle().get(i).getImg_100());
-					imgID.add(modle.getImgModle().get(i).getId());
+			if (isPermission(modle.getPublisher()+"")) {
+				for (int i = 0; i < modle.getImages().size(); i++) {
+					urlPath.add(modle.getImages().get(i).getImg());
+					imgID.add(modle.getImages().get(i).getImgId()+"");
 				}
 				Intent intent = new Intent();
 				Bundle bundle = new Bundle();
@@ -465,21 +543,30 @@ public class GrowthCommentActivity extends BaseActivity implements
 			Utils.showToast("您没有编辑权限！");
 			break;
 		case R.id.del:
-			if (isPermission(modle.getUid())) {
+			if (isPermission(modle.getPublisher()+"")) {
 				new DelCommentsTask().execute();
 				return;
 			}
 			Utils.showToast("您没有删除权限！");
 			break;
 		case R.id.layParise:
-			if (!modle.isIspraise()) {
-				PraiseAndCancle(modle.getCid(), modle.getId(), "praise",
-						"/growth/imyPraise");
+			new BaseAsyncTask<Void, Void, RetError>() {
 
-				return;
-			}
-			PraiseAndCancle(modle.getCid(), modle.getId(), "cancle",
-					"/growth/icancelPraise");
+				@Override
+				protected RetError doInBackground(Void... params) {
+					// TODO Auto-generated method stub
+					modle.uploadMyPraise(!modle.isPraised());
+					return null;
+				}
+			}.executeWithCheckNet();
+//			if (!modle.isIspraise()) {
+//				PraiseAndCancle(modle.getCid(), modle.getId(), "praise",
+//						"/growth/imyPraise");
+//
+//				return;
+//			}
+//			PraiseAndCancle(modle.getCid(), modle.getId(), "cancle",
+//					"/growth/icancelPraise");
 			break;
 		default:
 			break;
@@ -489,30 +576,30 @@ public class GrowthCommentActivity extends BaseActivity implements
 	/**
 	 * 点赞
 	 */
-	private void PraiseAndCancle(String cid, String gid, String type, String url) {
-		final Dialog dialog = DialogUtil.getWaitDialog(
-				GrowthCommentActivity.this, "请稍后");
-		dialog.show();
-		PraiseAndCanclePraiseTask task = new PraiseAndCanclePraiseTask(cid,
-				gid, type, url);
-		task.setPraiseCallBack(new PraiseAndCancle() {
-			@Override
-			public void praiseAndCancle(String type, int count) {
-				dialog.dismiss();
-				modle.setPraise(count);
-				praise.setText("赞(" + modle.getPraise() + ")");
-				if (type.equals("praise")) {
-					modle.setIspraise(true);
-				} else {
-					modle.setIspraise(false);
-
-				}
-			}
-
-		});
-		task.execute();
-
-	}
+//	private void PraiseAndCancle(String cid, String gid, String type, String url) {
+//		final Dialog dialog = DialogUtil.getWaitDialog(
+//				GrowthCommentActivity.this, "请稍后");
+//		dialog.show();
+//		PraiseAndCanclePraiseTask task = new PraiseAndCanclePraiseTask(cid,
+//				gid, type, url);
+//		task.setPraiseCallBack(new PraiseAndCancle() {
+//			@Override
+//			public void praiseAndCancle(String type, int count) {
+//				dialog.dismiss();
+//				modle.setPraise(count);
+//				praise.setText("赞(" + modle.getPraiseCnt() + ")");
+//				if (type.equals("praise")) {
+//					modle.setIspraise(true);
+//				} else {
+//					modle.setIspraise(false);
+//
+//				}
+//			}
+//
+//		});
+//		task.execute();
+//
+//	}
 
 	public static void setRecordOperation(RecordOperation callBa) {
 		callBack = callBa;
@@ -549,16 +636,16 @@ public class GrowthCommentActivity extends BaseActivity implements
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		List<String> imgUrl = new ArrayList<String>();
-		for (int i = 0; i < modle.getImgModle().size(); i++) {
-			imgUrl.add(modle.getImgModle().get(i).getImg());
+		for (int i = 0; i < modle.getImages().size(); i++) {
+			imgUrl.add(modle.getImages().get(i).getImg());
 		}
 		imageBrower(arg2, imgUrl.toArray(new String[imgUrl.size()]));
 	}
 
 	@Override
 	public void getGrowthComments(List<CommentsModle> listModle) {
-		cModle.addAll(listModle);
-		adapter.notifyDataSetChanged();
-		Utils.setListViewHeightBasedOnChildren(listview);
+//		cModle.addAll(listModle);
+//		adapter.notifyDataSetChanged();
+//		Utils.setListViewHeightBasedOnChildren(listview);
 	}
 }

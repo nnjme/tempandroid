@@ -1,5 +1,6 @@
 package com.changlianxi.activity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
@@ -81,8 +83,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	private TextView name;
-	//private CircularImage avatar;
-	private ImageView avatar;
+	private CircularImage avatar;
 	private LinearLayout btnCall;
 	private LinearLayout btnMessage;
 	private Button btnEdit;
@@ -256,9 +257,8 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		back = (ImageView) findViewById(R.id.back);
 		btnCall = (LinearLayout) findViewById(R.id.btncall);
 		btnMessage = (LinearLayout) findViewById(R.id.btnmessage);
-		name = (TextView) findViewById(R.id.username);
-		//avatar = (CircularImage) findViewById(R.id.avatar);
-		avatar = (ImageView) findViewById(R.id.avatar);
+		name = (TextView) findViewById(R.id.name_userinfo);
+		avatar = (CircularImage) findViewById(R.id.avatar);
 		name.setText(username);
 		setAvatar();
 		btnEdit = (Button) findViewById(R.id.btnedit);
@@ -383,8 +383,12 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
-
+				int sdk = android.os.Build.VERSION.SDK_INT;
+				if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+				    layTop.setBackgroundDrawable(BitmapUtils.convertBimapToDrawable(bmp));
+				} else {
+				    layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				}
 			}
 
 			@Override
@@ -775,7 +779,7 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 		if (requestCode == 2 && data != null) {
 			boolean[] flag = data.getBooleanArrayExtra("flag");
 			 Bundle bundle = data.getExtras();
-			 circleMember = (CircleMember) data.getSerializableExtra("circleMember");
+			 //circleMember = (CircleMember) data.getSerializableExtra("circleMember");
 			if(flag[0]){
 				List<Info> basicList = (List<Info>) bundle
 						.getSerializable("basicList");
@@ -906,10 +910,18 @@ public class UserInfoActivity extends BaseActivity implements OnClickListener,
 			break;
 		case R.id.btnedit:
 			Intent it = new Intent();
-//			it.putExtra("name", username);
-//			it.putExtra("cid", cid);
-//			it.putExtra("pid", pid);
-//			it.putExtra("avatar", iconPath);
+			it.putExtra("name", username);
+			it.putExtra("cid", cid);
+			it.putExtra("pid", pid);
+			it.putExtra("avatar", iconPath);
+			Bundle bundle = new Bundle();
+			bundle.putSerializable("basicList", (Serializable) showBasicList);
+			bundle.putSerializable("contactList", (Serializable) showContactList);
+			bundle.putSerializable("socialList", (Serializable) showSocialList);
+			bundle.putSerializable("addressList", (Serializable) showAddressList);
+			bundle.putSerializable("eduList", (Serializable) showEduList);
+			bundle.putSerializable("workList", (Serializable) showWorkList);
+			it.putExtras(bundle);
 			it.putExtra("circleMumber", circleMember);
 			it.setClass(this, UserInfoEditActivity.class);
 			startActivityForResult(it, 2);

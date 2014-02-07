@@ -25,10 +25,15 @@ import android.widget.TextView;
 import com.changlianxi.R;
 import com.changlianxi.activity.GrowthCommentActivity.RecordOperation;
 import com.changlianxi.adapter.GrowthAdapter;
+import com.changlianxi.data.Growth;
+import com.changlianxi.data.GrowthList;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthModle;
+import com.changlianxi.task.BaseAsyncTask.PostCallBack;
 import com.changlianxi.task.GetGrowthListTask;
 import com.changlianxi.task.GetGrowthListTask.GroGrowthList;
+import com.changlianxi.task.GrowthListTask;
 import com.changlianxi.util.BroadCast;
 import com.changlianxi.util.Constants;
 import com.changlianxi.util.DateUtils;
@@ -46,7 +51,8 @@ import com.umeng.analytics.MobclickAgent;
 public class GrowthActivity extends BaseActivity implements OnClickListener,
 		GroGrowthList, OnItemClickListener, OnPullDownListener {
 	private String cid = "";
-	private List<GrowthModle> listData = new ArrayList<GrowthModle>();
+	//private List<GrowthModle> listData = new ArrayList<GrowthModle>();
+	private List<Growth> listData;
 	private PullDownView mPullDownView;
 	private ListView mListView;
 	private GrowthAdapter adapter;
@@ -62,6 +68,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	private int commentCount;
 	private boolean firstLoad = true;
 	private GetGrowthListTask task;
+	private GrowthList growthList;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -73,17 +80,39 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		commentCount = getIntent().getIntExtra("commentCount", 0);
 		initView();
 		setListener();
-		listData = DBUtils.getGrowthList(cid);
-		setAdapter();
+		//listData = DBUtils.getGrowthList(cid);
+		growthList = new GrowthList(Integer.parseInt(cid));
+		filldata();
+		//setAdapter();
 	}
 
-	private void setAdapter() {
-		adapter = new GrowthAdapter(this, listData);
-		mListView.setAdapter(adapter);
-		mPullDownView.Refresh();
-		end = DateUtils.phpTime(System.currentTimeMillis());
-		getGrowthList();
+	private void filldata() {
+		// TODO Auto-generated method stub
+		GrowthListTask growthListTask = new GrowthListTask();
+		growthListTask.setTaskCallBack(new PostCallBack<RetError>() {
+
+			@Override
+			public void taskFinish(RetError result) {
+				// TODO Auto-generated method stub
+				listData = growthList.getGrowths();
+				if(adapter == null){
+					adapter = new GrowthAdapter(GrowthActivity.this, listData);
+					mListView.setAdapter(adapter);
+				}else{
+					adapter.notifyDataSetChanged();
+				}
+			}
+		});
+		growthListTask.executeWithCheckNet(growthList);
 	}
+
+//	private void setAdapter() {
+//		adapter = new GrowthAdapter(this, listData);
+//		mListView.setAdapter(adapter);
+//		mPullDownView.Refresh();
+//		end = DateUtils.phpTime(System.currentTimeMillis());
+//		getGrowthList();
+//	}
 	/**设置页面统计
 	 * 
 	 */
@@ -106,8 +135,9 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		isRefresh = false;
 		loadMore = false;
 		listData.clear();
-		end = DateUtils.phpTime(System.currentTimeMillis());
-		getGrowthList();
+		//end = DateUtils.phpTime(System.currentTimeMillis());
+		//getGrowthList();
+		filldata();
 		super.onRestart();
 	}
 
@@ -137,18 +167,18 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 
 	}
 
-	private void getGrowthList() {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("cid", cid);
-		map.put("uid", SharedUtils.getString("uid", ""));
-		map.put("token", SharedUtils.getString("token", ""));
-		map.put("start", start);
-		map.put("end", end);
-		task = new GetGrowthListTask(map);
-		task.setTaskCallBack(this);
-		task.execute();
-
-	}
+//	private void getGrowthList() {
+//		Map<String, Object> map = new HashMap<String, Object>();
+//		map.put("cid", cid);
+//		map.put("uid", SharedUtils.getString("uid", ""));
+//		map.put("token", SharedUtils.getString("token", ""));
+//		map.put("start", start);
+//		map.put("end", end);
+//		task = new GetGrowthListTask(map);
+//		task.setTaskCallBack(this);
+//		task.execute();
+//
+//	}
 
 	@Override
 	public void onClick(View v) {
@@ -188,7 +218,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	}
 
 	@Override
-	public void getGrowthList(List<GrowthModle> list) {
+	public void getGrowthList(List<Growth> list) {
 		firstLoad = false;
 		mPullDownView.notifyDidMore();
 		mPullDownView.RefreshComplete();
@@ -213,7 +243,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View v, int arg2, long arg3) {
 		int position = arg2 - 1;
-		GrowthModle modle = listData.get(position);
+		Growth modle = listData.get(position);
 		Intent intent = new Intent(this, GrowthCommentActivity.class);
 		Bundle bundle = new Bundle();
 		bundle.putSerializable("modle", (Serializable) modle);
@@ -231,7 +261,7 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 
 			@Override
 			public void setComment(int position, String count) {
-				listData.get(position).setComment(Integer.valueOf(count));
+				listData.get(position).setCommentCnt(Integer.valueOf(count));
 				adapter.notifyDataSetChanged();
 
 			}
@@ -247,7 +277,8 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		if (firstLoad) {
 			return;
 		}
-		getGrowthList();
+		//getGrowthList();
+		filldata();
 	}
 
 	@Override
@@ -256,8 +287,9 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		isRefresh = false;
 		start = "0";
 		end = DateUtils.phpTime(DateUtils.convertToDate(listData.get(
-				listData.size() - 1).getPublish()));
-		getGrowthList();
+				listData.size() - 1).getPublished()));
+		//getGrowthList();
+		filldata();
 	}
 
 	@Override
@@ -279,24 +311,24 @@ public class GrowthActivity extends BaseActivity implements OnClickListener,
 		DBUtils.delGrowthById(cid);
 		int size = listData.size() > 20 ? 20 : listData.size();
 		for (int i = 0; i < size; i++) {
-			GrowthModle modle = listData.get(i);
+			Growth modle = listData.get(i);
 			JSONArray jsonAry = new JSONArray();
 			JSONObject jsonObj = new JSONObject();
-
+			
 			try {
-				for (int j = 0; j < modle.getImgModle().size(); j++) {
-					jsonObj.put("img", modle.getImgModle().get(j).getImg());
+				for (int j = 0; j < modle.getImages().size(); j++) {
+					jsonObj.put("img", modle.getImages().get(j).getImg());
 					jsonAry.put(jsonObj);
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			DBUtils.saveGrowth(cid, modle.getName(), modle.getPersonImg(),
-					modle.getId(), modle.getUid(), modle.getContent(),
-					modle.getLocation(), modle.getHappen(), modle.getPublish(),
-					modle.getPraise(), modle.getComment(),
-					modle.isIspraise() == true ? 1 : 0, jsonAry.toString());
+//			DBUtils.saveGrowth(cid, modle.getName(), modle.getPersonImg(),
+//					modle.getId(), modle.getUid(), modle.getContent(),
+//					modle.getLocation(), modle.getHappen(), modle.getPublish(),
+//					modle.getPraise(), modle.getComment(),
+//					modle.isIspraise() == true ? 1 : 0, jsonAry.toString());
 
 		}
 		super.onDestroy();

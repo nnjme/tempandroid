@@ -23,6 +23,7 @@ import com.changlianxi.data.request.ApiRequest;
 import com.changlianxi.data.request.Result;
 import com.changlianxi.data.request.StringResult;
 import com.changlianxi.db.Const;
+import com.changlianxi.db.DBUtils;
 import com.changlianxi.util.DateUtils;
 
 /**
@@ -81,18 +82,20 @@ import com.changlianxi.util.DateUtils;
  * 
  */
 public class Growth extends AbstractData {
-	public final static String DETAIL_API = "growth/idetail";
-	public final static String EDIT_API = "growth/igrowth";
-	public final static String UPLOAD_IMAGE_API = "growth/iuploadImage";
-	public final static String REMOVE_IMAGE_API = "growth/iremoveImage";
-	public final static String ADD_API = "growth/igrowth";
-	public final static String REMOVE_API = "growth/iremoveGrowth";	
-	public final static String PRAISE_API = "growth/imyPraise";	
-	public final static String CANCEL_PRAISE_API = "growth/icancelPraise";
-	public final static String COMMENT_API = "growth/iMyComment";
+	public final static String DETAIL_API = "/growth/idetail";
+	public final static String EDIT_API = "/growth/igrowth";
+	public final static String UPLOAD_IMAGE_API = "/growth/iuploadImage";
+	public final static String REMOVE_IMAGE_API = "/growth/iremoveImage";
+	public final static String ADD_API = "/growth/igrowth";
+	public final static String REMOVE_API = "/growth/iremoveGrowth";	
+	public final static String PRAISE_API = "/growth/imyPraise";	
+	public final static String CANCEL_PRAISE_API = "/growth/icancelPraise";
+	public final static String COMMENT_API = "/growth/imyComment";
 	
 	private int id = 0;
 	private int cid = 0;
+	private String name = "";
+	private String avatar = "";
 	private int publisher = 0;
 	private String content = "";
 	private String location = "";
@@ -125,6 +128,22 @@ public class Growth extends AbstractData {
 		this.happened = happened;
 		this.published = published;
 		this.commentList = new GrowthCommentList(cid, id);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
 	}
 
 	public int getId() {
@@ -289,10 +308,11 @@ public class Growth extends AbstractData {
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
 			for (int i = 0; i < cursor2.getCount(); i++) {
-				int imgId = cursor2.getInt(cursor.getColumnIndex("imgId"));
-				String img = cursor2.getString(cursor.getColumnIndex("img"));
+				int imgId = cursor2.getInt(cursor2.getColumnIndex("imgId"));
+				String img = cursor2.getString(cursor2.getColumnIndex("img"));
 
 				GrowthImage imgage = new GrowthImage(cid, id, imgId, img);
+				imgage.setStatus(Status.OLD);
 				images.add(imgage);
 			}
 		}
@@ -699,10 +719,22 @@ public class Growth extends AbstractData {
 		params.put("content", comment.getContent());
 		params.put("replyid", comment.getReplyid());
 
-		StringResult ret = (StringResult) ApiRequest.requestWithToken(
+//		StringResult ret = (StringResult) ApiRequest.requestWithToken(
+//				Growth.COMMENT_API, params, parser);
+		Result ret = ApiRequest.requestWithToken(
 				Growth.COMMENT_API, params, parser);
 		if (ret.getStatus() == RetStatus.SUCC) {
 			GrowthComment newComent = (GrowthComment) ret.getData();
+			
+			CircleMemberList circleMemberList = new CircleMemberList(cid);
+			circleMemberList.read(DBUtils.db);
+			List<CircleMember> members = circleMemberList.getMembers();
+			for(CircleMember circleMember : members){
+				if(circleMember.getUid()==newComent.getUid()){
+					newComent.setAvatar(circleMember.getAvatar());
+					newComent.setName(circleMember.getName());
+				}
+			}
 			this.commentList.addComment(newComent);
 			this.commentCnt = newComent.getTotal();
 

@@ -40,6 +40,7 @@ import com.changlianxi.R;
 import com.changlianxi.activity.ReleaseGrowthActivity;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.adapter.GrowthImgAdapter;
+import com.changlianxi.data.Growth;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CommentsModle;
 import com.changlianxi.modle.GrowthModle;
@@ -63,14 +64,14 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 		OnItemClickListener {
 	private Context mContext;// 当前对象
 	private View parent;
-	private GrowthModle modle;
+	private Growth modle;
 	private LayoutInflater flater;
 	private View view;// 要加载的布局文件
 	private PopupWindow popupWindow;// popWindow弹出框
 	private ListView listview;
-	private String cid;// 圈子id
-	private String uid;// 用户id
-	private String gid = "";// 成长记录id
+	private int cid;// 圈子id
+	private int uid;// 用户id
+	private int gid;// 成长记录id
 	private List<CommentsModle> cModle = new ArrayList<CommentsModle>();
 	private MyAdapter adapter;// 自定义adapter
 	private TextView name;// 显示發佈人姓名
@@ -102,7 +103,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 	 * @param modle
 	 */
 	public GrowthCommentsPopwindow(Context contxt, View parent,
-			GrowthModle modle, int pisition) {
+			Growth modle, int pisition) {
 		this.mContext = contxt;
 		this.parent = parent;
 		this.modle = modle;
@@ -115,14 +116,14 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 		initPopwindow();
 		cid = modle.getCid();
 		gid = modle.getId();
-		uid = modle.getUid();
-		MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
-		if (md != null) {
-			name.setText(md.getName());
-			String path = md.getAvator();
-			ImageManager.from(mContext).displayImage(img, path,
-					R.drawable.hand_pic, 60, 60);
-		}
+		uid = modle.getPublisher();
+//		MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
+//		if (md != null) {
+//			name.setText(md.getName());
+//			String path = md.getAvator();
+//			ImageManager.from(mContext).displayImage(img, path,
+//					R.drawable.hand_pic, 60, 60);
+//		}
 		adapter = new MyAdapter();
 		listview.setAdapter(adapter);
 		new GetCommentsTask().execute();
@@ -148,7 +149,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 		gridView = (GridView) view.findViewById(R.id.gridView1);
 		gridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
 		gridView.setOnItemClickListener(this);
-		int size = modle.getImgModle().size();
+		int size = modle.getImages().size();
 		int average = 0;
 		if (size == 1) {
 			average = 1;
@@ -158,7 +159,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 			average = 4;
 		}
 		gridView.setNumColumns(average);
-		gridView.setAdapter(new GrowthImgAdapter(mContext, modle.getImgModle(),
+		gridView.setAdapter(new GrowthImgAdapter(mContext, modle.getImages(),
 				average));
 		praise = (TextView) view.findViewById(R.id.praise);
 		comment = (TextView) view.findViewById(R.id.comments);
@@ -166,10 +167,10 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 		time = (TextView) view.findViewById(R.id.time);
 		content = (TextView) view.findViewById(R.id.content);
 		img = (CircularImage) view.findViewById(R.id.img);
-		time.setText(DateUtils.publishedTime(modle.getPublish()));
+		time.setText(DateUtils.publishedTime(modle.getPublished()));
 		content.setText(modle.getContent());
-		comment.setText("评论(" + modle.getComment() + ")");
-		praise.setText("赞(" + modle.getPraise() + ")");
+		comment.setText("评论(" + modle.getCommentCnt() + ")");
+		praise.setText("赞(" + modle.getPraiseCnt() + ")");
 		listview = (ListView) view.findViewById(R.id.listView);
 		titleTxt = (TextView) view.findViewById(R.id.titleTxt);
 		titleTxt.setText("成长");
@@ -322,7 +323,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 				Utils.showToast("评论成功!");
 				callBack.setComment(pisition, count);
 				CommentsModle modle = new CommentsModle();
-				modle.setCid(cid);
+				modle.setCid(cid+"");
 				modle.setUid(SharedUtils.getString("uid", ""));
 				modle.setContent(edtContent.getText().toString());
 				modle.setTime(DateUtils.getCurrDateStr());
@@ -511,10 +512,10 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 
 			break;
 		case R.id.edit:
-			if (isPermission(modle.getUid())) {
-				for (int i = 0; i < modle.getImgModle().size(); i++) {
-					urlPath.add(modle.getImgModle().get(i).getImg_100());
-					imgID.add(modle.getImgModle().get(i).getId());
+			if (isPermission(modle.getPublisher()+"")) {
+				for (int i = 0; i < modle.getImages().size(); i++) {
+					urlPath.add(modle.getImages().get(i).getImg());
+					imgID.add(modle.getImages().get(i).getImgId()+"");
 				}
 				Intent intent = new Intent();
 				Bundle bundle = new Bundle();
@@ -533,7 +534,7 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 			Utils.showToast("您没有编辑权限！");
 			break;
 		case R.id.del:
-			if (isPermission(modle.getUid())) {
+			if (isPermission(modle.getPublisher()+"")) {
 				new DelCommentsTask().execute();
 				return;
 			}
@@ -570,8 +571,8 @@ public class GrowthCommentsPopwindow implements OnClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		List<String> imgUrl = new ArrayList<String>();
-		for (int i = 0; i < modle.getImgModle().size(); i++) {
-			imgUrl.add(modle.getImgModle().get(i).getImg());
+		for (int i = 0; i < modle.getImages().size(); i++) {
+			imgUrl.add(modle.getImages().get(i).getImg());
 		}
 		imageBrower(arg2, imgUrl.toArray(new String[imgUrl.size()]));
 	}

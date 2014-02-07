@@ -44,7 +44,7 @@ import com.changlianxi.util.DateUtils;
  *
  */
 public class GrowthList extends AbstractData {
-	public final static String LIST_API = "growth/ilist";
+	public final static String LIST_API = "/growth/ilist";
 
 	private int cid = 0;
 	private long startTime = 0L; // data start time, in milliseconds

@@ -50,7 +50,7 @@ public class GrowthListParser implements IParser {
 			List<GrowthImage> images = new ArrayList<GrowthImage>();
 			for (int j = 0; j < jsonImages.length(); j++) {
 				JSONObject obj2 = (JSONObject) jsonImages.opt(j);
-				int imgId = obj2.getInt("id");
+				int imgId = obj2.getInt("imgid");
 				String img = obj2.getString("img");
 				GrowthImage gimg = new GrowthImage(cid, id, imgId, img);
 				images.add(gimg);

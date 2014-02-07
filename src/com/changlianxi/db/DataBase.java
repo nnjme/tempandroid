@@ -84,6 +84,9 @@ public class DataBase extends SQLiteOpenHelper {
 	 db.execSQL("create table IF NOT EXISTS " + Const.CIRCLE_MEMBER_TABLE_NAME + "(" + Const.CIRCLE_MEMBER_TABLE_STRUCTURE +")");
 	 db.execSQL("create table IF NOT EXISTS " + Const.TIME_RECORD_TABLE_NAME + "(" + Const.TIME_RECORD_TABLE_STRUCTURE +")");
 	 db.execSQL("create table IF NOT EXISTS " + Const.PERSON_DETAIL_TABLE_NAME + "(" + Const.PERSON_DETAIL_TABLE_STRUCTURE +")");
+	 db.execSQL("create table IF NOT EXISTS " + Const.GROWTH_TABLE_NAME + "(" + Const.GROWTH_TABLE_STRUCTURE +")");
+	 db.execSQL("create table IF NOT EXISTS " + Const.GROWTH_IMAGE_TABLE_NAME + "(" + Const.GROWTH_IMAGE_TABLE_STRUCTURE +")");
+	 db.execSQL("create table IF NOT EXISTS " + Const.GROWTH_COMMENT_TABLE_NAME + "(" + Const.GROWTH_COMMENT_TABLE_STRUCTURE +")");
 	 }
 }
 

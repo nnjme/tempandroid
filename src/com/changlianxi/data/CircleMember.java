@@ -946,8 +946,19 @@ public class CircleMember extends AbstractData {
 					}
 				}
 			}
-			another.setDetails(details);
-
+			List<PersonDetail> oldDetails = another.getDetails();
+			for(int n=0,len = details.size();n<len;n++){
+				PersonDetail detail = details.get(n);
+				int id = detail.getId();
+				for(int i=0;i<oldDetails.size();i++){
+					int id2 = oldDetails.get(i).getId();
+					if(id == id2){
+						oldDetails.set(i, detail);
+						break;
+					}
+				}
+			}
+			//another.setDetails(details);
 			if (this.updateDetails(another)) {
 				this.syncBasicAndDetail(false);
 				this.status = Status.UPDATE;
@@ -975,10 +986,14 @@ public class CircleMember extends AbstractData {
 		params.put("pid", another.pid);
 		params.put("person", changedDetails.toString());
 
-		ArrayResult ret = (ArrayResult) ApiRequest.requestWithToken(
+		Result ret =  ApiRequest.requestWithToken(
 				CircleMember.EDIT_API, params, parser);
+		ArrayResult arrayResult = null;
+		if(ret instanceof ArrayResult){
+			arrayResult = (ArrayResult)ret;
+		}
 		if (ret.getStatus() == RetStatus.SUCC) {
-			updateForEditInfo(another, changedDetails, ret.getArrs());
+			updateForEditInfo(another, changedDetails, arrayResult.getArrs());
 			return RetError.NONE;
 		} else {
 			return ret.getErr();

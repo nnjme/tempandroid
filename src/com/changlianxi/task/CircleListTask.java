@@ -27,7 +27,6 @@ public class CircleListTask extends BaseAsyncTask<List<Circle>, Void, RetError>{
 		RetError retError = circleList.refresh(CLXApplication.circleListLastRefreshTime);
 		circleList.write(DBUtils.db);    
 		
-		
 //		// 你要执行的方法
 //		try {
 //			JSONObject jsonobject = new JSONObject(result);

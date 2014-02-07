@@ -29,7 +29,10 @@ import com.changlianxi.activity.GrowthCommentActivity;
 import com.changlianxi.activity.GrowthCommentActivity.RecordOperation;
 import com.changlianxi.R;
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
+import com.changlianxi.data.Growth;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.modle.GrowthModle;
+import com.changlianxi.task.BaseAsyncTask;
 import com.changlianxi.task.PraiseAndCanclePraiseTask;
 import com.changlianxi.task.PraiseAndCanclePraiseTask.PraiseAndCancle;
 import com.changlianxi.util.DateUtils;
@@ -40,13 +43,14 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class GrowthAdapter extends BaseAdapter {
-	private List<GrowthModle> listData;
+	//private List<GrowthModle> listData;
+	private List<Growth> listData;
 	private Context mContext;
 	private DisplayImageOptions options;
 	private DisplayImageOptions options1;
 	private ImageLoader imageLoader;
 
-	public GrowthAdapter(Context context, List<GrowthModle> modle) {
+	public GrowthAdapter(Context context, List<Growth> modle) {
 		this.mContext = context;
 		this.listData = modle;
 		options = CLXApplication.getUserOptions();
@@ -59,7 +63,7 @@ public class GrowthAdapter extends BaseAdapter {
 				.build();
 	}
 
-	public void setData(List<GrowthModle> listData) {
+	public void setData(List<Growth> listData) {
 		this.listData = listData;
 		notifyDataSetChanged();
 	}
@@ -108,7 +112,7 @@ public class GrowthAdapter extends BaseAdapter {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
-		int size = listData.get(position).getImgModle().size();
+		int size = listData.get(position).getImages().size();
 		int average = 0;
 		if (size == 1) {
 			average = 1;
@@ -122,27 +126,27 @@ public class GrowthAdapter extends BaseAdapter {
 					400));
 		}
 		if (average == 1) {
-			String imgPath = listData.get(position).getImgModle().get(0)
-					.getImg_200();
+			String imgPath = listData.get(position).getImages().get(0)
+					.getImg();
 			holder.img.setVisibility(View.VISIBLE);
 			holder.gridView.setVisibility(View.GONE);
 			imageLoader.displayImage(imgPath, holder.img, options1);
 			holder.img.setOnClickListener(new ImgOnClick(listData.get(position)
-					.getImgModle().get(0).getImg()));
+					.getImages().get(0).getImg()));
 		} else {
 			holder.img.setVisibility(View.GONE);
 			holder.gridView.setVisibility(View.VISIBLE);
 			holder.gridView.setNumColumns(average);
 			holder.gridView.setAdapter(new GrowthImgAdapter(mContext, listData
-					.get(position).getImgModle(), average));
+					.get(position).getImages(), average));
 			holder.gridView.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> arg0, View arg1,
 						int arg2, long arg3) {
 					List<String> imgUrl = new ArrayList<String>();
-					for (int i = 0; i < listData.get(position).getImgModle()
+					for (int i = 0; i < listData.get(position).getImages()
 							.size(); i++) {
-						imgUrl.add(listData.get(position).getImgModle().get(i)
+						imgUrl.add(listData.get(position).getImages().get(i)
 								.getImg());
 					}
 					imageBrower(arg2, imgUrl.toArray(new String[imgUrl.size()]));
@@ -152,7 +156,7 @@ public class GrowthAdapter extends BaseAdapter {
 		holder.location.setText(listData.get(position).getLocation());
 		holder.layParise.setOnClickListener(new BtnClick(holder, position));
 		holder.layComment.setOnClickListener(new BtnClick(position));
-		String path = listData.get(position).getPersonImg();
+		String path = listData.get(position).getAvatar();
 		if (path == null || path.equals("")) {
 			holder.avatar.setImageResource(R.drawable.head_bg);
 		} else {
@@ -160,14 +164,14 @@ public class GrowthAdapter extends BaseAdapter {
 		}
 		holder.name.setText(listData.get(position).getName());
 		holder.time.setText(DateUtils.publishedTime(listData.get(position)
-				.getPublish()));
+				.getPublished()));
 		String content = StringUtils.ToDBC(listData.get(position).getContent());
 		if (content.length() == 0) {
 			holder.content.setVisibility(View.GONE);
 		}
 		holder.content.setText(content);
-		holder.praise.setText("赞（" + listData.get(position).getPraise() + "）");
-		holder.comment.setText("评论（" + listData.get(position).getComment()
+		holder.praise.setText("赞（" + listData.get(position).getPraiseCnt() + "）");
+		holder.comment.setText("评论（" + listData.get(position).getCommentCnt()
 				+ "）");
 		return convertView;
 	}
@@ -220,19 +224,32 @@ public class GrowthAdapter extends BaseAdapter {
 			case R.id.layParise:
 				Dialog pd = DialogUtil.getWaitDialog(mContext, "请稍后");
 				pd.show();
-				if (!listData.get(position).isIspraise()) {
-					PraiseAndCancle(listData.get(position).getCid(), listData
-							.get(position).getId(), "praise",
-							"/growth/imyPraise", position, pd);
+				
+				final Growth growth = listData.get(position);
+				
+				new BaseAsyncTask<Void, Void, RetError>() {
 
-					return;
-				}
-				PraiseAndCancle(listData.get(position).getCid(),
-						listData.get(position).getId(), "cancle",
-						"/growth/icancelPraise", position, pd);
+					@Override
+					protected RetError doInBackground(Void... params) {
+						// TODO Auto-generated method stub
+						growth.uploadMyPraise(!growth.isPraised());
+						return null;
+					}
+				}.executeWithCheckNet();
+				
+//				if (!listData.get(position).isPraised()) {
+//					PraiseAndCancle(listData.get(position).getCid(), listData
+//							.get(position).getId(), "praise",
+//							"/growth/imyPraise", position, pd);
+//
+//					return;
+//				}
+//				PraiseAndCancle(listData.get(position).getCid(),
+//						listData.get(position).getId(), "cancle",
+//						"/growth/icancelPraise", position, pd);
 				break;
 			case R.id.layComment:
-				GrowthModle modle = listData.get(position);
+				Growth modle = listData.get(position);
 				Intent intent = new Intent(mContext,
 						GrowthCommentActivity.class);
 				Bundle bundle = new Bundle();
@@ -251,7 +268,7 @@ public class GrowthAdapter extends BaseAdapter {
 
 					@Override
 					public void setComment(int position, String count) {
-						listData.get(position).setComment(
+						listData.get(position).setCommentCnt(
 								Integer.valueOf(count));
 						notifyDataSetChanged();
 
@@ -264,6 +281,7 @@ public class GrowthAdapter extends BaseAdapter {
 
 		}
 	}
+	
 
 	/**
 	 * 点赞
@@ -276,11 +294,11 @@ public class GrowthAdapter extends BaseAdapter {
 			@Override
 			public void praiseAndCancle(String type, int count) {
 				pd.dismiss();
-				listData.get(postition).setPraise(count);
+				listData.get(postition).setPraiseCnt(count);
 				if (type.equals("praise")) {
-					listData.get(postition).setIspraise(true);
+					listData.get(postition).setPraised(true);
 				} else {
-					listData.get(postition).setIspraise(false);
+					listData.get(postition).setPraised(false);
 
 				}
 				notifyDataSetChanged();

@@ -106,7 +106,6 @@ public class BitmapUtils {
 	 * @return
 	 */
 	public static Drawable convertBimapToDrawable(Bitmap bm) {
-		@SuppressWarnings("deprecation")
 		BitmapDrawable bd = null;
 		if(bd == null)
 			bd = new BitmapDrawable(bm);

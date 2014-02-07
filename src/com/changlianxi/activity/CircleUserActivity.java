@@ -104,7 +104,8 @@ public class CircleUserActivity extends BaseActivity implements
 			@Override
 			public void taskFinish(RetError result) {
 				layInvitate.setVisibility(View.GONE);
-				progressDialog.dismiss();
+				if(progressDialog!=null)
+					progressDialog.dismiss();
 				adapter = new MyAdapter(CircleUserActivity.this, circleMemberList);
 				listView.setAdapter(adapter);
 			}

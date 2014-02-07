@@ -33,10 +33,13 @@ import android.widget.TextView;
 
 import com.changlianxi.activity.showBigPic.ImagePagerActivity;
 import com.changlianxi.adapter.GrowthImgAdapter;
+import com.changlianxi.data.Growth;
+import com.changlianxi.data.enums.RetError;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.CommentsModle;
 import com.changlianxi.modle.GrowthModle;
 import com.changlianxi.modle.MemberInfoModle;
+import com.changlianxi.task.BaseAsyncTask;
 import com.changlianxi.task.GetGrowthCommentsTask;
 import com.changlianxi.task.GetGrowthCommentsTask.GetGrowthComments;
 import com.changlianxi.task.GetGrowthIdetailTask;
@@ -65,7 +68,7 @@ import com.changlianxi.R;
 public class CommentsListItemActivity extends BaseActivity implements
 		OnClickListener, OnItemClickListener, GetGrowthComments,
 		GetGrowthIdetail {
-	private GrowthModle modle;
+	private Growth modle;
 	private LayoutInflater flater;
 	private ListView listview;
 	private String cid;// 圈子id
@@ -164,8 +167,8 @@ public class CommentsListItemActivity extends BaseActivity implements
 		}
 	}
 
-	private void setContent(GrowthModle modle) {
-		int size = modle.getImgModle().size();
+	private void setContent(Growth modle) {
+		int size = modle.getImages().size();
 		int average = 0;
 		if (size == 1) {
 			average = 1;
@@ -180,7 +183,7 @@ public class CommentsListItemActivity extends BaseActivity implements
 			content.setVisibility(View.GONE);
 		}
 		if (average == 1) {
-			String imgPath = modle.getImgModle().get(pisition).getImg_200();
+			String imgPath = modle.getImages().get(pisition).getImg();
 			oneImg.setVisibility(View.VISIBLE);
 			gridView.setVisibility(View.GONE);
 			imageLoader.displayImage(imgPath, oneImg, options);
@@ -188,13 +191,13 @@ public class CommentsListItemActivity extends BaseActivity implements
 			oneImg.setVisibility(View.GONE);
 			gridView.setVisibility(View.VISIBLE);
 			gridView.setNumColumns(average);
-			gridView.setAdapter(new GrowthImgAdapter(this, modle.getImgModle(),
+			gridView.setAdapter(new GrowthImgAdapter(this, modle.getImages(),
 					average));
 		}
-		time.setText(DateUtils.publishedTime(modle.getPublish()));
+		time.setText(DateUtils.publishedTime(modle.getPublished()));
 		content.setText(StringUtils.ToDBC(modle.getContent()));
-		comment.setText("评论（" + modle.getComment() + "）");
-		praise.setText("赞（" + modle.getPraise() + "）");
+		comment.setText("评论（" + modle.getCommentCnt() + "）");
+		praise.setText("赞（" + modle.getPraiseCnt() + "）");
 	}
 
 	private void getGrowthIdetail() {
@@ -447,10 +450,10 @@ public class CommentsListItemActivity extends BaseActivity implements
 
 			break;
 		case R.id.edit:
-			if (isPermission(modle.getUid())) {
-				for (int i = 0; i < modle.getImgModle().size(); i++) {
-					urlPath.add(modle.getImgModle().get(i).getImg_100());
-					imgID.add(modle.getImgModle().get(i).getId());
+			if (isPermission(modle.getPublisher()+"")) {
+				for (int i = 0; i < modle.getImages().size(); i++) {
+					urlPath.add(modle.getImages().get(i).getImg());
+					imgID.add(modle.getImages().get(i).getImgId()+"");
 				}
 				Intent intent = new Intent();
 				Bundle bundle = new Bundle();
@@ -469,21 +472,32 @@ public class CommentsListItemActivity extends BaseActivity implements
 			Utils.showToast("您没有编辑权限！");
 			break;
 		case R.id.del:
-			if (isPermission(modle.getUid())) {
+			if (isPermission(modle.getPublisher()+"")) {
 				new DelCommentsTask().execute();
 				return;
 			}
 			Utils.showToast("您没有删除权限！");
 			break;
 		case R.id.layParise:
-			if (!modle.isIspraise()) {
-				PraiseAndCancle(modle.getCid(), modle.getId(), "praise",
-						"/growth/imyPraise");
+			
+			new BaseAsyncTask<Void, Void, RetError>() {
 
-				return;
-			}
-			PraiseAndCancle(modle.getCid(), modle.getId(), "cancle",
-					"/growth/icancelPraise");
+				@Override
+				protected RetError doInBackground(Void... params) {
+					// TODO Auto-generated method stub
+					modle.uploadMyPraise(!modle.isPraised());
+					return null;
+				}
+			}.executeWithCheckNet();
+			
+//			if (!modle.isPraised()) {
+//				PraiseAndCancle(modle.getCid(), modle.getId(), "praise",
+//						"/growth/imyPraise");
+//
+//				return;
+//			}
+//			PraiseAndCancle(modle.getCid(), modle.getId(), "cancle",
+//					"/growth/icancelPraise");
 			break;
 		default:
 			break;
@@ -503,12 +517,12 @@ public class CommentsListItemActivity extends BaseActivity implements
 			@Override
 			public void praiseAndCancle(String type, int count) {
 				dialog.dismiss();
-				modle.setPraise(count);
-				praise.setText("赞(" + modle.getPraise() + ")");
+				modle.setPraiseCnt(count);
+				praise.setText("赞(" + modle.getPraiseCnt() + ")");
 				if (type.equals("praise")) {
-					modle.setIspraise(true);
+					modle.setPraised(true);
 				} else {
-					modle.setIspraise(false);
+					modle.setPraised(false);
 
 				}
 			}
@@ -521,8 +535,8 @@ public class CommentsListItemActivity extends BaseActivity implements
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		List<String> imgUrl = new ArrayList<String>();
-		for (int i = 0; i < modle.getImgModle().size(); i++) {
-			imgUrl.add(modle.getImgModle().get(i).getImg());
+		for (int i = 0; i < modle.getImages().size(); i++) {
+			imgUrl.add(modle.getImages().get(i).getImg());
 		}
 		imageBrower(arg2, imgUrl.toArray(new String[imgUrl.size()]));
 	}
@@ -535,7 +549,7 @@ public class CommentsListItemActivity extends BaseActivity implements
 	}
 
 	@Override
-	public void getGrowthIdetail(GrowthModle models) {
+	public void getGrowthIdetail(Growth models) {
 		if (dialog != null) {
 			dialog.dismiss();
 		}

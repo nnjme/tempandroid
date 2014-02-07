@@ -124,6 +124,9 @@ public class DateUtils {
 	public static long convertToDate(String str) {
 		Date date = null;
 		try {
+			if("".equals(str)){
+				return 0L;
+			}
 			date = df.parse(str);
 			return date.getTime();
 		} catch (ParseException e) {

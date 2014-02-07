@@ -45,7 +45,7 @@ import com.changlianxi.util.DateUtils;
  *
  */
 public class GrowthCommentList extends AbstractData {
-	public final static String LIST_API = "growth/icomments";
+	public final static String LIST_API = "/growth/icomments";
 
 	private int cid = 0;
 	private int gid = 0;
@@ -152,6 +152,7 @@ public class GrowthCommentList extends AbstractData {
 						content);
 				comment.setReplyid(replyid);
 				comment.setTime(time);
+				comment.setStatus(Status.OLD);
 				comments.add(comment);
 
 				long joinTime = DateUtils.convertToDate(time);
@@ -173,11 +174,11 @@ public class GrowthCommentList extends AbstractData {
 				+ "" }, null, null, null);
 		if (cursor2.getCount() > 0) {
 			cursor2.moveToFirst();
-			long lastCommentsReqTime = cursor2.getLong(cursor
+			long lastCommentsReqTime = cursor2.getLong(cursor2
 					.getColumnIndex("lastCommentsReqTime"));
 			this.lastReqTime = lastCommentsReqTime;
 		}
-		cursor.close();
+		cursor2.close();
 
 		this.status = Status.OLD;
 		sort(true);

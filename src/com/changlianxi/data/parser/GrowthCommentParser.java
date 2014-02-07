@@ -5,6 +5,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.changlianxi.data.AbstractData.Status;
+import com.changlianxi.data.CircleMemberList;
 import com.changlianxi.data.GrowthComment;
 import com.changlianxi.data.request.Result;
 
@@ -29,10 +30,10 @@ public class GrowthCommentParser implements IParser {
 			return Result.defContentErrorResult();
 		}
 
-		int uid = (Integer) params.get("uid");
+		String uid = (String) params.get("uid");
 		int gid = (Integer) params.get("gid");
 		String content = (String) params.get("content");
-		GrowthComment comment = new GrowthComment(gid, gcid, uid, content);
+		GrowthComment comment = new GrowthComment(gid, gcid, Integer.parseInt(uid), content);
 		comment.setTime(time);
 		comment.setTotal(count);
 		comment.setStatus(Status.NEW);

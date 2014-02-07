@@ -156,20 +156,19 @@ public class UserInfoEditActivity extends BaseActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.user_info_edit);
-//		Debug.startMethodTracing();
 		imageLoader = CLXApplication.getImageLoader();
 		options = CLXApplication.getUserOptions();
-//		cid = getIntent().getStringExtra("cid");
-//		pid = getIntent().getStringExtra("pid");
-//		strName = getIntent().getStringExtra("name");
-//		avatarURL = getIntent().getStringExtra("avatar");
+		cid = getIntent().getStringExtra("cid");
+		pid = getIntent().getStringExtra("pid");
+		strName = getIntent().getStringExtra("name");
+		avatarURL = getIntent().getStringExtra("avatar");
 		initView();
 		circleMember = (CircleMember) getIntent().getSerializableExtra(
 				"circleMumber");
-		cid = circleMember.getCid()+"";
-		pid = circleMember.getPid()+"";
-		strName = circleMember.getName();
-		avatarURL = circleMember.getAvatar();
+//		cid = circleMember.getCid()+"";
+//		pid = circleMember.getPid()+"";
+//		strName = circleMember.getName();
+//		avatarURL = circleMember.getAvatar();
 		editName.setText(strName);
 		initData();
 		setListener();
@@ -190,6 +189,14 @@ public class UserInfoEditActivity extends BaseActivity implements
 			valuesClassification(detail.getId() + "", detail.getType().name(),
 					detail.getValue(), detail.getStart(), detail.getEnd());
 		}
+		Bundle bundle = getIntent().getExtras();
+		basicList = (List<Info>) bundle.getSerializable("basicList");
+		contactList = (List<Info>) bundle.getSerializable("contactList");
+		socialList = (List<Info>) bundle.getSerializable("socialList");
+		addressList = (List<Info>) bundle.getSerializable("addressList");
+		eduList = (List<Info>) bundle.getSerializable("eduList");
+		workList = (List<Info>) bundle.getSerializable("workList");
+		
 		for (int i = basicList.size() - 1; i >= 0; i--) {
 			String type = basicList.get(i).getType();
 			if (type.equals("D_NAME")) {
@@ -377,7 +384,12 @@ public class UserInfoEditActivity extends BaseActivity implements
 					return;
 				}
 				avatar.setImageBitmap(bmp);
-				layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				int sdk = android.os.Build.VERSION.SDK_INT;
+				if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+				    layTop.setBackgroundDrawable(BitmapUtils.convertBimapToDrawable(bmp));
+				} else {
+				    layTop.setBackground(BitmapUtils.convertBimapToDrawable(bmp));
+				}
 			}
 
 			@Override
@@ -863,9 +875,13 @@ public class UserInfoEditActivity extends BaseActivity implements
 
 		@Override
 		public void afterTextChanged(Editable s) {
+//			if(position>=valuesList.size()){
+//				return;
+//			}
 			if (editType == 2) {
 				valuesList.get(position).setValue(s.toString());
 			} else {
+				
 				String values = valuesList.get(position).getValue();
 				if (!values.equals(s.toString())) {
 					valuesList.get(position).setValue(s.toString());
@@ -1562,7 +1578,7 @@ public class UserInfoEditActivity extends BaseActivity implements
 		bundle.putSerializable("addressList", (Serializable) addressList);
 		bundle.putSerializable("eduList", (Serializable) eduList);
 		bundle.putSerializable("workList", (Serializable) workList);
-		bundle.putSerializable("circleMember", circleMember);
+		bundle.putSerializable("circleMember", newCircleMember);
 		it.putExtras(bundle);
 		setResult(2, it);
 		finish();

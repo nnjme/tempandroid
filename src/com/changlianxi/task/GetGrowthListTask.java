@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import android.os.AsyncTask;
 
+import com.changlianxi.data.Growth;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
@@ -26,7 +27,7 @@ import com.changlianxi.util.StringUtils;
  */
 public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 	private GroGrowthList callBack;
-	private List<GrowthModle> listData = new ArrayList<GrowthModle>();
+	private List<Growth> listData = new ArrayList<Growth>();
 	private Map<String, Object> map;
 
 	public GetGrowthListTask(Map<String, Object> map) {
@@ -42,65 +43,65 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 		if (isCancelled()) {
 			return null;
 		}
-		String result = HttpUrlHelper.postData(map, "/growth/ilist");
-		try {
-			JSONObject jsonobject = new JSONObject(result);
-			String cid = jsonobject.getString("cid");
-			String num = jsonobject.getString("num");
-			JSONArray jsonarray = jsonobject.getJSONArray("growths");
-			for (int i = 0; i < jsonarray.length(); i++) {
-				JSONObject object = (JSONObject) jsonarray.opt(i);
-				GrowthModle modle = new GrowthModle();
-				String id = object.getString("id");
-				String uid = object.getString("uid");
-				String content = object.getString("content");
-				String location = object.getString("location");
-				String happen = object.getString("happen");
-				int praise = object.getInt("praise");
-				int comment = object.getInt("comment");
-				String publish = object.getString("publish");
-				String isPraise = object.getString("mypraise");
-				JSONArray imgrray = object.getJSONArray("images");
-				List<GrowthImgModle> imgModle = new ArrayList<GrowthImgModle>();
-				for (int j = 0; j < imgrray.length(); j++) {
-					GrowthImgModle im = new GrowthImgModle();
-					JSONObject imgObj = (JSONObject) imgrray.opt(j);
-					String imgId = imgObj.getString("imgid");
-					String img = imgObj.getString("img");
-					im.setId(imgId);
-					im.setImg(img);
-					im.setImg_200(StringUtils.JoinString(img, "_200x200"));
-					im.setImg_100(StringUtils.JoinString(img, "_100x100"));
-					im.setImg_60(StringUtils.JoinString(img, "_60x60"));
-					im.setImg_500(StringUtils.JoinString(img, "_500x500"));
-					imgModle.add(im);
-				}
-				MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
-				modle.setName(md.getName());
-				modle.setPersonImg(md.getAvator());
-				if (isPraise.equals("1")) {
-					modle.setIspraise(true);
-				} else {
-					modle.setIspraise(false);
-				}
-				modle.setImgModle(imgModle);
-				modle.setCid(cid);
-				modle.setNum(num);
-				modle.setId(id);
-				modle.setUid(uid);
-				modle.setContent(content);
-				modle.setLocation(location);
-				modle.setHappen(happen);
-				modle.setPraise(praise);
-				modle.setComment(comment);
-				modle.setPublish(publish);
-				listData.add(modle);
-			}
-		} catch (JSONException e) {
-			Logger.error(this, e);
-
-			e.printStackTrace();
-		}
+//		String result = HttpUrlHelper.postData(map, "/growth/ilist");
+//		try {
+//			JSONObject jsonobject = new JSONObject(result);
+//			String cid = jsonobject.getString("cid");
+//			String num = jsonobject.getString("num");
+//			JSONArray jsonarray = jsonobject.getJSONArray("growths");
+//			for (int i = 0; i < jsonarray.length(); i++) {
+//				JSONObject object = (JSONObject) jsonarray.opt(i);
+//				String id = object.getString("id");
+//				String uid = object.getString("uid");
+//				Growth modle = new Growth(Integer.parseInt(cid),Integer.parseInt(id));
+//				String content = object.getString("content");
+//				String location = object.getString("location");
+//				String happen = object.getString("happen");
+//				int praise = object.getInt("praise");
+//				int comment = object.getInt("comment");
+//				String publish = object.getString("publish");
+//				String isPraise = object.getString("mypraise");
+//				JSONArray imgrray = object.getJSONArray("images");
+//				List<GrowthImgModle> imgModle = new ArrayList<GrowthImgModle>();
+//				for (int j = 0; j < imgrray.length(); j++) {
+//					GrowthImgModle im = new GrowthImgModle();
+//					JSONObject imgObj = (JSONObject) imgrray.opt(j);
+//					String imgId = imgObj.getString("imgid");
+//					String img = imgObj.getString("img");
+//					im.setId(imgId);
+//					im.setImg(img);
+//					im.setImg_200(StringUtils.JoinString(img, "_200x200"));
+//					im.setImg_100(StringUtils.JoinString(img, "_100x100"));
+//					im.setImg_60(StringUtils.JoinString(img, "_60x60"));
+//					im.setImg_500(StringUtils.JoinString(img, "_500x500"));
+//					imgModle.add(im);
+//				}
+//				MemberInfoModle md = DBUtils.selectNameAndImgByID(uid);
+//				modle.setName(md.getName());
+//				modle.setPersonImg(md.getAvator());
+//				if (isPraise.equals("1")) {
+//					modle.setIspraise(true);
+//				} else {
+//					modle.setIspraise(false);
+//				}
+//				modle.setImgModle(imgModle);
+//				modle.setCid(cid);
+//				modle.setNum(num);
+//				modle.setId(id);
+//				modle.setUid(uid);
+//				modle.setContent(content);
+//				modle.setLocation(location);
+//				modle.setHappen(happen);
+//				modle.setPraise(praise);
+//				modle.setComment(comment);
+//				modle.setPublish(publish);
+//				listData.add(modle);
+//			}
+//		} catch (JSONException e) {
+//			Logger.error(this, e);
+//
+//			e.printStackTrace();
+//		}
 		return null;
 	}
 
@@ -117,6 +118,6 @@ public class GetGrowthListTask extends AsyncTask<String, Integer, String> {
 	}
 
 	public interface GroGrowthList {
-		void getGrowthList(List<GrowthModle> listModle);
+		void getGrowthList(List<Growth> listModle);
 	}
 }

@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import android.os.AsyncTask;
 
+import com.changlianxi.data.Growth;
 import com.changlianxi.db.DBUtils;
 import com.changlianxi.modle.GrowthImgModle;
 import com.changlianxi.modle.GrowthModle;
@@ -106,7 +107,7 @@ public class GetGrowthIdetailTask extends AsyncTask<String, Integer, String> {
 	@Override
 	protected void onPostExecute(String result) {
 		// 任务结束
-		callBack.getGrowthIdetail(modles);
+		//callBack.getGrowthIdetail(modles);
 	}
 
 	@Override
@@ -116,6 +117,6 @@ public class GetGrowthIdetailTask extends AsyncTask<String, Integer, String> {
 	}
 
 	public interface GetGrowthIdetail {
-		void getGrowthIdetail(GrowthModle models);
+		void getGrowthIdetail(Growth models);
 	}
 }
