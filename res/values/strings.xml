@@ -1,7 +1,5 @@
 <resources>
 
-    <string name="app_name">ShareSDK</string>
-
     <integer name="app_version_code">26</integer>
 
     <string name="app_version">2.3.1</string>
@@ -66,7 +64,6 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_user_info_activity1">UserInfoActivity1</string>
     <string name="title_activity_user_info_edit_activity1">UserInfoEditActivity1</string>
-    
     <string name="more">更多</string>
     <string name="not_yet_authorized">尚未授权</string>
     <string name="share_to_wechat">微信好友</string>

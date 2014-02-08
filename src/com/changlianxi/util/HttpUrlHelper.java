@@ -44,7 +44,7 @@ import org.apache.http.util.EntityUtils;
  */
 public class HttpUrlHelper {
 	public static final String TAG = "HttpUrlHelper";
-	public static final String strUrl = "http://clx.teeker.com";// 服务器地址
+	public static final String strUrl = "http://i.changlianxi.com";// 服务器地址
 
 	// i.changlianxi.com
 

@@ -1,9 +1,5 @@
 <resources>
 
-    <style name="AppTheme" parent="android:Theme.Light">
-        <item name="android:windowNoTitle">true</item>
-    </style>
-
     <style name="Dialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowIsFloating">true</item>
         <!-- 设置未浮动窗口 -->
@@ -15,10 +11,6 @@
         <!-- 设置完全透明 -->
         <item name="android:backgroundDimEnabled">true</item>
         <!-- 设置屏幕变暗 -->
-    </style>
-
-    <style name="AppTheme" parent="android:Theme.Light">
-        <item name="android:windowNoTitle">true</item>
     </style>
 
     <style name="AnimBottom" parent="@android:style/Animation">

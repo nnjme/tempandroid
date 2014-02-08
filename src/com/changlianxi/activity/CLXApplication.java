@@ -12,6 +12,7 @@ import android.media.MediaPlayer;
 
 import com.changlianxi.BuildConfig;
 import com.changlianxi.R;
+import com.changlianxi.util.CrashHandler;
 import com.changlianxi.util.FileUtils;
 import com.changlianxi.util.Logger;
 import com.changlianxi.util.Logger.Level;
@@ -45,8 +46,8 @@ public class CLXApplication extends Application {
 		setInstance(this);
 		Logger.setWriteFile(false); // 设置日志是写文件还是使用标准输出
 		Logger.setLogLevel(Level.DEBUG); // 日志级别
-		// CrashHandler catchHandler = CrashHandler.getInstance();
-		// catchHandler.init(this);
+		CrashHandler catchHandler = CrashHandler.getInstance();
+		catchHandler.init(this);
 		initData();
 		initImageLoader();
 		super.onCreate();
@@ -132,6 +133,7 @@ public class CLXApplication extends Application {
 	public static DisplayImageOptions getUserOptions() {
 		return userOptions;
 	}
+
 	private void initData() {
 		mNotificationManager = (NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
 		mMediaPlayer = MediaPlayer.create(this, R.raw.office);
